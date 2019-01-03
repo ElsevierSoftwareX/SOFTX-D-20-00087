@@ -1,0 +1,25 @@
+# Ignore the following files in GIT:
+######################################
+
+# Python compiled files:
+*.pyc
+*.orig
+
+# PyCharm Settings:
+.idea
+
+# Gurobi log files:
+*gurobi.log
+
+# Output files:
+output/
+
+#Model Files
+*.lp
+*.ilp
+
+# Files in matlab library
+*.pdf
+*.emf
+src/
+*.asv
