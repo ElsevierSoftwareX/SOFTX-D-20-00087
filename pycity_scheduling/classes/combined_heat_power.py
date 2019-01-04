@@ -134,6 +134,6 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
             p = self.P_Th_Schedule
         if timestep:
             p = p[:timestep]
-        co2 = ElectricalEntity.calculate_co2(timestep, reference)
+        co2 = ElectricalEntity.calculate_co2(self, timestep, reference)
         co2 -= sum(p) * self.TIME_SLOT * CO2_EMISSIONS_GAS
         return co2

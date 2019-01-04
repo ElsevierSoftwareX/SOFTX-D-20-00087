@@ -91,7 +91,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         """
         if prices is None:
             prices = self.environment.prices.da_prices
-        costs = self.calculate_costs(timestep, prices, reference)
+        costs = ElectricalEntity.calculate_costs(self, timestep,
+                                                 prices, reference)
         return costs
 
     def calculate_co2(self, timestep=None, co2_emissions=None,

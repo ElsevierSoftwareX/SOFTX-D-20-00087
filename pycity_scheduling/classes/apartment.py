@@ -75,6 +75,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
     def update_schedule(self, mode=""):
         ThermalEntity.update_schedule(self, mode)
         ElectricalEntity.update_schedule(self, mode)
+
         for entity in self.get_lower_entities():
             entity.update_schedule(mode)
 
@@ -112,6 +113,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             DeferrableLoad, CurtailableLoad, SpaceHeating or DomesticHotWater.
         """
         super(Apartment, self).addEntity(entity)
+
         if isinstance(entity, ThermalEntity):
             self.Th_Demand_list.append(entity)
         if isinstance(entity, ElectricalEntity):

@@ -177,7 +177,7 @@ class Building(ElectricalEntity, bd.Building):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        ElectricalEntity.reset(self, schedule, reference)
+        super(Building, self).reset(schedule, reference)
 
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)

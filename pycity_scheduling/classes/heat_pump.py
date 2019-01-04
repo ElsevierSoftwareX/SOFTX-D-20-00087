@@ -12,7 +12,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
     """
 
     def __init__(self, environment, P_Th_Nom, hp_type="aw", tAmbient=None,
-                 tFlow=45, cop=None, tMax=55, lowerActivationLimit=1,
+                 tFlow=45, cop=None, tMax=55, lowerActivationLimit=0,
                  heat=None, power=None):
         """Initialize HeatPump.
 
