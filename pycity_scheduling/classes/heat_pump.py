@@ -33,6 +33,9 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
             temperatures
         tMax :
 
+        lowerActivationLimit:
+            Minimal percentage the heatpump operates with. If this value is
+            larger than zero, the heatpump never turns fully off.
         heat
         power
         """
@@ -75,7 +78,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         for var in self.P_Th_vars:
             var.lb = -self.P_Th_Nom
-            var.ub = 0
+            var.ub = -self.lowerActivationLimit*self.P_Th_Nom
 
         for t in self.OP_TIME_VEC:
             model.addConstr(
