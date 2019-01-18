@@ -106,6 +106,6 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
         mode : str, optional
         """
         timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_Th_vars[t].lb = self.P_Th_Demand[t+timestep]
             self.P_Th_vars[t].ub = self.P_Th_Demand[t+timestep]

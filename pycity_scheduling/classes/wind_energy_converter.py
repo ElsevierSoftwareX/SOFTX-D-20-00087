@@ -42,14 +42,14 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         wheather_forecast = self.environment.weather.getWeatherForecast
         (full_wind,) = wheather_forecast(getVWind=True)
         ts = self.timer.time_in_year("timesteps", True)
-        total_wind = full_wind[ts:ts+self.SIMU_HORIZON]
+        total_wind = full_wind[ts:ts+self.simu_horizon]
         log_wind = self._logWindProfile(total_wind)
         self.P_El_Supply = np.interp(log_wind, self.velocity,
                                      self.power, right=0)
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = -self.P_El_Supply[t+timestep]
             if self.force_renewables:
                 self.P_El_vars[t].ub = -self.P_El_Supply[t+timestep]
@@ -77,12 +77,12 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         obj = gurobi.QuadExpr()
         if not self.force_renewables:
             obj.addTerms(
-                [coeff] * self.OP_HORIZON,
+                [coeff] * self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
             t1 = self.timer.currentTimestep
-            t2 = t1 + self.OP_HORIZON
+            t2 = t1 + self.op_horizon
             obj.addTerms(
                 - 2 * coeff * self.P_El_Supply[t1:t2],
                 self.P_El_vars
@@ -114,5 +114,5 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         co2 = super(WindEnergyConverter, self).calculate_co2(timestep,
                                                              co2_emissions,
                                                              reference)
-        co2 -= sum(p) * self.TIME_SLOT * CO2_EMISSIONS_WIND
+        co2 -= sum(p) * self.time_slot * CO2_EMISSIONS_WIND
         return co2

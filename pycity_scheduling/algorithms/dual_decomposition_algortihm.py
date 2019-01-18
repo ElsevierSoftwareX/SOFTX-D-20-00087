@@ -23,7 +23,7 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
         Maximum number of ADMM iterations.
     """
 
-    OP_HORIZON = OptimizationEntity.OP_HORIZON
+    OP_HORIZON = city_district.op_horizon
     nodes = city_district.nodes
 
     iteration = 0
@@ -130,7 +130,7 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
         for node in nodes.values():
             r += node["entity"].P_El_Schedule[t1:t2]
 
-        for t in city_district.OP_TIME_VEC:
+        for t in city_district.op_time_vec:
             if abs(r[t]) > r_norms[-1]:
                 r_norms[-1] = abs(r[t])
 

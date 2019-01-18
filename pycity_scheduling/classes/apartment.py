@@ -54,11 +54,11 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             entity.populate_model(model, mode)
             P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
             self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.OP_HORIZON])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.OP_HORIZON])
+            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
             model.addConstr(
                 self.P_Th_vars[t] == P_Th_var_sum,
                 "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)

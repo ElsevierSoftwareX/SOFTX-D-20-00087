@@ -45,7 +45,7 @@ class ElectricalVehicle(BatteryEntity):
             charging_time = [1] * a + [0] * b + [1] * c
 
         t1 = self.timer.time_in_day()
-        t2 = t1 + self.SIMU_HORIZON
+        t2 = t1 + self.simu_horizon
         ts_in_day = int(86400 / self.timer.timeDiscretization)
         self.charging_time = []
         for t in range(t1, t2):
@@ -58,7 +58,7 @@ class ElectricalVehicle(BatteryEntity):
         super(ElectricalVehicle, self).populate_model(model, mode)
 
         self.P_El_Drive_vars = []
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_Drive_vars.append(
                 model.addVar(
                     name="%s_P_El_Drive_at_t=%i" % (self._long_ID, t + 1)
@@ -66,13 +66,13 @@ class ElectricalVehicle(BatteryEntity):
             )
         model.update()
 
-        for t in range(1, self.OP_HORIZON):
+        for t in range(1, self.op_horizon):
             model.addConstr(
                 0.9 * self.E_El_vars[t]
                 == 0.9 * self.E_El_vars[t-1]
                    + (0.81*self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
                       - 0.9*self.P_El_Drive_vars[t])
-                     * self.TIME_SLOT
+                     * self.time_slot
             )
 
     def update_model(self, model, mode=""):
@@ -94,7 +94,7 @@ class ElectricalVehicle(BatteryEntity):
             == 0.9 * E_El_Ini
                + (0.81*self.P_El_Demand_vars[0] - self.P_El_Supply_vars[0]
                   - 0.9*self.P_El_Drive_vars[0])
-                 * self.TIME_SLOT
+                 * self.time_slot
         )
 
         blocks, portion = compute_blocks(self.timer, self.charging_time)
@@ -129,7 +129,7 @@ class ElectricalVehicle(BatteryEntity):
         self.E_El_vars[t2-1].ub = self.E_El_Max * (1 - portion)
 
     def _reset_vars(self, t1, t2, drive_vars=False):
-        max_power = self.E_El_Max/self.TIME_SLOT
+        max_power = self.E_El_Max/self.time_slot
         for var in self.P_El_vars[t1:t2]:
             var.ub = 0 if drive_vars else max_power
         for var in self.P_El_Drive_vars[t1:t2]:
@@ -155,8 +155,8 @@ class ElectricalVehicle(BatteryEntity):
         gurobi.QuadExpr :
             Objective function.
         """
-        i = int(self.OP_HORIZON / 5)
-        c = [1.4]*i + [1.2]*i + [1]*(self.OP_HORIZON - 4*i) + [0.8]*i + [0.6]*i
+        i = int(self.op_horizon / 5)
+        c = [1.4] * i + [1.2] * i + [1] * (self.op_horizon - 4 * i) + [0.8] * i + [0.6] * i
         obj = gurobi.QuadExpr()
         obj.addTerms(
             [coeff * v for v in c],

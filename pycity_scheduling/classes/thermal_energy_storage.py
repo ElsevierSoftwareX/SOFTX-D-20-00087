@@ -53,16 +53,16 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
 
         # TODO: very simple storage model which assumes tFlow == tSurroundings
         self.Th_Loss_coeff = (
-            self.kLosses / self.capacity / self.cWater * self.TIME_SLOT * 3600
+                self.kLosses / self.capacity / self.cWater * self.time_slot * 3600
         )
 
         self.E_Th_vars = []
         self.E_Th_Init_constr = None
-        self.E_Th_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.E_Th_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Actual_var = None
         self.E_Th_Actual_Coupling_constr = None
-        self.E_Th_Actual_Schedule = np.zeros(self.SIMU_HORIZON)
-        self.E_Th_Ref_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.E_Th_Actual_Schedule = np.zeros(self.simu_horizon)
+        self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model
@@ -82,7 +82,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             var.lb = -gurobi.GRB.INFINITY
 
         self.E_Th_vars = []
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.E_Th_vars.append(
                 model.addVar(
                     ub=self.E_Th_Max,
@@ -90,11 +90,11 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
                 )
             )
         model.update()
-        for t in range(1, self.OP_HORIZON):
+        for t in range(1, self.op_horizon):
             model.addConstr(
                 self.E_Th_vars[t]
                 == self.E_Th_vars[t-1] * (1 - self.Th_Loss_coeff)
-                   + self.P_Th_vars[t] * self.TIME_SLOT,
+                   + self.P_Th_vars[t] * self.time_slot,
                 "{0:s}_P_Th_t={1}".format(self._long_ID, t)
             )
         self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_End
@@ -115,7 +115,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             E_Th_Ini = self.E_Th_Actual_Schedule[timestep-1]
         self.E_Th_Init_constr = model.addConstr(
             self.E_Th_vars[0] == E_Th_Ini * (1 - self.Th_Loss_coeff)
-                                 + self.P_Th_vars[0] * self.TIME_SLOT,
+                                 + self.P_Th_vars[0] * self.time_slot,
             "{0:s}_P_Th_t=0".format(self._long_ID)
         )
 
@@ -124,10 +124,10 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         timestep = self.timer.currentTimestep
         t = 0
         try:
-            self.E_Th_Schedule[timestep:timestep+self.OP_HORIZON] \
+            self.E_Th_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_Th_vars]
         except gurobi.GurobiError:
-            self.E_Th_Schedule[t:timestep+self.OP_HORIZON].fill(0)
+            self.E_Th_Schedule[t:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )

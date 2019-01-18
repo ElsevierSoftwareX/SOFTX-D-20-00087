@@ -38,7 +38,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         obj = gurobi.QuadExpr()
         if self.objective == "valley_filling":
             obj.addTerms(
-                [1] * self.OP_HORIZON,
+                [1] * self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
@@ -46,7 +46,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             time_shift = self.timer.currentTimestep
             prices = self.environment.prices.da_prices
             obj.addTerms(
-                prices[time_shift:time_shift+self.OP_HORIZON],
+                prices[time_shift:time_shift+self.op_horizon],
                 self.P_El_vars
             )
         return obj

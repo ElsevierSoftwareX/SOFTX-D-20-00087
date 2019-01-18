@@ -52,15 +52,15 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         #     -0.2434*(self.P_Th_vars[t]/self.P_Th_Nom)**2
         #     +1.1856*(self.P_Th_vars[t]/self.P_Th_Nom)
         #     +0.0487
-        #     for t in self.OP_TIME_VEC
+        #     for t in self.op_time_vec
         # ]
         # function linearised with quadratic regression over the interval
         # [0, 1]
         # COP = [
         #     0.9422 * self.P_Th_vars[t] * (1 / self.P_Th_Nom) + 0.0889
-        #     for t in self.OP_TIME_VEC
+        #     for t in self.op_time_vec
         #     ]
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             model.addConstr(
                 self.P_Th_vars[t] * self.sigma == self.P_El_vars[t]
             )
@@ -83,7 +83,7 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars
         )
         return obj
@@ -135,5 +135,5 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         if timestep:
             p = p[:timestep]
         co2 = ElectricalEntity.calculate_co2(self, timestep, reference)
-        co2 -= sum(p) * self.TIME_SLOT * CO2_EMISSIONS_GAS
+        co2 -= sum(p) * self.time_slot * CO2_EMISSIONS_GAS
         return co2

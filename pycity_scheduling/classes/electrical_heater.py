@@ -38,7 +38,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
             var.lb = -self.P_Th_Nom
             var.ub = 0
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             model.addConstr(
                 - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
             )
@@ -61,7 +61,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars
         )
         return obj

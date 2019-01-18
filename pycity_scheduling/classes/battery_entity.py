@@ -41,15 +41,15 @@ class BatteryEntity(ElectricalEntity):
 
         self.E_El_vars = []
         self.E_El_Init_constr = None
-        self.E_El_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.E_El_Schedule = np.zeros(self.simu_horizon)
         self.E_El_Actual_var = None
         self.E_El_Actual_Coupling_constr = None
-        self.E_El_Actual_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.E_El_Actual_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Demand_vars = []
         self.P_El_Demand_Actual_var = None
         self.P_El_Supply_vars = []
         self.P_El_Supply_Actual_var = None
-        self.E_El_Ref_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.E_El_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model.
@@ -71,7 +71,7 @@ class BatteryEntity(ElectricalEntity):
         self.P_El_Demand_vars = []
         self.P_El_Supply_vars = []
         self.E_El_vars = []
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
             self.P_El_Demand_vars.append(
                 model.addVar(
@@ -95,7 +95,7 @@ class BatteryEntity(ElectricalEntity):
             )
         model.update()
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             model.addConstr(
                 self.P_El_vars[t]
                 == self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
@@ -106,10 +106,10 @@ class BatteryEntity(ElectricalEntity):
         timestep = self.timer.currentTimestep
         t = 0
         try:
-            self.E_El_Schedule[timestep:timestep+self.OP_HORIZON] \
+            self.E_El_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_El_vars]
         except gurobi.GurobiError:
-            self.E_El_Schedule[t:self.OP_HORIZON+timestep].fill(0)
+            self.E_El_Schedule[t:self.op_horizon + timestep].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )

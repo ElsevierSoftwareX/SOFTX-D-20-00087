@@ -65,6 +65,8 @@ class Timer(ti.Timer):
                                     timestepsHorizon=horizon,
                                     timestepsTotal=horizon,
                                     initialDay=initial_day)
+
+        self.time_slot = 3600 / step_size
         self._init_dt = self._dt
         if mpc_horizon is None:
             self.simu_horizon = op_horizon

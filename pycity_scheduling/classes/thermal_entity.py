@@ -16,10 +16,10 @@ class ThermalEntity(OptimizationEntity):
         super(ThermalEntity, self).__init__(timer, *args, **kwargs)
 
         self.P_Th_vars = []
-        self.P_Th_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.P_Th_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Actual_var = None
-        self.P_Th_Actual_Schedule = np.zeros(self.SIMU_HORIZON)
-        self.P_Th_Ref_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.P_Th_Actual_Schedule = np.zeros(self.simu_horizon)
+        self.P_Th_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -33,7 +33,7 @@ class ThermalEntity(OptimizationEntity):
         mode : str, optional
         """
         self.P_Th_vars = []
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_Th_vars.append(
                 model.addVar(
                     name="%s_P_Th_at_t=%i" % (self._long_ID, t+1)
@@ -45,10 +45,10 @@ class ThermalEntity(OptimizationEntity):
         timestep = self.timer.currentTimestep
         t = 0
         try:
-            self.P_Th_Schedule[timestep:timestep+self.OP_HORIZON] \
+            self.P_Th_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.P_Th_vars]
         except gurobi.GurobiError:
-            self.P_Th_Schedule[t:timestep+self.OP_HORIZON].fill(0)
+            self.P_Th_Schedule[t:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )

@@ -55,7 +55,7 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
        Online: https://mediatum.ub.tum.de/doc/1187583/1187583.pdf
     """
 
-    op_horizon = city_district.OP_HORIZON
+    op_horizon = city_district.op_horizon
     nodes = city_district.nodes
     n = 1 + len(nodes)
 

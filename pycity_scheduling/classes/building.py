@@ -97,10 +97,10 @@ class Building(ElectricalEntity, bd.Building):
             P_Th_var_list.extend(entity.P_Th_vars)
             P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.OP_HORIZON])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.OP_HORIZON])
+            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
             model.addConstr(
                 0 == P_Th_var_sum,
                 "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
@@ -131,7 +131,7 @@ class Building(ElectricalEntity, bd.Building):
         timestep = self.timer.currentTimestep
         if self.objective == "peak_shaving":
             obj.addTerms(
-                [coeff]*self.OP_HORIZON,
+                [coeff]*self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
@@ -142,9 +142,9 @@ class Building(ElectricalEntity, bd.Building):
                 prices = self.environment.prices.co2_prices
             else:
                 # TODO: Print warning.
-                prices = np.ones(self.SIMU_HORIZON)
-            prices = prices[timestep:timestep+self.OP_HORIZON]
-            prices = prices * self.OP_HORIZON / sum(prices)
+                prices = np.ones(self.simu_horizon)
+            prices = prices[timestep:timestep+self.op_horizon]
+            prices = prices * self.op_horizon / sum(prices)
             obj.addTerms(
                 coeff * prices,
                 self.P_El_vars

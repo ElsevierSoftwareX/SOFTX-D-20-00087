@@ -16,8 +16,8 @@ class ElectricalEntity(OptimizationEntity):
         super(ElectricalEntity, self).__init__(timer, *args, **kwargs)
 
         self.P_El_vars = []
-        self.P_El_Schedule = np.zeros(self.SIMU_HORIZON)
-        self.P_El_Ref_Schedule = np.zeros(self.SIMU_HORIZON)
+        self.P_El_Schedule = np.zeros(self.simu_horizon)
+        self.P_El_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -31,7 +31,7 @@ class ElectricalEntity(OptimizationEntity):
         mode : str, optional
         """
         self.P_El_vars = []
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars.append(
                 model.addVar(
                     name="%s_P_El_at_t=%i" % (self._long_ID, t+1)
@@ -42,10 +42,10 @@ class ElectricalEntity(OptimizationEntity):
     def update_schedule(self, mode=""):
         timestep = self.timer.currentTimestep
         try:
-            self.P_El_Schedule[timestep:timestep+self.OP_HORIZON] \
+            self.P_El_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.P_El_vars]
         except gurobi.GurobiError:
-            self.P_El_Schedule[timestep:timestep+self.OP_HORIZON].fill(0)
+            self.P_El_Schedule[timestep:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 "{0}: Could not read from variables."
                 .format(str(self))
@@ -93,14 +93,14 @@ class ElectricalEntity(OptimizationEntity):
         if timestep:
             t2 = timestep
         else:
-            t2 = self.SIMU_HORIZON
+            t2 = self.simu_horizon
         if reference:
             p = self.P_El_Ref_Schedule
         else:
             p = self.P_El_Schedule
         if prices is None:
             prices = self.environment.prices.tou_prices
-        costs = self.TIME_SLOT * np.dot(prices[:t2], p[:t2])
+        costs = self.time_slot * np.dot(prices[:t2], p[:t2])
         return costs
 
     def calculate_co2(self, timestep=None, co2_emissions=None,
@@ -130,7 +130,7 @@ class ElectricalEntity(OptimizationEntity):
         if timestep:
             co2_emissions = co2_emissions[:timestep]
             p = p[:timestep]
-        co2 = self.TIME_SLOT * np.dot(p, co2_emissions)
+        co2 = self.time_slot * np.dot(p, co2_emissions)
         return co2
 
     def metric_delta_g(self):
