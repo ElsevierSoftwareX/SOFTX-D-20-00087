@@ -74,7 +74,7 @@ class Boiler(ThermalEntity, bl.Boiler):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [- coeff] * self.OP_HORIZON,
+            [- coeff] * self.op_horizon,
             self.P_Th_vars
         )
         return obj
@@ -103,5 +103,5 @@ class Boiler(ThermalEntity, bl.Boiler):
             p = self.P_Th_Schedule
         if timestep:
             p = p[:timestep]
-        co2 = -(sum(p) * self.TIME_SLOT * CO2_EMISSIONS_GAS)
+        co2 = -(sum(p) * self.time_slot * CO2_EMISSIONS_GAS)
         return co2

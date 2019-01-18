@@ -67,7 +67,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             self.P_El_bvars = []
 
             # Add variables:
-            for t in self.OP_TIME_VEC:
+            for t in self.op_time_vec:
                 self.P_El_bvars.append(
                     model.addVar(
                         vtype=gurobi.GRB.BINARY,
@@ -78,7 +78,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             model.update()
 
             # Set additional constraints:
-            for t in self.OP_TIME_VEC:
+            for t in self.op_time_vec:
                 model.addConstr(
                     self.P_El_vars[t] <= self.P_El_bvars[t] * 1000000
                 )
@@ -86,13 +86,13 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 gurobi.quicksum(
                     (self.P_El_bvars[t] - self.P_El_bvars[t+1])
                     * (self.P_El_bvars[t] - self.P_El_bvars[t+1])
-                    for t in range(self.OP_HORIZON - 1))
+                    for t in range(self.op_horizon - 1))
                 <= 2
             )
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].ub = 0
 
         blocks, portion = compute_blocks(self.timer, self.time)
@@ -114,7 +114,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                     completed_load += val
                 else:
                     break
-            completed_load *= self.TIME_SLOT
+            completed_load *= self.time_slot
         # consider future consumption
         consumption = self.E_Min_Consumption
         if len(blocks) == 1:
@@ -124,7 +124,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             var.ub = self.P_El_Nom
         self.P_El_Sum_constrs.append(
             model.addConstr(
-                gurobi.quicksum(block_vars) * self.TIME_SLOT
+                gurobi.quicksum(block_vars) * self.time_slot
                 == consumption - completed_load
             )
         )
@@ -134,7 +134,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 var.ub = self.P_El_Nom
             self.P_El_Sum_constrs.append(
                 model.addConstr(
-                    gurobi.quicksum(block_vars) * self.TIME_SLOT
+                    gurobi.quicksum(block_vars) * self.time_slot
                     == self.E_Min_Consumption
                 )
             )
@@ -144,7 +144,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 var.ub = self.P_El_Nom
             self.P_El_Sum_constrs.append(
                 model.addConstr(
-                    gurobi.quicksum(block_vars) * self.TIME_SLOT
+                    gurobi.quicksum(block_vars) * self.time_slot
                     == self.E_Min_Consumption * portion
                 )
             )
@@ -166,16 +166,16 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
         gurobi.QuadExpr :
             Objective function.
         """
-        max_loading_time = sum(self.time) * self.TIME_SLOT
+        max_loading_time = sum(self.time) * self.time_slot
         optimal_P_El = self.E_Min_Consumption / max_loading_time
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars,
             self.P_El_vars
         )
         obj.addTerms(
-            [- 2 * coeff * optimal_P_El] * self.OP_HORIZON,
+            [- 2 * coeff * optimal_P_El] * self.op_horizon,
             self.P_El_vars
         )
         return obj

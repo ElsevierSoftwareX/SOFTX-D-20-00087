@@ -8,17 +8,16 @@ class OptimizationEntity(object):
     in the scheduling optimization.
     """
 
-    OP_HORIZON = -1
-    OP_TIME_VEC = None
-    SIMU_HORIZON = -1
-    SIMU_TIME_VEC = None
-    # MPC_HORIZON = -1
-    # MPC_TIME_VEC = None
-    TIME_SLOT = -1
-
     static_entity_id = 0
 
     def __init__(self, timer, *args, **kwargs):
+        """Set up OptimizationEntity.
+
+        Parameters
+        ----------
+        timer : pycity_scheduling.classes.Timer
+
+        """
         OptimizationEntity.static_entity_id += 1
         self.ID = OptimizationEntity.static_entity_id
         self._ID_string = "{0:05d}".format(self.ID)
@@ -26,14 +25,6 @@ class OptimizationEntity(object):
         self._kind = ""
 
         self.timer = timer
-        if OptimizationEntity.OP_HORIZON == -1:
-            OptimizationEntity.OP_HORIZON = timer.timestepsUsedHorizon
-            OptimizationEntity.OP_TIME_VEC = range(self.OP_HORIZON)
-        if OptimizationEntity.SIMU_HORIZON == -1:
-            OptimizationEntity.SIMU_HORIZON = timer.simu_horizon
-            OptimizationEntity.SIMU_TIME_VEC = range(self.SIMU_HORIZON)
-        if OptimizationEntity.TIME_SLOT == -1:
-            OptimizationEntity.TIME_SLOT = timer.timeDiscretization/3600
         super(OptimizationEntity, self).__init__(*args, **kwargs)
 
     def __str__(self):
@@ -44,12 +35,24 @@ class OptimizationEntity(object):
                 + " with ID: " + self._long_ID + ">")
 
     @property
-    def MPC_HORIZON(self):
-        return self.timer.mpc_step_width
+    def op_horizon(self):
+        return self.timer.timestepsUsedHorizon
 
     @property
-    def MPC_TIME_VEC(self):
-        return range(self.timer.mpc_step_width)
+    def op_time_vec(self):
+        return range(self.timer.timestepsUsedHorizon)
+
+    @property
+    def simu_horizon(self):
+        return self.timer.simu_horizon
+
+    @property
+    def simu_time_vec(self):
+        return range(self.timer.simu_horizon)
+
+    @property
+    def time_slot(self):
+        return self.timer.time_slot
 
     def populate_model(self, model, mode=""):
         raise NotImplementedError

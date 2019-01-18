@@ -45,12 +45,12 @@ class Battery(BatteryEntity, bat.Battery):
     def populate_model(self, model, mode=""):
         super(Battery, self).populate_model(model, mode)
 
-        for t in range(1, self.OP_HORIZON):
+        for t in range(1, self.op_horizon):
             model.addConstr(
                 0.9 * self.E_El_vars[t]
                 == 0.9 * self.E_El_vars[t-1]
                    + (0.81*self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t])
-                     * self.TIME_SLOT
+                     * self.time_slot
             )
         self.E_El_vars[-1].lb = self.E_El_Max * self.SOC_End
         if self.storage_end_equality:
@@ -72,7 +72,7 @@ class Battery(BatteryEntity, bat.Battery):
             0.9 * self.E_El_vars[0]
             == 0.9 * E_El_Ini
                + (0.81*self.P_El_Demand_vars[0] - self.P_El_Supply_vars[0])
-                 * self.TIME_SLOT
+                 * self.time_slot
         )
 
     def get_objective(self, coeff=1):
@@ -93,7 +93,7 @@ class Battery(BatteryEntity, bat.Battery):
         """
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars,
             self.P_El_vars
         )

@@ -71,7 +71,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         """
         super(CurtailableLoad, self).populate_model(model, mode)
         time_shift = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = self.P_El_Curt_Demand[t+time_shift]
             self.P_El_vars[t].ub = self.P_El_Demand[t+time_shift]
 
@@ -93,11 +93,11 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         """
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars,
             self.P_El_vars
         )
         obj.addTerms(
-            [- 2 * coeff] * self.OP_HORIZON,
+            [- 2 * coeff] * self.op_horizon,
             self.P_El_vars
         )

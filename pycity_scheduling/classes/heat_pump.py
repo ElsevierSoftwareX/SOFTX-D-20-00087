@@ -45,13 +45,13 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
                     getTAmbient=True
                 )
                 ts = environment.timer.time_in_year()
-                tAmbient = tAmbient[ts:ts+self.SIMU_HORIZON]
+                tAmbient = tAmbient[ts:ts+self.simu_horizon]
             else:
-                tAmbient = np.full(self.SIMU_HORIZON, 283)
+                tAmbient = np.full(self.simu_horizon, 283)
         if cop is None:
             relative_COP = (0.36 if hp_type == "aw" else 0.5)
             cop = [relative_COP * (tFlow + 273) / (tFlow - tAmbient[t])
-                   for t in self.SIMU_TIME_VEC]  # TODO: better implementation
+                   for t in self.simu_time_vec]  # TODO: better implementation
         super(HeatPump, self).__init__(environment.timer, environment,
                                        tAmbient, tFlow, heat, power, cop, tMax,
                                        lowerActivationLimit)
@@ -80,7 +80,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
             var.lb = -self.P_Th_Nom
             var.ub = -self.lowerActivationLimit*self.P_Th_Nom
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             model.addConstr(
                 -self.P_Th_vars[t] == self.COP[t] * self.P_El_vars[t],
                 "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
@@ -108,7 +108,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars
         )
         return obj
