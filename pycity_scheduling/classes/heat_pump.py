@@ -39,19 +39,20 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         heat
         power
         """
+        simu_horizon = environment.timer.simu_horizon
         if tAmbient is None:
             if hp_type == "aw":
                 (tAmbient,) = environment.weather.getWeatherForecast(
                     getTAmbient=True
                 )
                 ts = environment.timer.time_in_year()
-                tAmbient = tAmbient[ts:ts+self.simu_horizon]
+                tAmbient = tAmbient[ts:ts+simu_horizon]
             else:
-                tAmbient = np.full(self.simu_horizon, 283)
+                tAmbient = np.full(simu_horizon, 283)
         if cop is None:
             relative_COP = (0.36 if hp_type == "aw" else 0.5)
             cop = [relative_COP * (tFlow + 273) / (tFlow - tAmbient[t])
-                   for t in self.simu_time_vec]  # TODO: better implementation
+                   for t in range(simu_horizon)]  # TODO: better implementation
         super(HeatPump, self).__init__(environment.timer, environment,
                                        tAmbient, tFlow, heat, power, cop, tMax,
                                        lowerActivationLimit)

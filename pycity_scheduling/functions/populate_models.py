@@ -22,8 +22,8 @@ def populate_models(city_district, algorithm, num_threads=4):
     dict :
         Holds one or more `gurobi.Model`.
     """
-    OP_HORIZON = city_district.OP_HORIZON
-    OP_TIME_VEC = city_district.OP_TIME_VEC
+    op_horizon = city_district.op_horizon
+    op_time_vec = city_district.op_time_vec
     nodes = city_district.node
 
     # create dictionary
@@ -39,8 +39,8 @@ def populate_models(city_district, algorithm, num_threads=4):
             entity.populate_model(m)
             P_El_var_list.extend(entity.P_El_vars)
         city_district.populate_model(m)
-        for t in OP_TIME_VEC:
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::OP_HORIZON])
+        for t in op_time_vec:
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::op_horizon])
             m.addConstr(city_district.P_El_vars[t] == P_El_var_sum)
         models[0] = m
     elif algorithm in ["admm", "dual-decomposition"]:
