@@ -1,5 +1,5 @@
 from pycity_scheduling.algorithms import algorithms
-from pycity_scheduling.functions import populate_models
+from pycity_scheduling.util import populate_models
 
 
 def run_simulation(city_district, algorithm="admm", models=None):

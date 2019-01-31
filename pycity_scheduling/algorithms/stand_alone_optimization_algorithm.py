@@ -1,6 +1,6 @@
 import gurobi
 
-from pycity_scheduling.functions import populate_models
+from pycity_scheduling.util import populate_models
 
 
 def stand_alone_optimization(city_district, models=None):

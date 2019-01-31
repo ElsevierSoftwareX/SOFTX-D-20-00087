@@ -3,7 +3,7 @@ import gurobi
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.exception import *
-from pycity_scheduling.functions import populate_models
+from pycity_scheduling.util import populate_models
 
 
 def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,

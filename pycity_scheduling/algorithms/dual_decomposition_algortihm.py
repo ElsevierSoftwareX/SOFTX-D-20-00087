@@ -3,7 +3,7 @@ import gurobi
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.exception import *
-from pycity_scheduling.functions import populate_models
+from pycity_scheduling.util import populate_models
 
 
 def dual_decomposition(city_district, models=None, eps_primal=0.01,

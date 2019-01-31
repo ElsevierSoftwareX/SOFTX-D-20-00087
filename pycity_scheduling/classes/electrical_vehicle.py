@@ -1,7 +1,7 @@
 import gurobi
 
 from .battery_entity import BatteryEntity
-from ..functions import compute_blocks, compute_inverted_blocks
+from ..util import compute_blocks, compute_inverted_blocks
 
 
 class ElectricalVehicle(BatteryEntity):

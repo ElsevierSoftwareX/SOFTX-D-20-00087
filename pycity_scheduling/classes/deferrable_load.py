@@ -3,7 +3,7 @@ import gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from ..exception import PyCitySchedulingInitError
-from ..functions import compute_blocks
+from ..util import compute_blocks
 from .electrical_entity import ElectricalEntity
 
 
