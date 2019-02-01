@@ -10,18 +10,18 @@ class Boiler(ThermalEntity, bl.Boiler):
     Extension of pycity class Boiler for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, eta,
+    def __init__(self, environment, P_Th_Nom, eta=1,
                  tMax=85, lowerActivationLimit=0):
         """Initialize Boiler.
 
         Parameters
         ----------
-        environment : Environment
-            common to all other objects, includes time and weather instances
-        P_Th_Nom : array_like of float
-            nominal heat output in [kW]
-        eta : array_like of float
-            efficiency
+        environment : pycity_scheduling.classes.Environment
+            Common to all other objects. Includes time and weather instances.
+        P_Th_Nom : float
+            Nominal heat output in [kW].
+        eta : float, optional
+            Efficiency.
         tMax : float, optional
             maximum provided temperature in [°C]
         lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)

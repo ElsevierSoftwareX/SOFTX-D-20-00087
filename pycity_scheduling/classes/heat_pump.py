@@ -18,8 +18,8 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         Parameters
         ----------
-        environment : Environment
-            Common Environment instance.
+        environment : pycity_scheduling.classes.Environment
+            Common to all other objects. Includes time and weather instances.
         P_Th_Nom : float
             Nominal thermal power of the heatpump in [kW].
         hp_type : {"aw", "ww"}

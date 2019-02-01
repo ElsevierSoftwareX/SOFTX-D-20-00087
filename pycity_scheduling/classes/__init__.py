@@ -52,4 +52,12 @@ __all__ = [
     "SpaceHeating",
     "ThermalEnergyStorage",
     "WindEnergyConverter",
+    "heating_devices"
 ]
+
+heating_devices = {
+    "HP": HeatPump,
+    "BL": Boiler,
+    "CHP": CombinedHeatPower,
+    "EH": ElectricalHeater,
+}
