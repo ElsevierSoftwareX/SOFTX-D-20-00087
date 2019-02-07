@@ -1,6 +1,8 @@
 from .block_computation import compute_blocks, compute_inverted_blocks
 from .populate_models import populate_models
 from .write_csv import schedule_to_csv
+from .factory import (generate_standard_environment, generate_tabula_buildings,
+                      generate_tabula_district,)
 
 
 __all__ = [
@@ -8,6 +10,9 @@ __all__ = [
     "compute_inverted_blocks",
     "populate_models",
     "schedule_to_csv",
+    "generate_standard_environment",
+    "generate_tabula_buildings",
+    "generate_tabula_district",
     "get_normal_params",
 ]
 
