@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.ThermalEnergyStorage as tes
 
 from .thermal_entity import ThermalEntity

@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.exception import *

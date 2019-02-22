@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.Apartment as apm
 
 from .thermal_entity import ThermalEntity

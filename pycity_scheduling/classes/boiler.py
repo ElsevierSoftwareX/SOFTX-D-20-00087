@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.Boiler as bl
 
 from .thermal_entity import ThermalEntity
