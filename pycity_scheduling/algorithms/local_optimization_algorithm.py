@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 
 from pycity_scheduling.util import populate_models
 

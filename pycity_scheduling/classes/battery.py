@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.Battery as bat
 
 from .battery_entity import BatteryEntity

@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.WindEnergyConverter as wec
 
 from .electrical_entity import ElectricalEntity

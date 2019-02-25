@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from .electrical_entity import ElectricalEntity
 from ..exception import PyCitySchedulingGurobiException

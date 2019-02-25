@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from ..exception import PyCitySchedulingInitError

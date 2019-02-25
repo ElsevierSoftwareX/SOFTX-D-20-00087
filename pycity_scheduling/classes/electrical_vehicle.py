@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 
 from .battery_entity import BatteryEntity
 from ..util import compute_blocks, compute_inverted_blocks
