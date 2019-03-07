@@ -206,7 +206,11 @@ def generate_tabula_buildings(environment,
             bd.addEntity(ap)
             ap_counter += 1
 
-        p_th_max = max(bd.get_space_heating_power_curve())/1000.0 + 1.0
+        # TODO: Workaround for unstable implementation in pycity_base
+        power_curve = bd.get_space_heating_power_curve()
+        if len(power_curve) == 0:
+            power_curve = [0]
+        p_th_max = max(power_curve)/1000.0 + 1.0
         heating_device = heating_list[i](environment, P_Th_Nom=p_th_max)
         tes = ThermalEnergyStorage(environment, capacity=2.0*p_th_max,
                                    SOC_Ini=0.5, SOC_End=0.5, tMax=60.0,
@@ -227,7 +231,11 @@ def generate_tabula_buildings(environment,
             bes.addDevice(pv)
 
         if bat_list[i]:
-            capacity = max(bd.get_electric_power_curve())/1000.0
+            #TODO: Workaround for unstable implementation in pycity_base
+            power_curve = bd.get_electric_power_curve()
+            if len(power_curve) == 0:
+                power_curve = [0]
+            capacity = max(power_curve)/1000.0
             bat = Battery(environment, SOC_Ini=0.5, SOC_End=0.5,
                           E_El_Max=capacity, P_El_Max_Charge=4.6,
                           P_El_Max_Discharge=4.6)
