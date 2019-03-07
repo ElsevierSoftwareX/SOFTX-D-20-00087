@@ -1,10 +1,11 @@
 import gurobipy as gurobi
+import numpy as np
 
-from .battery_entity import BatteryEntity
+from .battery import Battery
 from ..util import compute_blocks, compute_inverted_blocks
 
 
-class ElectricalVehicle(BatteryEntity):
+class ElectricalVehicle(Battery):
     """
     Class representing an electrical vehicle for scheduling purposes.
     """
@@ -28,28 +29,24 @@ class ElectricalVehicle(BatteryEntity):
         charging_time : array of binaries
             Indicator when electrical vehicle be charged.
             `charging_time[t] == 0`: EV cannot be charged in t
-            `charging_time[t] == 1`: EV *can* be charged in t
+            `charging_time[t] == 1`: EV can be charged in t
+            Length must match `environment.timer.simu_horizon`.
         """
         super(ElectricalVehicle, self).__init__(
-            environment.timer, E_El_Max, SOC_Ini, SOC_End,
-            P_El_Max_Charge, 0
+            environment, E_El_Max, SOC_Ini, SOC_End,
+            P_El_Max_Charge, 0, storage_end_equality=False
         )
         self._kind = "electricalvehicle"
         self._long_ID = "EV_" + self._ID_string
 
         if charging_time is None:
             # load during night, drive at day
-            a = int(86400 / self.timer.timeDiscretization / 4)
-            b = int(86400 / self.timer.timeDiscretization / 2)
-            c = int(86400 / self.timer.timeDiscretization - (a + b))
-            charging_time = [1] * a + [0] * b + [1] * c
+            a = int(86400 / self.time_slot / 4)
+            b = int(86400 / self.time_slot / 2)
+            c = int(86400 / self.time_slot) - a - b
+            charging_time = [1]*a + [0]*b + [1]*c
 
-        t1 = self.timer.time_in_day()
-        t2 = t1 + self.simu_horizon
-        ts_in_day = int(86400 / self.timer.timeDiscretization)
-        self.charging_time = []
-        for t in range(t1, t2):
-            self.charging_time.append(charging_time[t%ts_in_day])
+        self.charging_time = np.resize(charging_time, self.simu_horizon)
 
         self.P_El_Drive_vars = []
         self.P_El_Sum_constrs = []
@@ -58,6 +55,7 @@ class ElectricalVehicle(BatteryEntity):
         super(ElectricalVehicle, self).populate_model(model, mode)
 
         self.P_El_Drive_vars = []
+        # Simulate power consumption while driving
         for t in self.op_time_vec:
             self.P_El_Drive_vars.append(
                 model.addVar(
@@ -88,7 +86,7 @@ class ElectricalVehicle(BatteryEntity):
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
-            E_El_Ini = self.E_El_Actual_Schedule[timestep-1]
+            E_El_Ini = self.E_El_Schedule[timestep-1]
         self.E_El_Init_constr = model.addConstr(
             0.9 * self.E_El_vars[0]
             == 0.9 * E_El_Ini
