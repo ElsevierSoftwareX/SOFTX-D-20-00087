@@ -1,8 +1,8 @@
 import gurobipy as gurobi
 import numpy as np
+import warnings
 
 from .battery import Battery
-from ..util import compute_blocks, compute_inverted_blocks
 
 
 class ElectricalVehicle(Battery):
@@ -11,7 +11,7 @@ class ElectricalVehicle(Battery):
     """
 
     def __init__(self, environment, E_El_Max, P_El_Max_Charge,
-                 SOC_Ini, SOC_End, charging_time=None):
+                 SOC_Ini, charging_time=None):
         """Initialize ElectricalVehicle.
 
         Parameters
@@ -24,17 +24,16 @@ class ElectricalVehicle(Battery):
             Maximum charging power in [kW].
         SOC_Ini : float
             Initial state of charge.
-        SOC_End : float
-            Final state of charge.
         charging_time : array of binaries
             Indicator when electrical vehicle be charged.
             `charging_time[t] == 0`: EV cannot be charged in t
             `charging_time[t] == 1`: EV can be charged in t
-            Length must match `environment.timer.simu_horizon`.
+            Length should match `environment.timer.simu_horizon`, otherwise it
+            will be turncated / repeated to match it.
         """
         super(ElectricalVehicle, self).__init__(
-            environment, E_El_Max, SOC_Ini, SOC_End,
-            P_El_Max_Charge, 0, storage_end_equality=False
+            environment, E_El_Max, SOC_Ini,
+            P_El_Max_Charge, eta=1, storage_end_equality=False
         )
         self._kind = "electricalvehicle"
         self._long_ID = "EV_" + self._ID_string
@@ -45,11 +44,17 @@ class ElectricalVehicle(Battery):
             b = int(86400 / self.time_slot / 2)
             c = int(86400 / self.time_slot) - a - b
             charging_time = [1]*a + [0]*b + [1]*c
+        elif len(charging_time) != self.simu_horizon:
+            warnings.warn(
+                "Length of `charging_time` does not match `simu_horizon`. "
+                "Expected length: {}, actual length: {}"
+                .format(self.simu_horizon, len(charging_time))
+            )
 
         self.charging_time = np.resize(charging_time, self.simu_horizon)
 
         self.P_El_Drive_vars = []
-        self.P_El_Sum_constrs = []
+        self.E_El_SOC_constrs = []
 
     def populate_model(self, model, mode=""):
         super(ElectricalVehicle, self).populate_model(model, mode)
@@ -64,14 +69,20 @@ class ElectricalVehicle(Battery):
             )
         model.update()
 
+        # Replace coupling constraints from Battery class
+        model.remove(self.E_El_coupl_constrs)
         for t in range(1, self.op_horizon):
-            model.addConstr(
-                0.9 * self.E_El_vars[t]
-                == 0.9 * self.E_El_vars[t-1]
-                   + (0.81*self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
-                      - 0.9*self.P_El_Drive_vars[t])
-                     * self.time_slot
+            delta = (
+                (self.etaCharge * self.P_El_Demand_vars[t]
+                 - (1/self.etaDischarge) * self.P_El_Supply_vars[t]
+                 - self.P_El_Drive_vars[t])
+                * self.time_slot
             )
+            self.E_El_coupl_constrs.append(model.addConstr(
+                self.E_El_vars[t] == self.E_El_vars[t-1] + delta
+            ))
+        self.E_El_vars[-1].lb = 0
+        self.E_El_vars[-1].ub = self.E_El_Max
 
     def update_model(self, model, mode=""):
         super(ElectricalVehicle, self).update_model(model, mode)
@@ -87,54 +98,36 @@ class ElectricalVehicle(Battery):
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
             E_El_Ini = self.E_El_Schedule[timestep-1]
+
+        delta = (
+            (self.etaCharge * self.P_El_Demand_vars[0]
+             - (1 / self.etaDischarge) * self.P_El_Supply_vars[0]
+             - self.P_El_Drive_vars[0])
+            * self.time_slot
+        )
         self.E_El_Init_constr = model.addConstr(
-            0.9 * self.E_El_vars[0]
-            == 0.9 * E_El_Ini
-               + (0.81*self.P_El_Demand_vars[0] - self.P_El_Supply_vars[0]
-                  - 0.9*self.P_El_Drive_vars[0])
-                 * self.time_slot
+            self.E_El_vars[0] == E_El_Ini + delta
         )
 
-        blocks, portion = compute_blocks(self.timer, self.charging_time)
-        if len(blocks) == 0:
-            return
-        for block in blocks[0:-1]:
-            t1 = block[0]
-            t2 = block[1]
-            self._reset_vars(t1, t2)
-            self.E_El_vars[t2-1].lb = self.E_El_Max
-            self.E_El_vars[t2-1].ub = self.E_El_Max
-        t1 = blocks[-1][0]
-        t2 = blocks[-1][1]
-        self._reset_vars(t1, t2)
-        self.E_El_vars[t2-1].lb = self.E_El_Max * portion
-        self.E_El_vars[t2-1].ub = self.E_El_Max * portion
+        model.remove(self.E_El_SOC_constrs)
 
-        blocks, portion = compute_inverted_blocks(self.timer,
-                                                  self.charging_time)
-        if len(blocks) == 0:
-            return
-        for block in blocks[0:-1]:
-            t1 = block[0]
-            t2 = block[1]
-            self._reset_vars(t1, t2, True)
-            self.E_El_vars[t2-1].lb = 0
-            self.E_El_vars[t2-1].ub = 0
-        t1 = blocks[-1][0]
-        t2 = blocks[-1][1]
-        self._reset_vars(t1, t2, True)
-        self.E_El_vars[t2-1].lb = self.E_El_Max * (1 - portion)
-        self.E_El_vars[t2-1].ub = self.E_El_Max * (1 - portion)
-
-    def _reset_vars(self, t1, t2, drive_vars=False):
-        max_power = self.E_El_Max/self.time_slot
-        for var in self.P_El_vars[t1:t2]:
-            var.ub = 0 if drive_vars else max_power
-        for var in self.P_El_Drive_vars[t1:t2]:
-            var.ub = max_power if drive_vars else 0
-        for var in self.E_El_vars[t1:t2-1]:
-            var.lb = 0
-            var.ub = self.E_El_Max
+        for t in self.op_time_vec:
+            if self.charging_time[timestep+t]:
+                self.P_El_vars[t].lb = -self.P_El_Max_Charge
+                self.P_El_Drive_vars.ub = 0
+                if t < self.op_horizon - 1:
+                    if not self.charging_time[timestep+t+1]:
+                        self.E_El_SOC_constrs.append(model.addConstr(
+                            self.E_El_vars[t] == self.E_El_Max
+                        ))
+            else:
+                self.P_El_vars[t].lb = 0
+                self.P_El_Drive_vars.ub = gurobi.GRB.INFINITY
+                if t < self.op_horizon - 1:
+                    if self.charging_time[timestep+t+1]:
+                        self.E_El_SOC_constrs.append(model.addConstr(
+                            self.E_El_vars[t] == 0
+                        ))
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.

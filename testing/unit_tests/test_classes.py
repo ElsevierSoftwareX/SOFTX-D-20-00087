@@ -34,7 +34,7 @@ class TestOptimizationEntity(unittest.TestCase):
         sh = SpaceHeating(e, method=1, livingArea=100, specificDemand=50,
                           profile_type='HEF')
         ap.addMultipleEntities([fl, dhw, sh])
-        ev = ElectricalVehicle(e, 10, 10, 1, 0, [1]*96)
+        ev = ElectricalVehicle(e, 10, 10, 1, [1]*48+[0]*48)
         ap.addEntity(ev)
         cl = CurtailableLoad(e, 0.5, method=1, annualDemand=1000)
         dl = DeferrableLoad(e, 10, 10, [1]*96)

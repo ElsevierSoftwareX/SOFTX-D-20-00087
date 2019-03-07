@@ -32,22 +32,25 @@ class Battery(ElectricalEntity, bat.Battery):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        super(Battery, self).__init__(environment.timer, environment, SOC_Ini,
-                                      E_El_Max*3600*1000, 0, eta, eta)
+        capacity = E_El_Max*3600*1000
+        soc_init = SOC_Ini * capacity  # absolute SOC
+        super(Battery, self).__init__(environment.timer, environment, soc_init,
+                                      capacity, 0, eta, eta)
         self._kind = "battery"
         self._long_ID = "BAT_" + self._ID_string
 
         self.E_El_Max = E_El_Max
-        self.SOC_Ini = SOC_Ini
+        self.SOC_Ini = SOC_Ini  # relative SOC
         self.P_El_Max_Charge = P_El_Max_Charge
         self.P_El_Max_Discharge = P_El_Max_Discharge or P_El_Max_Charge
         self.storage_end_equality = storage_end_equality
 
-        self.E_El_vars = []
-        self.E_El_Init_constr = None
-        self.E_El_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Demand_vars = []
         self.P_El_Supply_vars = []
+        self.E_El_vars = []
+        self.E_El_Init_constr = None
+        self.E_El_coupl_constrs = []
+        self.E_El_Schedule = np.zeros(self.simu_horizon)
         self.E_El_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
@@ -107,9 +110,9 @@ class Battery(ElectricalEntity, bat.Battery):
                  - (1/self.etaDischarge) * self.P_El_Supply_vars[t])
                 * self.time_slot
             )
-            model.addConstr(
+            self.E_El_coupl_constrs.append(model.addConstr(
                 self.E_El_vars[t] == self.E_El_vars[t-1] + delta
-            )
+            ))
         self.E_El_vars[-1].lb = self.E_El_Max * self.SOC_Ini
         if self.storage_end_equality:
             self.E_El_vars[-1].ub = self.E_El_Max * self.SOC_Ini
