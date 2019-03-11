@@ -232,7 +232,10 @@ def generate_tabula_buildings(environment,
 
         if bat_list[i]:
             #TODO: Workaround for unstable implementation in pycity_base
-            power_curve = bd.get_electric_power_curve()
+            try:
+                power_curve = bd.get_electric_power_curve()
+            except:
+                power_curve = [0]
             if len(power_curve) == 0:
                 power_curve = [0]
             capacity = max(power_curve)/1000.0
