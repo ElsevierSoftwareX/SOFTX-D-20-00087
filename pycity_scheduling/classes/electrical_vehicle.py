@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 
 from .battery_entity import BatteryEntity
 from ..util import compute_blocks, compute_inverted_blocks
@@ -88,7 +88,7 @@ class ElectricalVehicle(BatteryEntity):
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
-            E_El_Ini = self.E_El_Actual_Schedule[timestep-1]
+            E_El_Ini = self.E_El_Schedule[timestep-1]
         self.E_El_Init_constr = model.addConstr(
             0.9 * self.E_El_vars[0]
             == 0.9 * E_El_Ini

@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from .optimization_entity import OptimizationEntity
 from ..exception import PyCitySchedulingGurobiException
@@ -17,8 +17,6 @@ class ThermalEntity(OptimizationEntity):
 
         self.P_Th_vars = []
         self.P_Th_Schedule = np.zeros(self.simu_horizon)
-        self.P_Th_Actual_var = None
-        self.P_Th_Actual_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):

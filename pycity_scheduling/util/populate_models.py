@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 
 
 def populate_models(city_district, algorithm, num_threads=4):

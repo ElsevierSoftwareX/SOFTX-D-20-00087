@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from .electrical_entity import ElectricalEntity
 from ..exception import PyCitySchedulingGurobiException
@@ -42,13 +42,8 @@ class BatteryEntity(ElectricalEntity):
         self.E_El_vars = []
         self.E_El_Init_constr = None
         self.E_El_Schedule = np.zeros(self.simu_horizon)
-        self.E_El_Actual_var = None
-        self.E_El_Actual_Coupling_constr = None
-        self.E_El_Actual_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Demand_vars = []
-        self.P_El_Demand_Actual_var = None
         self.P_El_Supply_vars = []
-        self.P_El_Supply_Actual_var = None
         self.E_El_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):

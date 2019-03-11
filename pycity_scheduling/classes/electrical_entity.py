@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from .optimization_entity import OptimizationEntity
 from ..exception import PyCitySchedulingGurobiException

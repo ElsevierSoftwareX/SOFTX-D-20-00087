@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.ThermalEnergyStorage as tes
 
 from .thermal_entity import ThermalEntity
@@ -59,9 +59,6 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         self.E_Th_vars = []
         self.E_Th_Init_constr = None
         self.E_Th_Schedule = np.zeros(self.simu_horizon)
-        self.E_Th_Actual_var = None
-        self.E_Th_Actual_Coupling_constr = None
-        self.E_Th_Actual_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
@@ -112,7 +109,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         if timestep == 0:
             E_Th_Ini = self.SOC_Ini * self.E_Th_Max
         else:
-            E_Th_Ini = self.E_Th_Actual_Schedule[timestep-1]
+            E_Th_Ini = self.E_Th_Schedule[timestep-1]
         self.E_Th_Init_constr = model.addConstr(
             self.E_Th_vars[0] == E_Th_Ini * (1 - self.Th_Loss_coeff)
                                  + self.P_Th_vars[0] * self.time_slot,

@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from .electrical_entity import ElectricalEntity

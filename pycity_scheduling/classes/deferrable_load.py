@@ -1,5 +1,5 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from ..exception import PyCitySchedulingInitError
@@ -109,7 +109,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
         # consider already completed consumption
         completed_load = 0
         if blocks[0][0] == 0:
-            for val in self.P_El_Actual_Schedule[:timestep][::-1]:
+            for val in self.P_El_Schedule[:timestep][::-1]:
                 if val > 0:
                     completed_load += val
                 else:
