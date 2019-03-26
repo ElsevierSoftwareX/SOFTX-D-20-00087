@@ -124,17 +124,16 @@ class Battery(ElectricalEntity, bat.Battery):
             model.remove(self.E_El_Init_constr)
         except gurobi.GurobiError:
             pass
-
-        delta = (
-            (self.etaCharge * self.P_El_Demand_vars[0]
-             - (1 / self.etaDischarge) * self.P_El_Supply_vars[0])
-            * self.time_slot
-        )
         timestep = self.timer.currentTimestep
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
             E_El_Ini = self.E_El_Schedule[timestep - 1]
+        delta = (
+            (self.etaCharge * self.P_El_Demand_vars[0]
+             - (1 / self.etaDischarge) * self.P_El_Supply_vars[0])
+            * self.time_slot
+        )
         self.E_El_Init_constr = model.addConstr(
             self.E_El_vars[0] == E_El_Ini + delta
         )

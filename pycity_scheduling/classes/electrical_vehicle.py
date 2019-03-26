@@ -98,7 +98,6 @@ class ElectricalVehicle(Battery):
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
             E_El_Ini = self.E_El_Schedule[timestep-1]
-
         delta = (
             (self.etaCharge * self.P_El_Demand_vars[0]
              - (1 / self.etaDischarge) * self.P_El_Supply_vars[0]
@@ -110,24 +109,38 @@ class ElectricalVehicle(Battery):
         )
 
         model.remove(self.E_El_SOC_constrs)
-
+        charging_time = self.charging_time[timestep:timestep+self.op_horizon]
         for t in self.op_time_vec:
-            if self.charging_time[timestep+t]:
-                self.P_El_vars[t].lb = -self.P_El_Max_Charge
-                self.P_El_Drive_vars.ub = 0
-                if t < self.op_horizon - 1:
-                    if not self.charging_time[timestep+t+1]:
-                        self.E_El_SOC_constrs.append(model.addConstr(
-                            self.E_El_vars[t] == self.E_El_Max
-                        ))
-            else:
-                self.P_El_vars[t].lb = 0
-                self.P_El_Drive_vars.ub = gurobi.GRB.INFINITY
-                if t < self.op_horizon - 1:
-                    if self.charging_time[timestep+t+1]:
-                        self.E_El_SOC_constrs.append(model.addConstr(
-                            self.E_El_vars[t] == 0
-                        ))
+            if t + 1 < self.op_horizon:
+                if charging_time[t] and not charging_time[t+1]:
+                    self.E_El_SOC_constrs.append(model.addConstr(
+                        self.E_El_vars[t] == self.E_El_Max,
+                        "Full battery at end of charging period"
+                    ))
+            if t > 0:
+                if not charging_time[t] and charging_time[t-1]:
+                    self.E_El_SOC_constrs.append(model.addConstr(
+                        self.E_El_vars[t] == 0,
+                        "Empty battery"
+                    ))
+
+        if charging_time[self.op_horizon-1]:
+            current_ts = timestep + self.op_horizon - 1
+            first_ts = current_ts
+            while True:
+                if not self.charging_time[first_ts-1]:
+                    break
+                first_ts -= 1
+            last_ts = timestep + self.op_horizon
+            while last_ts < self.simu_horizon:
+                if not self.charging_time[last_ts]:
+                    break
+                last_ts += 1
+            portion = (current_ts - first_ts) / (last_ts - first_ts)
+            self.E_El_SOC_constrs.append(model.addConstr(
+                self.E_El_vars[self.op_horizon-1] == portion * self.E_El_Max,
+                "SOC at the end"
+            ))
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
