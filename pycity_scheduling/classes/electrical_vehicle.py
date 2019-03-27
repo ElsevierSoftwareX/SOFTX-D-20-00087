@@ -88,8 +88,6 @@ class ElectricalVehicle(Battery):
         self.E_El_vars[-1].ub = self.E_El_Max
 
     def update_model(self, model, mode=""):
-        super(ElectricalVehicle, self).update_model(model, mode)
-
         try:
             model.remove(self.E_El_Init_constr)
         except gurobi.GurobiError:
@@ -114,6 +112,14 @@ class ElectricalVehicle(Battery):
         model.remove(self.E_El_SOC_constrs)
         charging_time = self.charging_time[timestep:timestep+self.op_horizon]
         for t in self.op_time_vec:
+            if charging_time[t]:
+                self.P_El_Demand_vars[t].ub = self.P_El_Max_Charge
+                self.P_El_Supply_vars[t].ub = self.P_El_Max_Discharge
+                self.P_El_Drive_vars[t].ub = 0
+            else:
+                self.P_El_Demand_vars[t].ub = 0
+                self.P_El_Supply_vars[t].ub = 0
+                self.P_El_Drive_vars[t].ub = gurobi.GRB.INFINITY
             if t + 1 < self.op_horizon:
                 if charging_time[t] and not charging_time[t+1]:
                     self.E_El_SOC_constrs.append(model.addConstr(
@@ -127,13 +133,13 @@ class ElectricalVehicle(Battery):
                         "Empty battery"
                     ))
 
-        if charging_time[self.op_horizon-1]:
-            current_ts = timestep + self.op_horizon - 1
+        if charging_time[-1]:
+            current_ts = timestep + self.op_horizon
             first_ts = current_ts
             while True:
+                first_ts -= 1
                 if not self.charging_time[first_ts-1]:
                     break
-                first_ts -= 1
             last_ts = timestep + self.op_horizon
             while last_ts < self.simu_horizon:
                 if not self.charging_time[last_ts]:
@@ -149,8 +155,8 @@ class ElectricalVehicle(Battery):
         """Objective function for entity level scheduling.
 
         Return the objective function of the electric vehicle wheighted with
-        coeff. Quadratic term with additional wieghts to reward
-        charging the vehicle earlier.
+        coeff. Quadratic term with additional weights to reward charging the
+        vehicle earlier.
 
         Parameters
         ----------
@@ -162,11 +168,11 @@ class ElectricalVehicle(Battery):
         gurobi.QuadExpr :
             Objective function.
         """
-        i = int(self.op_horizon / 5)
-        c = [1.4] * i + [1.2] * i + [1] * (self.op_horizon - 4 * i) + [0.8] * i + [0.6] * i
+        c = np.array(list(map(lambda x: x+1, range(self.op_horizon))))
+        c = c * (coeff * self.op_horizon / sum(c))
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff * v for v in c],
+            c,
             self.P_El_vars,
             self.P_El_vars
         )

@@ -35,7 +35,7 @@ class Battery(ElectricalEntity, bat.Battery):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        capacity = E_El_Max*3600*1000
+        capacity = E_El_Max * 3600 * 1000
         soc_init = SOC_Ini * capacity  # absolute SOC
         super(Battery, self).__init__(environment.timer, environment, soc_init,
                                       capacity, 0, eta, eta)
@@ -81,14 +81,14 @@ class Battery(ElectricalEntity, bat.Battery):
             self.P_El_Demand_vars.append(
                 model.addVar(
                     ub=self.P_El_Max_Charge,
-                    name="%s_E_El_Demand_at_t=%i"
+                    name="%s_P_El_Demand_at_t=%i"
                          % (self._long_ID, t + 1)
                 )
             )
             self.P_El_Supply_vars.append(
                 model.addVar(
                     ub=self.P_El_Max_Discharge,
-                    name="%s_E_El_Supply_at_t=%i"
+                    name="%s_P_El_Supply_at_t=%i"
                          % (self._long_ID, t + 1)
                 )
             )
