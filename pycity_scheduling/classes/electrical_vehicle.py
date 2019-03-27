@@ -11,7 +11,7 @@ class ElectricalVehicle(Battery):
     """
 
     def __init__(self, environment, E_El_Max, P_El_Max_Charge,
-                 SOC_Ini, charging_time=None):
+                 SOC_Ini=0.5, charging_time=None):
         """Initialize ElectricalVehicle.
 
         Parameters
@@ -22,7 +22,7 @@ class ElectricalVehicle(Battery):
             Electric capacity of the battery in [kWh].
         P_El_Max_Charge : float
             Maximum charging power in [kW].
-        SOC_Ini : float
+        SOC_Ini : float, optional
             Initial state of charge.
         charging_time : array of binaries
             Indicator when electrical vehicle be charged.
@@ -31,10 +31,13 @@ class ElectricalVehicle(Battery):
             Length should match `environment.timer.simu_horizon`, otherwise it
             will be turncated / repeated to match it.
         """
-        super(ElectricalVehicle, self).__init__(
-            environment, E_El_Max, SOC_Ini,
-            P_El_Max_Charge, eta=1, storage_end_equality=False
-        )
+        super(ElectricalVehicle, self).__init__(environment,
+                                                E_El_Max,
+                                                P_El_Max_Charge,
+                                                P_El_Max_Charge,
+                                                SOC_Ini=SOC_Ini,
+                                                eta=1,
+                                                storage_end_equality=False)
         self._kind = "electricalvehicle"
         self._long_ID = "EV_" + self._ID_string
 

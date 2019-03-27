@@ -11,8 +11,9 @@ class Battery(ElectricalEntity, bat.Battery):
     Extension of pycity class Battery for scheduling purposes
     """
 
-    def __init__(self, environment, E_El_Max, SOC_Ini, P_El_Max_Charge,
-                 P_El_Max_Discharge=None, eta=1, storage_end_equality=False):
+    def __init__(self, environment, E_El_Max, P_El_Max_Charge,
+                 P_El_Max_Discharge=None, SOC_Ini=0.5, eta=1,
+                 storage_end_equality=False):
         """Initialize Battery.
 
         Parameters
@@ -21,12 +22,14 @@ class Battery(ElectricalEntity, bat.Battery):
             Common Environment instance.
         E_El_Max : float
             Electric capacity of the battery [kWh].
-        SOC_Ini : float
-            Iinitial state of charge.
         P_El_Max_Charge : float
             Maximum charging power [kW].
         P_El_Max_Discharge : float
             Maximum discharging power [kW].
+        SOC_Ini : float, optional
+            Initial state of charge.
+        eta : float, optional
+            Charging and discharging efficiency. Must be in (0,1].
         storage_end_equality : bool, optional
             `True` if the soc at the end of the scheduling has to be equal to
             the inintial soc.
