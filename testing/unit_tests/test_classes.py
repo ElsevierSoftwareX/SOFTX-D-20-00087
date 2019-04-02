@@ -16,7 +16,7 @@ class TestOptimizationEntity(unittest.TestCase):
         cd.addEntity(bd, [0, 0])
         bes = BuildingEnergySystem(e)
         bd.addEntity(bes)
-        tes = ThermalEnergyStorage(e, 46.44444444444444, 0.5, 0.5)
+        tes = ThermalEnergyStorage(e, 40, 0.5, 0.5)
         bes.addDevice(tes)
         bat = Battery(e, 10, 1, 0, 10, 10)
         bes.addDevice(bat)
