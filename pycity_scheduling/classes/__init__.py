@@ -5,7 +5,6 @@ from .environment import Environment
 from .optimization_entity import OptimizationEntity
 from .thermal_entity import ThermalEntity
 from .electrical_entity import ElectricalEntity
-from .battery_entity import BatteryEntity
 from .city_district import CityDistrict
 from .building import Building
 from .building_energy_system import BuildingEnergySystem
@@ -33,7 +32,6 @@ __all__ = [
     "OptimizationEntity",
     "ThermalEntity",
     "ElectricalEntity",
-    "BatteryEntity",
     "CityDistrict",
     "Building",
     "BuildingEnergySystem",
