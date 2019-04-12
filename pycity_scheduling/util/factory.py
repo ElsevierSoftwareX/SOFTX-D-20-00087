@@ -199,7 +199,6 @@ def generate_tabula_buildings(environment,
                                        E_El_Max=ev_data['e_el_storage_max'],
                                        P_El_Max_Charge=ev_data['p_el_nom'],
                                        SOC_Ini=random.uniform(0.0, 0.5),
-                                       SOC_End=ev_data['soc_max'],
                                        charging_time=ev_charging_time)
                 ap.addEntity(ev)
 
@@ -212,7 +211,7 @@ def generate_tabula_buildings(environment,
             power_curve = [0]
         p_th_max = max(power_curve)/1000.0 + 1.0
         heating_device = heating_list[i](environment, P_Th_Nom=p_th_max)
-        tes = ThermalEnergyStorage(environment, capacity=2.0*p_th_max,
+        tes = ThermalEnergyStorage(environment, E_Th_Max=2.0*p_th_max,
                                    SOC_Ini=0.5, SOC_End=0.5, tMax=60.0,
                                    tSurroundings=20.0)
         bes.addDevice(heating_device)
@@ -239,9 +238,8 @@ def generate_tabula_buildings(environment,
             if len(power_curve) == 0:
                 power_curve = [0]
             capacity = max(power_curve)/1000.0
-            bat = Battery(environment, SOC_Ini=0.5, SOC_End=0.5,
-                          E_El_Max=capacity, P_El_Max_Charge=4.6,
-                          P_El_Max_Discharge=4.6)
+            bat = Battery(environment, E_El_Max=capacity, P_El_Max_Charge=4.6,
+                          SOC_Ini=0.5, P_El_Max_Discharge=4.6)
             bes.addDevice(bat)
 
         buildings.append(bd)
