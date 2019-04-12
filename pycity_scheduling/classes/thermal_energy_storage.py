@@ -11,7 +11,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     Extension of pycity class ThermalEnergyStorage for scheduling purposes.
     """
 
-    def __init__(self, environment, capacity, SOC_Ini, SOC_End=None,
+    def __init__(self, environment, E_Th_Max, SOC_Ini, SOC_End=None,
                  tMax=60, tSurroundings=20, kLosses=0,
                  storage_end_equality=False):
         """Initialize ThermalEnergyStorage.
@@ -20,8 +20,8 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         ----------
         environment : Environment
             Common Environment instance.
-        capacity : int
-            Storage mass in [kg].
+        E_Th_Max : float
+            Amount of energy the TES is able to store in [kWh].
         SOC_Ini : float
             Initial state of charge.
         SOC_End : float, optional
@@ -38,13 +38,14 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             `False` if it has to be greater or equal than the initial soc.
         """
         tInit = SOC_Ini * (tMax - tSurroundings) + tSurroundings
+        capacity = E_Th_Max / self.cWater / (tMax - tSurroundings) * 3.6e6
         super(ThermalEnergyStorage, self).__init__(
             environment.timer, environment, tInit,
             capacity, tMax, tSurroundings, kLosses
         )
         self._long_ID = "TES_" + self._ID_string
 
-        self.E_Th_Max = capacity * self.cWater * (tMax - tSurroundings) / 3.6e6
+        self.E_Th_Max = E_Th_Max
         self.SOC_Ini = SOC_Ini
         if SOC_End is None:
             SOC_End = SOC_Ini
