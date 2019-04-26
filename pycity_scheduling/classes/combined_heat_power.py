@@ -11,7 +11,7 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
     Extension of pycity class CHP for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, P_El_Nom=0, eta=1, tMax=85,
+    def __init__(self, environment, P_Th_Nom, P_El_Nom=None, eta=1, tMax=85,
                  lowerActivationLimit=0):
         """Initialize CombinedHeatPower.
 
