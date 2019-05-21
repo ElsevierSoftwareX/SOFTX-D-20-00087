@@ -1,8 +1,8 @@
 import gurobipy as gurobi
 import numpy as np
-import warnings
 
 from .battery import Battery
+from pycity_scheduling import util
 
 
 class ElectricalVehicle(Battery):
@@ -11,7 +11,7 @@ class ElectricalVehicle(Battery):
     """
 
     def __init__(self, environment, E_El_Max, P_El_Max_Charge,
-                 SOC_Ini=0.5, charging_time=None):
+                 SOC_Ini=0.5, charging_time=None, ct_pattern=None):
         """Initialize ElectricalVehicle.
 
         Parameters
@@ -23,13 +23,18 @@ class ElectricalVehicle(Battery):
         P_El_Max_Charge : float
             Maximum charging power in [kW].
         SOC_Ini : float, optional
-            Initial state of charge.
+            Initial state of charge. Defaults to 50%.
         charging_time : array of binaries
-            Indicator when electrical vehicle be charged.
+            Indicator when electrical vehicle can be charged.
             `charging_time[t] == 0`: EV cannot be charged in t
             `charging_time[t] == 1`: EV can be charged in t
-            Length should match `environment.timer.simu_horizon`, otherwise it
-            will be turncated / repeated to match it.
+            It must contain at least one `0` otherwise the model will become
+            infeasible. Its length has to be consistent with `ct_pattern`.
+        ct_pattern : str, optional
+            Define how the `charging_time` profile is to be used
+            `None` : Profile matches simulation horizon.
+            'daily' : Profile matches one day.
+            'weekly' : Profile matches one week.
         """
         super(ElectricalVehicle, self).__init__(environment,
                                                 E_El_Max,
@@ -42,19 +47,15 @@ class ElectricalVehicle(Battery):
         self._long_ID = "EV_" + self._ID_string
 
         if charging_time is None:
-            # load during night, drive at day
-            a = int(86400 / self.time_slot / 4)
-            b = int(86400 / self.time_slot / 2)
-            c = int(86400 / self.time_slot) - a - b
-            charging_time = [1]*a + [0]*b + [1]*c
-        elif len(charging_time) != self.simu_horizon:
-            warnings.warn(
-                "Length of `charging_time` does not match `simu_horizon`. "
-                "Expected length: {}, actual length: {}"
-                .format(self.simu_horizon, len(charging_time))
-            )
-
-        self.charging_time = np.resize(charging_time, self.simu_horizon)
+            # load at night, drive during day
+            ts_per_day = int(86400 / self.time_slot)
+            a = int(ts_per_day / 4)
+            b = int(ts_per_day / 2)
+            c = ts_per_day - a - b
+            charging_time = [1] * a + [0] * b + [1] * c
+            ct_pattern = 'daily'
+        self.charging_time = util.compute_profile(self.timer, charging_time,
+                                                  ct_pattern)
 
         self.P_El_Drive_vars = []
         self.E_El_SOC_constrs = []
@@ -62,8 +63,8 @@ class ElectricalVehicle(Battery):
     def populate_model(self, model, mode=""):
         super(ElectricalVehicle, self).populate_model(model, mode)
 
-        self.P_El_Drive_vars = []
         # Simulate power consumption while driving
+        self.P_El_Drive_vars = []
         for t in self.op_time_vec:
             self.P_El_Drive_vars.append(
                 model.addVar(
@@ -74,6 +75,7 @@ class ElectricalVehicle(Battery):
 
         # Replace coupling constraints from Battery class
         model.remove(self.E_El_coupl_constrs)
+        del self.E_El_coupl_constrs[:]
         for t in range(1, self.op_horizon):
             delta = (
                 (self.etaCharge * self.P_El_Demand_vars[t]
@@ -88,11 +90,11 @@ class ElectricalVehicle(Battery):
         self.E_El_vars[-1].ub = self.E_El_Max
 
     def update_model(self, model, mode=""):
+        # raises GurobiError if constraints are from a prior scheduling
+        # optimization
         try:
             model.remove(self.E_El_Init_constr)
         except gurobi.GurobiError:
-            # raises GurobiError if constraint is from a prior scheduling
-            # optimization or not present
             pass
         timestep = self.timer.currentTimestep
         if timestep == 0:
@@ -109,7 +111,11 @@ class ElectricalVehicle(Battery):
             self.E_El_vars[0] == E_El_Ini + delta
         )
 
-        model.remove(self.E_El_SOC_constrs)
+        try:
+            model.remove(self.E_El_SOC_constrs)
+        except gurobi.GurobiError:
+            pass
+        del self.E_El_SOC_constrs[:]
         charging_time = self.charging_time[timestep:timestep+self.op_horizon]
         for t in self.op_time_vec:
             if charging_time[t]:
@@ -126,10 +132,9 @@ class ElectricalVehicle(Battery):
                         self.E_El_vars[t] == self.E_El_Max,
                         "Full battery at end of charging period"
                     ))
-            if t > 0:
-                if not charging_time[t] and charging_time[t-1]:
+                if not charging_time[t+1] and charging_time[t]:
                     self.E_El_SOC_constrs.append(model.addConstr(
-                        self.E_El_vars[t] == 0,
+                        self.E_El_vars[t+1] == 0,
                         "Empty battery"
                     ))
 

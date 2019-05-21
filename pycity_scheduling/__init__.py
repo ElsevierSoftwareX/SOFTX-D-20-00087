@@ -7,7 +7,7 @@ import pycity_scheduling.algorithms
 __all__ = {
     'constants',
     'exception',
-    'functions',
+    'util',
     'classes',
     'algorithms',
 }
