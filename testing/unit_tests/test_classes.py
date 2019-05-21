@@ -1,3 +1,4 @@
+import datetime
 import unittest
 
 import gurobipy as gp
@@ -71,10 +72,6 @@ class TestElectricVehicle(unittest.TestCase):
         )
         model.setObjective(obj)
         model.optimize()
-        for var in model.getVars():
-            # if int(var.varname[-1]) > 3:
-            #     continue
-            print(var.varname, var.x)
 
         var_list = [var.varname for var in model.getVars()]
         self.assertEqual(30, len(var_list))
@@ -133,6 +130,68 @@ class TestElectricVehicle(unittest.TestCase):
             ref = (i + 1) / 21 * 6 * 11
             coeff = obj.getCoeff(i)
             self.assertAlmostEqual(ref, coeff, places=5)
+
+
+class TestDeferrableLoad(unittest.TestCase):
+    def setUp(self):
+        e = EnvStub(6, 9)
+        self.lt = [0, 1, 1, 1, 0, 1, 1, 1, 0]
+        self.dl = DeferrableLoad(e, 19, 10, load_time=self.lt)
+
+    def test_update_model(self):
+        model = gp.Model('DLModel')
+        self.dl.populate_model(model)
+        obj = gp.QuadExpr()
+        obj.addTerms(
+            [1] * 6,
+            self.dl.P_El_vars,
+            self.dl.P_El_vars
+        )
+        model.setObjective(obj)
+        self.dl.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(10, gp.quicksum(self.dl.P_El_vars), places=5)
+
+        self.dl.timer.mpc_update()
+        self.dl.update_model(model)
+        model.optimize()
+
+        for t, c in enumerate(self.lt[1:7]):
+            if c:
+                self.assertEqual(19, self.dl.P_El_vars[t].ub)
+            else:
+                self.assertEqual(0, self.dl.P_El_vars[t].ub)
+        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[4].x, places=5)
+        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[5].x, places=5)
+
+        self.dl.timer.mpc_update()
+        self.dl.timer.mpc_update()
+        self.dl.P_El_Schedule[1] = 15
+        self.dl.P_El_Schedule[2] = 15
+        self.dl.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(10, self.dl.P_El_vars[0].x, places=5)
+
+
+class TestTimer(unittest.TestCase):
+    def setUp(self):
+        self.timer = Timer(mpc_horizon=192, mpc_step_width=4,
+                           initial_date=(2015, 1, 15), initial_time=(12, 0, 0))
+        self.timer._dt = datetime.datetime(2015, 1, 15, 13)
+
+    def test_time_in_year(self):
+        self.assertEqual(1396, self.timer.time_in_year())
+        self.assertEqual(1392, self.timer.time_in_year(from_init=True))
+
+    def test_time_in_week(self):
+        self.assertEqual(340, self.timer.time_in_week())
+        self.assertEqual(336, self.timer.time_in_week(from_init=True))
+
+    def test_time_in_day(self):
+        self.assertEqual(52, self.timer.time_in_day())
+        self.assertEqual(48, self.timer.time_in_day(from_init=True))
 
 
 class EnvStub:

@@ -1,14 +1,14 @@
-from .block_computation import compute_blocks, compute_inverted_blocks
+import numpy as np
+
 from .populate_models import populate_models
 from .write_csv import schedule_to_csv
 
 
 __all__ = [
-    "compute_blocks",
-    "compute_inverted_blocks",
     "populate_models",
     "schedule_to_csv",
     "get_normal_params",
+    "compute_profile",
 ]
 
 
@@ -35,3 +35,63 @@ def get_normal_params(sigma_lognormal):
     sigma_normal = math.sqrt(math.log(sigma_lognormal**2+1))
     my_normal = -sigma_normal**2/2
     return sigma_normal, my_normal
+
+
+def compute_profile(timer, profile, pattern):
+    """
+
+    Parameters
+    ----------
+    timer : pycity_scheduling.classes.Timer
+    profile : array of binaries
+        Indicator when electrical vehicle can be charged.
+        `profile[t] == 0`: EV cannot be charged in t
+        `profile[t] == 1`: EV can be charged in t
+        It must contain at least one `0` otherwise the model will become
+        infeasible. Its length has to be consistent with `pattern`.
+    pattern : str, optional
+        Define how the `profile` is to be used
+        `None` : Profile matches simulation horizon.
+        'daily' : Profile matches one day.
+        'weekly' : Profile matches one week.
+
+    Returns
+    -------
+
+    """
+    if pattern is None:
+        if len(profile) != timer.simu_horizon:
+            raise ValueError(
+                "Length of `profile` does not match `self.simu_horizon`. "
+                "Expected: {}, Got: {}"
+                .format(timer.simu_horizon, len(profile))
+            )
+        else:
+            return profile
+    elif pattern == 'daily':
+        ts_per_day = int(86400 / timer.time_slot)
+        if len(profile) != ts_per_day:
+            raise ValueError(
+                "Length of `profile` does not match one day. Expected: {}, "
+                "Got: {}".format(ts_per_day, len(profile))
+            )
+        else:
+            days = int(timer.simu_horizon / ts_per_day) + 2
+            ts = timer.time_in_day(from_init=True)
+            return np.tile(profile, days)[ts:ts + timer.simu_horizon]
+    elif pattern == 'weekly':
+        ts_per_week = int(604800 / timer.time_slot)
+        if len(profile) != ts_per_week:
+            raise ValueError(
+                "Length of `profile` does not match one week. Expected: {}, "
+                "Got: {}".format(ts_per_week, len(profile))
+            )
+        else:
+            weeks = int(timer.simu_horizon / ts_per_week) + 2
+            ts = timer.time_in_week(from_init=True)
+            return np.tile(profile, weeks)[ts:ts + timer.simu_horizon]
+    else:
+        raise ValueError(
+            "Unknown `pattern`: {}. Must be `None`, 'daily' or 'weekly'."
+            .format(pattern)
+        )
