@@ -123,7 +123,7 @@ class Photovoltaic(ElectricalEntity, pv.PV):
             p = self.P_El_Ref_Schedule
         else:
             p = self.P_El_Schedule
-        co2 = super(Photovoltaic, self).calculate_co2(timestep, co2_emissions,
-                                                      reference)
-        co2 -= sum(p) * self.time_slot * CO2_EMISSIONS_PV
+        if timestep:
+            p = p[:timestep]
+        co2 = - sum(p) * self.time_slot * CO2_EMISSIONS_PV
         return co2

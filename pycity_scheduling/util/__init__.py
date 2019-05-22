@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 
 from .populate_models import populate_models
@@ -5,10 +7,11 @@ from .write_csv import schedule_to_csv
 
 
 __all__ = [
-    "populate_models",
-    "schedule_to_csv",
-    "get_normal_params",
-    "compute_profile",
+    'populate_models',
+    'schedule_to_csv',
+    'get_normal_params',
+    'compute_profile',
+    'get_schedule',
 ]
 
 
@@ -95,3 +98,43 @@ def compute_profile(timer, profile, pattern):
             "Unknown `pattern`: {}. Must be `None`, 'daily' or 'weekly'."
             .format(pattern)
         )
+
+
+def get_schedule(entity, reference=False, timestep=None,
+                 energy=False, thermal=False):
+    """Retrieve a schedule from an OptimizationEntity.
+
+    Parameters
+    ----------
+    entity : pycity_scheduling.classes.OptimizationEntity
+        Entity to retrieve the schedule from.
+    reference : bool, optional
+        If `True` retrieve reference schedule.
+        If `False` retrieve normal schedule.
+    timestep : int, optional
+        If specified, trim schedule to this timestep.
+    energy : bool, optional
+        If `True` retrieve energy schedule.
+        If `False` retrieve power schedule.
+    thermal : bool, optional
+        If `True` retrieve thermal schedule.
+        If `False` retrieve electric schedule.
+
+    Returns
+    -------
+    np.ndarray :
+        Specified schedule.
+
+    Raises
+    ------
+    KeyError :
+        When specified schedule cannot be found.
+    """
+    schedule_name = 'E_' if energy else 'P_'
+    schedule_name += 'Th_' if thermal else 'El_'
+    schedule_name += 'Ref_' if reference else ''
+    schedule_name += 'Schedule'
+    sched = entity.__dict__.get(schedule_name)
+    if timestep is not None:
+        sched = sched[:timestep]
+    return sched

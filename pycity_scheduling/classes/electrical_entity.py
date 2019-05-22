@@ -121,15 +121,11 @@ class ElectricalEntity(OptimizationEntity):
         float :
             CO2 emissions in [g].
         """
+        p = util.get_schedule(self, reference, timestep)
         if co2_emissions is None:
             co2_emissions = self.environment.prices.co2_prices
-        if reference:
-            p = self.P_El_Ref_Schedule
-        else:
-            p = self.P_El_Schedule
         if timestep:
             co2_emissions = co2_emissions[:timestep]
-            p = p[:timestep]
         co2 = self.time_slot * np.dot(p, co2_emissions)
         return co2
 

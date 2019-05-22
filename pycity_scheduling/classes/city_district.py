@@ -1,7 +1,9 @@
+import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.CityDistrict as cd
 
 from .electrical_entity import ElectricalEntity
+from pycity_scheduling import constants, classes, util
 
 
 class CityDistrict(ElectricalEntity, cd.CityDistrict):
@@ -99,12 +101,16 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                       reference=False):
         """Calculate CO2 emissions of the CityDistrict.
 
+        The CO2 emissions are made up of two parts: the emissions for the
+        imported energy and the emissions of the local generation.
+
         Parameters
         ----------
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
+            Specific CO2 emissions for the imported energy over all timesteps
+            in the simulation horizon.
         reference : bool, optional
             `True` if CO2 for reference schedule.
 
@@ -113,10 +119,35 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         float :
             CO2 emissions in [g].
         """
-        co2 = sum(
-            e.calculate_co2(timestep, reference)
-            for e in self.get_lower_entities()
+        p = util.get_schedule(self, reference, timestep)
+        if co2_emissions is None:
+            co2_emissions = self.environment.prices.co2_prices
+        if timestep:
+            co2_emissions = co2_emissions[:timestep]
+        bat_schedule = sum(
+            util.get_schedule(e, reference, timestep)
+            for e in classes.filter_entities(self, 'BAT')
         )
+        p = p - bat_schedule
+        co2 = self.time_slot * np.dot(p[p>0], co2_emissions[p>0])
+
+        chp_schedule = sum(
+            util.get_schedule(e, reference, timestep, thermal=True).sum()
+            * (1+e.sigma) / e.omega
+            for e in classes.filter_entities(self, 'CHP')
+        )
+        pv_schedule = sum(
+            util.get_schedule(e, reference, timestep).sum()
+            for e in classes.filter_entities(self, 'PV')
+        )
+        wec_schedule = sum(
+            util.get_schedule(e, reference, timestep).sum()
+            for e in classes.filter_entities(self, 'WEC')
+        )
+        co2 -= chp_schedule * self.time_slot * constants.CO2_EMISSIONS_GAS
+        co2 -= pv_schedule * self.time_slot * constants.CO2_EMISSIONS_PV
+        co2 -= wec_schedule * self.time_slot * constants.CO2_EMISSIONS_WIND
+
         return co2
 
     def compute_flexibility(self):
