@@ -1,6 +1,7 @@
 import numpy as np
 import gurobipy as gurobi
 
+from pycity_scheduling import util
 from .optimization_entity import OptimizationEntity
 from ..exception import PyCitySchedulingGurobiException
 
@@ -73,7 +74,8 @@ class ElectricalEntity(OptimizationEntity):
         if reference:
             self.P_El_Ref_Schedule.fill(0)
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False):
+    def calculate_costs(self, timestep=None, prices=None, reference=False,
+                        feedin_factor=None):
         """Calculate electricity costs for the ElectricalEntity.
 
         Parameters
@@ -84,23 +86,23 @@ class ElectricalEntity(OptimizationEntity):
             Energy prices for simulation horizon.
         reference : bool, optional
             `True` if costs for reference schedule.
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
 
         Returns
         -------
         float :
             Electricity costs in [ct].
         """
-        if timestep:
-            t2 = timestep
-        else:
-            t2 = self.simu_horizon
-        if reference:
-            p = self.P_El_Ref_Schedule
-        else:
-            p = self.P_El_Schedule
+        p = util.get_schedule(self, reference, timestep)
         if prices is None:
             prices = self.environment.prices.tou_prices
-        costs = self.time_slot * np.dot(prices[:t2], p[:t2])
+        if timestep:
+            prices = prices[:timestep]
+        if feedin_factor is None:
+            feedin_factor = self.environment.prices.feedin_factor
+        costs = self.time_slot * np.dot(prices[p>0], p[p>0])
+        costs += self.time_slot * np.dot(prices[p<0], p[p<0]) * feedin_factor
         return costs
 
     def calculate_co2(self, timestep=None, co2_emissions=None,
@@ -173,12 +175,7 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Peak to average ratio.
         """
-        if reference:
-            p = self.P_El_Ref_Schedule
-        else:
-            p = self.P_El_Schedule
-        if timestep:
-            p = p[:timestep]
+        p = util.get_schedule(self, reference, timestep)
         peak = max(map(abs, p))
         mean = abs(np.mean(p))
         r = peak / mean

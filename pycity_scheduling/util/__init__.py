@@ -135,6 +135,6 @@ def get_schedule(entity, reference=False, timestep=None,
     schedule_name += 'Ref_' if reference else ''
     schedule_name += 'Schedule'
     sched = entity.__dict__.get(schedule_name)
-    if timestep is not None:
+    if timestep:
         sched = sched[:timestep]
     return sched

@@ -74,7 +74,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False):
+    def calculate_costs(self, timestep=None, prices=None, reference=False,
+                        feedin_factor=None):
         """Calculate electricity costs for the CityDistrict.
 
         Parameters
@@ -85,6 +86,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             Energy prices for simulation horizon.
         reference : bool, optional
             `True` if costs for reference schedule.
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
 
         Returns
         -------
@@ -93,8 +96,10 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         """
         if prices is None:
             prices = self.environment.prices.da_prices
-        costs = ElectricalEntity.calculate_costs(self, timestep,
-                                                 prices, reference)
+        if feedin_factor is None:
+            feedin_factor = 1
+        costs = ElectricalEntity.calculate_costs(self, timestep, prices,
+                                                 reference, feedin_factor)
         return costs
 
     def calculate_co2(self, timestep=None, co2_emissions=None,

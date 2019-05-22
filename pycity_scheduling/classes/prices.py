@@ -1,11 +1,9 @@
 import os
 import calendar
+
 import numpy as np
 import scipy.ndimage.interpolation as intp
 import pycity_base.classes.Prices as pr
-
-from ..exception import PyCitySchedulingInitError
-from .timer import Timer
 
 
 class Prices(pr.Prices):
@@ -14,17 +12,21 @@ class Prices(pr.Prices):
     """
 
     def __init__(self, timer, da_prices=None,
-                 tou_prices=None, co2_prices=None):
+                 tou_prices=None, co2_prices=None, feedin_factor=0):
         """Initialize Prices.
 
         Parameters
         ----------
-        timer : Timer
+        timer : pycity_scheduling.classes.Timer
             Timer instance for generating needed prices.
         da_prices : array_like, optional
             Day-ahead prices for quarter-hour intervals in [ct/kWh].
         co2_prices : array_like, optional
             CO2 price like for quarter-hour intervals in [g/kWh].
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
+            Should be in [0,1], as prices for feed-in are usually lower than
+            for consumption.
 
         Notes
         -----
@@ -54,7 +56,7 @@ class Prices(pr.Prices):
             )
         else:
             if len(da_prices) != timer.simu_horizon:
-                raise PyCitySchedulingInitError(
+                raise ValueError(
                     "Provided day-ahead price data do not match the number of "
                     "timesteps in the simulation horizon.\n"
                     "Number of timesteps: {0}, Length of price data: {1}"
@@ -111,13 +113,15 @@ class Prices(pr.Prices):
             )
         else:
             if len(tou_prices) != timer.simu_horizon:
-                raise PyCitySchedulingInitError(
+                raise ValueError(
                     "Provided Time Of Use prices do not match the number of "
                     "timesteps in the simulation horizon.\n"
                     "Number of timesteps: {0}, Length of price data: {1}"
                     .format(timer.simu_horizon, len(tou_prices))
                 )
             self.tou_prices = np.array(tou_prices)
+
+        self.feedin_factor = feedin_factor
 
         if co2_prices is None:
             root_dir = os.path.dirname(os.path.dirname(__file__))
@@ -137,7 +141,7 @@ class Prices(pr.Prices):
             )
         else:
             if len(co2_prices) != timer.simu_horizon:
-                raise PyCitySchedulingInitError(
+                raise ValueError(
                     "Provided CO2 price data do not match the number of "
                     "timesteps in the simulation horizon.\n"
                     "Number of timesteps: {0}, Length of price data: {1}"

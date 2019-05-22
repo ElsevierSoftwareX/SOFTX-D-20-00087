@@ -111,6 +111,18 @@ class TestCityDistrict(unittest.TestCase):
         e = get_env(4, 8)
         self.cd = CityDistrict(e)
 
+    def test_calculate_costs(self):
+        self.cd.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.cd.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
+        prices = np.array([10]*4 + [20]*4)
+
+        costs = self.cd.calculate_costs(prices=prices, feedin_factor=0.5)
+        self.assertEqual(-100, costs)
+        costs = self.cd.calculate_costs(prices=prices, timestep=4)
+        self.assertEqual(100, costs)
+        costs = self.cd.calculate_costs(prices=prices, reference=True)
+        self.assertEqual(-40, costs)
+
     def test_calculate_co2(self):
         pv = Photovoltaic(self.cd.environment, 0, 0)
         self.cd.addEntity(pv, Point(0, 0))
@@ -187,6 +199,25 @@ class TestDeferrableLoad(unittest.TestCase):
         model.optimize()
 
         self.assertAlmostEqual(10, self.dl.P_El_vars[0].x, places=5)
+
+
+class TestElectricalEntity(unittest.TestCase):
+    def setUp(self):
+        e = get_env(8, 4)
+        self.ee = ElectricalEntity(e.timer)
+        self.ee.environment = e
+
+    def test_calculate_costs(self):
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.ee.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
+        prices = np.array([10]*4 + [20]*4)
+
+        costs = self.ee.calculate_costs(prices=prices, feedin_factor=0.5)
+        self.assertEqual(-100, costs)
+        costs = self.ee.calculate_costs(prices=prices, timestep=4)
+        self.assertEqual(100, costs)
+        costs = self.ee.calculate_costs(prices=prices, reference=True)
+        self.assertEqual(40, costs)
 
 
 class TestElectricVehicle(unittest.TestCase):
