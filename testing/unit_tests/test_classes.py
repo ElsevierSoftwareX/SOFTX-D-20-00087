@@ -81,6 +81,28 @@ class TestBattery(unittest.TestCase):
 
         self.assertAlmostEqual(10, demand_var.x, places=5)
 
+    def test_calculate_co2(self):
+        self.bat.P_El_Schedule = np.array([10]*3)
+        self.assertEqual(0, self.bat.calculate_co2())
+
+
+class TestBoiler(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.bl = Boiler(e, 10, 0.4)
+
+    def test_calculate_co2(self):
+        self.bl.P_Th_Schedule = - np.array([10] * 8)
+        self.bl.P_Th_Ref_Schedule = - np.array([4] * 8)
+        co2_em = np.array([1111]*8)
+
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(23750, co2)
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(11875, co2)
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(9500, co2)
+
 
 class TestBuilding(unittest.TestCase):
     def setUp(self):

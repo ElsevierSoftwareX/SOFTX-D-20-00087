@@ -1,7 +1,7 @@
 import numpy as np
 import gurobipy as gurobi
 
-from pycity_scheduling import util, classes
+from pycity_scheduling import constants, classes, util
 from .optimization_entity import OptimizationEntity
 from ..exception import PyCitySchedulingGurobiException
 
@@ -128,7 +128,35 @@ class ElectricalEntity(OptimizationEntity):
             co2_emissions = self.environment.prices.co2_prices
         if timestep:
             co2_emissions = co2_emissions[:timestep]
-        co2 = self.time_slot * np.dot(p, co2_emissions)
+        bat_schedule = sum(
+            util.get_schedule(e, reference, timestep)
+            for e in classes.filter_entities(self, 'BAT')
+        )
+        p = p - bat_schedule
+        co2 = self.time_slot * np.dot(p[p>0], co2_emissions[p>0])
+
+        gas_schedule = sum(
+            util.get_schedule(e, reference, timestep, thermal=True).sum()
+            * (1+e.sigma) / e.omega
+            for e in classes.filter_entities(self, 'CHP')
+        )
+        gas_schedule += sum(
+            util.get_schedule(e, reference, timestep, thermal=True).sum()
+            / e.eta
+            for e in classes.filter_entities(self, 'BL')
+        )
+        pv_schedule = sum(
+            util.get_schedule(e, reference, timestep).sum()
+            for e in classes.filter_entities(self, 'PV')
+        )
+        wec_schedule = sum(
+            util.get_schedule(e, reference, timestep).sum()
+            for e in classes.filter_entities(self, 'WEC')
+        )
+        co2 -= gas_schedule * self.time_slot * constants.CO2_EMISSIONS_GAS
+        co2 -= pv_schedule * self.time_slot * constants.CO2_EMISSIONS_PV
+        co2 -= wec_schedule * self.time_slot * constants.CO2_EMISSIONS_WIND
+
         return co2
 
     def metric_delta_g(self):

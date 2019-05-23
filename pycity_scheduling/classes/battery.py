@@ -201,7 +201,3 @@ class Battery(ElectricalEntity, bat.Battery):
             self.E_El_Schedule.fill(0)
         if reference:
             self.E_El_Ref_Schedule.fill(0)
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        return 0

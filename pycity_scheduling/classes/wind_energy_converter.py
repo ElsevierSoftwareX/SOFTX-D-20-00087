@@ -3,7 +3,6 @@ import gurobipy as gurobi
 import pycity_base.classes.supply.WindEnergyConverter as wec
 
 from .electrical_entity import ElectricalEntity
-from pycity_scheduling.constants import CO2_EMISSIONS_WIND
 
 
 class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
@@ -88,30 +87,3 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
                 self.P_El_vars
             )
         return obj
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the entity.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        if reference:
-            p = self.P_El_Ref_Schedule
-        else:
-            p = self.P_El_Schedule
-        if timestep:
-            p = p[:timestep]
-        co2 = - sum(p) * self.time_slot * CO2_EMISSIONS_WIND
-        return co2
