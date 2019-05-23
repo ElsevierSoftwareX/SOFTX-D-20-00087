@@ -245,9 +245,3 @@ class Building(ElectricalEntity, bd.Building):
         if self.hasBes:
             yield self.bes
         yield from self.apartments
-
-    def compute_flexibility(self):
-        if self.bes.hasTes:
-            return self.bes.tes.compute_flexibility()
-        else:
-            return 0, 0, 0, 0

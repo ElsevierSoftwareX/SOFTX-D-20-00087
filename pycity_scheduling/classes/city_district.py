@@ -155,32 +155,6 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
 
         return co2
 
-    def compute_flexibility(self):
-        """Return flexibility metrics.
-
-        Return the flexibility metrics of the first building found, assuming
-        that only one Building is present in the district.
-
-        Returns
-        -------
-        float :
-            Flexibility in [kWh].
-        float :
-            Relative flexibility.
-        float :
-            Residual flexibility in [kWh].
-        float :
-            Relative residual flexibility.
-
-        Notes
-        -----
-         - Exploits the actual function of CityDistrict (aggregation of many
-           entities) to compute metrics for only one Building.
-        """
-        for entity in self.get_lower_entities():
-            if entity._kind == "building":
-                return entity.compute_flexibility()
-
     def get_lower_entities(self):
         for node in self.nodes.values():
             yield node['entity']
