@@ -1,7 +1,7 @@
 import numpy as np
 import gurobipy as gurobi
 
-from pycity_scheduling import util
+from pycity_scheduling import util, classes
 from .optimization_entity import OptimizationEntity
 from ..exception import PyCitySchedulingGurobiException
 
@@ -208,3 +208,65 @@ class ElectricalEntity(OptimizationEntity):
         ref_peak = max(map(abs, ref))
         r = (dr_peak - ref_peak) / ref_peak
         return r
+
+    def self_consumption(self, reference=False, timestep=None):
+        """Calculate the self consumption.
+
+        Parameters
+        ----------
+        reference : bool, optional
+            `True` if self consumption for reference schedule.
+        timestep : int, optional
+            If specified, calculate self consumption only to this timestep.
+
+        Returns
+        -------
+        float :
+            Self consumption.
+        """
+        p = util.get_schedule(self, reference, timestep)
+        res_schedule = sum(
+            util.get_schedule(e, reference, timestep)
+            for e in classes.filter_entities(self, 'res_devices')
+        )
+        if not isinstance(res_schedule, np.ndarray):
+            return 0
+        generation = res_schedule.sum()
+        if generation == 0:
+            return 0
+        neg_load = res_schedule - p
+        np.clip(neg_load, a_min=None, a_max=0, out=neg_load)
+        consumption = np.maximum(neg_load, res_schedule).sum()
+        self_consumption = consumption / generation
+        return self_consumption
+
+    def autarky(self, reference=False, timestep=None):
+        """Calculate the autarky.
+
+        Parameters
+        ----------
+        reference : bool, optional
+            `True` if autarky for reference schedule.
+        timestep : int, optional
+            If specified, calculate autarky only to this timestep.
+
+        Returns
+        -------
+        float :
+            Autarky.
+        """
+        p = util.get_schedule(self, reference, timestep)
+        res_schedule = - sum(
+            util.get_schedule(e, reference, timestep)
+            for e in classes.filter_entities(self, 'res_devices')
+        )
+        if not isinstance(res_schedule, np.ndarray):
+            return 0
+        load = p + res_schedule
+        np.clip(load, a_min=0, a_max=None, out=load)
+        consumption = load.sum()
+        if consumption == 0:
+            return 1
+        cover = np.minimum(res_schedule, load).sum()
+        autarky = cover / consumption
+        return autarky

@@ -139,6 +139,30 @@ class TestCityDistrict(unittest.TestCase):
         co2 = self.cd.calculate_co2(co2_emissions=co2_em, reference=True)
         self.assertEqual(1100, co2)
 
+    def test_self_consumption(self):
+        pv = Photovoltaic(self.cd.environment, 0, 0)
+        self.cd.addEntity(pv, Point(0, 0))
+        self.cd.P_El_Schedule = np.array([4]*2 + [-4]*2 + [-10]*2 + [-2]*2)
+        self.cd.P_El_Ref_Schedule = np.array([2]*2 + [-6]*2 + [-9]*2 + [-1]*2)
+        pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Ref_Schedule = - np.array([0]*8)
+
+        self.assertEqual(0.25, self.cd.self_consumption())
+        self.assertEqual(0.5, self.cd.self_consumption(timestep=4))
+        self.assertEqual(0, self.cd.self_consumption(reference=True))
+
+    def test_autarky(self):
+        pv = Photovoltaic(self.cd.environment, 0, 0)
+        self.cd.addEntity(pv, Point(0, 0))
+        self.cd.P_El_Schedule = np.array([4]*2 + [-4]*2 + [-10]*2 + [-2]*2)
+        self.cd.P_El_Ref_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Ref_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+
+        self.assertEqual(0.5, self.cd.autarky())
+        self.assertEqual(0, self.cd.autarky(timestep=2))
+        self.assertEqual(1, self.cd.autarky(reference=True))
+
 
 class TestCombinedHeatPower(unittest.TestCase):
     def setUp(self):
@@ -218,6 +242,16 @@ class TestElectricalEntity(unittest.TestCase):
         self.assertEqual(100, costs)
         costs = self.ee.calculate_costs(prices=prices, reference=True)
         self.assertEqual(40, costs)
+
+    def test_self_consumption(self):
+        # properly tested in CityDistrict
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.assertEqual(0, self.ee.self_consumption())
+
+    def test_autarky(self):
+        # properly tested in CityDistrict
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.assertEqual(0, self.ee.autarky())
 
 
 class TestElectricVehicle(unittest.TestCase):
