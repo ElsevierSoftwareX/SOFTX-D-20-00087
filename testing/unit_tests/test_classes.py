@@ -373,6 +373,28 @@ class TestPhotovoltaic(unittest.TestCase):
         self.assertEqual(600, co2)
 
 
+class TestPrices(unittest.TestCase):
+    def test_cache(self):
+        Prices.co2_price_cache = None
+        Prices.da_price_cache = None
+        Prices.tou_price_cache = None
+        ti = Timer(op_horizon=4, mpc_horizon=8, step_size=3600,
+                   initial_date=(2015, 1, 1), initial_time=(1, 0, 0))
+        pr = Prices(ti)
+
+        self.assertEqual(35040, len(pr.da_price_cache))
+        self.assertEqual(35040, len(pr.tou_price_cache))
+        self.assertEqual(35040, len(pr.co2_price_cache))
+        self.assertTrue(np.allclose(pr.tou_prices, [23.2621]*6 + [42.2947]*2))
+
+        Prices.da_price_cache[4] = 20
+        ti = Timer(op_horizon=4, mpc_horizon=8, step_size=900,
+                   initial_date=(2015, 1, 1), initial_time=(1, 0, 0))
+        pr = Prices(ti)
+
+        self.assertAlmostEqual(20, pr.da_prices[0], places=4)
+
+
 class TestTimer(unittest.TestCase):
     def setUp(self):
         self.timer = Timer(mpc_horizon=192, mpc_step_width=4,
