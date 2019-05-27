@@ -1,8 +1,8 @@
 import gurobipy as gurobi
 import pycity_base.classes.supply.Boiler as bl
 
+from pycity_scheduling import constants, util
 from .thermal_entity import ThermalEntity
-from pycity_scheduling.constants import CO2_EMISSIONS_GAS
 
 
 class Boiler(ThermalEntity, bl.Boiler):
@@ -97,11 +97,7 @@ class Boiler(ThermalEntity, bl.Boiler):
         float :
             CO2 emissions in [g].
         """
-        if reference:
-            p = self.P_Th_Ref_Schedule
-        else:
-            p = self.P_Th_Schedule
-        if timestep:
-            p = p[:timestep]
-        co2 = -(sum(p) * self.time_slot * CO2_EMISSIONS_GAS)
+        p = util.get_schedule(self, reference, timestep, thermal=True)
+        co2 = -(sum(p) * self.time_slot / self.eta
+                * constants.CO2_EMISSIONS_GAS)
         return co2

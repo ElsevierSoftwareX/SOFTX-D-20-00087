@@ -72,7 +72,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False):
+    def calculate_costs(self, timestep=None, prices=None, reference=False,
+                        feedin_factor=None):
         """Calculate electricity costs for the CityDistrict.
 
         Parameters
@@ -83,6 +84,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             Energy prices for simulation horizon.
         reference : bool, optional
             `True` if costs for reference schedule.
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
 
         Returns
         -------
@@ -91,59 +94,11 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         """
         if prices is None:
             prices = self.environment.prices.da_prices
-        costs = ElectricalEntity.calculate_costs(self, timestep,
-                                                 prices, reference)
+        if feedin_factor is None:
+            feedin_factor = 1
+        costs = ElectricalEntity.calculate_costs(self, timestep, prices,
+                                                 reference, feedin_factor)
         return costs
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the CityDistrict.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        co2 = sum(
-            e.calculate_co2(timestep, reference)
-            for e in self.get_lower_entities()
-        )
-        return co2
-
-    def compute_flexibility(self):
-        """Return flexibility metrics.
-
-        Return the flexibility metrics of the first building found, assuming
-        that only one Building is present in the district.
-
-        Returns
-        -------
-        float :
-            Flexibility in [kWh].
-        float :
-            Relative flexibility.
-        float :
-            Residual flexibility in [kWh].
-        float :
-            Relative residual flexibility.
-
-        Notes
-        -----
-         - Exploits the actual function of CityDistrict (aggregation of many
-           entities) to compute metrics for only one Building.
-        """
-        for entity in self.get_lower_entities():
-            if entity._kind == "building":
-                return entity.compute_flexibility()
 
     def get_lower_entities(self):
         for node in self.nodes.values():

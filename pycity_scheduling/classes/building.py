@@ -3,7 +3,6 @@ import gurobipy as gurobi
 import pycity_base.classes.Building as bd
 
 from .electrical_entity import ElectricalEntity
-from ..exception import PyCitySchedulingInitError
 
 
 class Building(ElectricalEntity, bd.Building):
@@ -89,7 +88,7 @@ class Building(ElectricalEntity, bd.Building):
         P_Th_var_list = []
         P_El_var_list = []
         if not self.hasBes:
-            raise PyCitySchedulingInitError(
+            raise AttributeError(
                 "No BES in %s\nModeling aborted." % str(self)
             )
         for entity in self.get_lower_entities():
@@ -182,29 +181,6 @@ class Building(ElectricalEntity, bd.Building):
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the Building.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        co2 = 0
-        for entity in self.get_lower_entities():
-            co2 += entity.calculate_co2(timestep, reference)
-        return co2
-
     def get_lower_entities(self):
         """
 
@@ -215,9 +191,3 @@ class Building(ElectricalEntity, bd.Building):
         if self.hasBes:
             yield self.bes
         yield from self.apartments
-
-    def compute_flexibility(self):
-        if self.bes.hasTes:
-            return self.bes.tes.compute_flexibility()
-        else:
-            return 0, 0, 0, 0

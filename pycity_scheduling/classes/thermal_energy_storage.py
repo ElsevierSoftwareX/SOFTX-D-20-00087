@@ -154,24 +154,3 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.E_Th_Schedule.fill(0)
         if reference:
             self.E_Th_Ref_Schedule.fill(0)
-
-    def compute_flexibility(self):
-        R_Flex = sum(
-            abs(e - self.E_Th_Max*self.SOC_Ini)
-            for e in self.E_Th_Schedule
-        )
-        r_Flex = R_Flex / sum(
-            abs(e - self.E_Th_Max*self.SOC_Ini)
-            for e in self.E_Th_Ref_Schedule
-        )
-        R_ResFlex = sum(
-            max(e, e - self.E_Th_Max)
-            for e in self.E_Th_Schedule
-        )
-        R_ref = sum(
-            max(e, e - self.E_Th_Max)
-            for e in self.E_Th_Schedule
-        )
-        r_ResFlex = (R_Flex - R_ref) / R_ref
-
-        return R_Flex, r_Flex, R_ResFlex, r_ResFlex

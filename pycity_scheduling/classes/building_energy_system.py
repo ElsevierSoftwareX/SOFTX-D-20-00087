@@ -88,29 +88,6 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the BuldingEnergySystem.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        co2 = 0
-        for entity in self.get_lower_entities():
-            co2 += entity.calculate_co2(timestep, reference)
-        return co2
-
     def get_lower_entities(self):
         """
 
