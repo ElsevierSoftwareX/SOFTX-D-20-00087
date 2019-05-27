@@ -112,11 +112,12 @@ class ElectricalEntity(OptimizationEntity):
         Parameters
         ----------
         timestep : int, optional
-            If specified, calculate costs only to this timestep.
+            If specified, calculate emissions only to this timestep.
         co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
+            Specific CO2 emissions for all timesteps in the simulation horizon
+            in [g/kWh].
         reference : bool, optional
-            `True` if CO2 for reference schedule.
+            `True` if CO2 emissions for reference schedule.
 
         Returns
         -------
@@ -194,7 +195,7 @@ class ElectricalEntity(OptimizationEntity):
         Parameters
         ----------
         timestep : int, optional
-            If specified, calculate power curve only to this timestep.
+            If specified, calculate ratio only to this timestep.
         reference : bool, optional
             `True` if ratio for reference schedule.
 
@@ -220,7 +221,7 @@ class ElectricalEntity(OptimizationEntity):
         Parameters
         ----------
         timestep : int, optional
-            If specified, calculate power curve only to this timestep.
+            If specified, calculate ratio only to this timestep.
 
         Returns
         -------
