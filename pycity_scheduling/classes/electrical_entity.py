@@ -261,7 +261,7 @@ class ElectricalEntity(OptimizationEntity):
             return 0
         generation = res_schedule.sum()
         if generation == 0:
-            return 0
+            return 1
         neg_load = res_schedule - p
         np.clip(neg_load, a_min=None, a_max=0, out=neg_load)
         consumption = np.maximum(neg_load, res_schedule).sum()

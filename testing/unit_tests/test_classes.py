@@ -171,7 +171,7 @@ class TestCityDistrict(unittest.TestCase):
 
         self.assertEqual(0.25, self.cd.self_consumption())
         self.assertEqual(0.5, self.cd.self_consumption(timestep=4))
-        self.assertEqual(0, self.cd.self_consumption(reference=True))
+        self.assertEqual(1, self.cd.self_consumption(reference=True))
 
     def test_autarky(self):
         pv = Photovoltaic(self.cd.environment, 0, 0)
