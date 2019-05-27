@@ -40,7 +40,7 @@ def get_normal_params(sigma_lognormal):
     return sigma_normal, my_normal
 
 
-def compute_profile(timer, profile, pattern):
+def compute_profile(timer, profile, pattern=None):
     """
 
     Parameters
@@ -72,7 +72,7 @@ def compute_profile(timer, profile, pattern):
         else:
             return profile
     elif pattern == 'daily':
-        ts_per_day = int(86400 / timer.time_slot)
+        ts_per_day = int(86400 / timer.timeDiscretization)
         if len(profile) != ts_per_day:
             raise ValueError(
                 "Length of `profile` does not match one day. Expected: {}, "
@@ -83,7 +83,7 @@ def compute_profile(timer, profile, pattern):
             ts = timer.time_in_day(from_init=True)
             return np.tile(profile, days)[ts:ts + timer.simu_horizon]
     elif pattern == 'weekly':
-        ts_per_week = int(604800 / timer.time_slot)
+        ts_per_week = int(604800 / timer.timeDiscretization)
         if len(profile) != ts_per_week:
             raise ValueError(
                 "Length of `profile` does not match one week. Expected: {}, "
