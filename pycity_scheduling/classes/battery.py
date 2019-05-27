@@ -167,12 +167,11 @@ class Battery(ElectricalEntity, bat.Battery):
     def update_schedule(self, mode=""):
         super(Battery, self).update_schedule(mode)
         timestep = self.timer.currentTimestep
-        t = 0
         try:
             self.E_El_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_El_vars]
         except gurobi.GurobiError:
-            self.E_El_Schedule[t:self.op_horizon + timestep].fill(0)
+            self.E_El_Schedule[timestep:self.op_horizon + timestep].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )

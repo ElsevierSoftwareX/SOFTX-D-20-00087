@@ -41,12 +41,11 @@ class ThermalEntity(OptimizationEntity):
 
     def update_schedule(self, mode=""):
         timestep = self.timer.currentTimestep
-        t = 0
         try:
             self.P_Th_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.P_Th_vars]
         except gurobi.GurobiError:
-            self.P_Th_Schedule[t:timestep+self.op_horizon].fill(0)
+            self.P_Th_Schedule[timestep:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )

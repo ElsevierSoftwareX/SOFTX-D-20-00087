@@ -54,7 +54,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
 
         # TODO: very simple storage model which assumes tFlow == tSurroundings
         self.Th_Loss_coeff = (
-                self.kLosses / self.capacity / self.cWater * self.time_slot * 3600
+            self.kLosses / self.capacity / self.cWater * self.time_slot * 3600
         )
 
         self.E_Th_vars = []
@@ -120,12 +120,11 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     def update_schedule(self, mode=""):
         super(ThermalEnergyStorage, self).update_schedule(mode)
         timestep = self.timer.currentTimestep
-        t = 0
         try:
             self.E_Th_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_Th_vars]
         except gurobi.GurobiError:
-            self.E_Th_Schedule[t:timestep+self.op_horizon].fill(0)
+            self.E_Th_Schedule[timestep:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )
