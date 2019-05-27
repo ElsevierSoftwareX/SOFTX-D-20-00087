@@ -50,12 +50,9 @@ class Photovoltaic(ElectricalEntity, pv.PV):
         self._long_ID = "PV_" + self._ID_string
 
         self.force_renewables = force_renewables
-
-        power, radiation = self._computePower()
-        ts = self.timer.time_in_year("timesteps", True)
-        self.totalPower = power[ts:ts+self.simu_horizon]
-        self.totalRadiation = radiation[ts:ts+self.simu_horizon]
-        self.P_El_Supply = self.totalPower/1000
+        self.getPower(currentValues=False)
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_El_Supply = self.totalPower[ts:ts+self.simu_horizon] / 1000
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep

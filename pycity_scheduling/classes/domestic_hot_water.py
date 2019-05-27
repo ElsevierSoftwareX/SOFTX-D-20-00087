@@ -49,7 +49,8 @@ class DomesticHotWater(ThermalEntity, dhw.DomesticHotWater):
                                                supplyTemperature, occupancy)
         self._long_ID = "DHW_" + self._ID_string
 
-        self.P_Th_Demand = self.loadcurve / 1000
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_Th_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep

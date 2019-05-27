@@ -36,15 +36,16 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         self._long_ID = "WEC_" + self._ID_string
 
         self.force_renewables = force_renewables
+        self.P_El_Supply = self._get_power_supply()
 
-        self.objective = None
+    def _get_power_supply(self):
+        # Base class cannot compute values for the whole simulation horizon
         wheather_forecast = self.environment.weather.getWeatherForecast
         (full_wind,) = wheather_forecast(getVWind=True)
-        ts = self.timer.time_in_year("timesteps", True)
-        total_wind = full_wind[ts:ts+self.simu_horizon]
+        ts = self.timer.time_in_year(from_init=True)
+        total_wind = full_wind[ts:ts + self.simu_horizon]
         log_wind = self._logWindProfile(total_wind)
-        self.P_El_Supply = np.interp(log_wind, self.velocity,
-                                     self.power, right=0)
+        return np.interp(log_wind, self.velocity, self.power, right=0)
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep

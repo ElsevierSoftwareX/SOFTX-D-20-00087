@@ -43,10 +43,10 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                 self.P_El_vars
             )
         elif self.objective == "price":
-            time_shift = self.timer.currentTimestep
+            timestep = self.timer.currentTimestep
             prices = self.environment.prices.da_prices
             obj.addTerms(
-                prices[time_shift:time_shift+self.op_horizon],
+                prices[timestep:timestep+self.op_horizon],
                 self.P_El_vars
             )
         return obj
