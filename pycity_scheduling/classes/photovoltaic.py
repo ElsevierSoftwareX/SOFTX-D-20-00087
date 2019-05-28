@@ -1,9 +1,7 @@
-import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.PV as pv
 
 from .electrical_entity import ElectricalEntity
-from pycity_scheduling.constants import CO2_EMISSIONS_PV
 
 
 class Photovoltaic(ElectricalEntity, pv.PV):
@@ -52,16 +50,13 @@ class Photovoltaic(ElectricalEntity, pv.PV):
         self._long_ID = "PV_" + self._ID_string
 
         self.force_renewables = force_renewables
-
-        power, radiation = self._computePower()
-        ts = self.timer.time_in_year("timesteps", True)
-        self.totalPower = power[ts:ts+self.SIMU_HORIZON]
-        self.totalRadiation = radiation[ts:ts+self.SIMU_HORIZON]
-        self.P_El_Supply = self.totalPower/1000
+        self.getPower(currentValues=False)
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_El_Supply = self.totalPower[ts:ts+self.simu_horizon] / 1000
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = -self.P_El_Supply[t+timestep]
             if self.force_renewables:
                 self.P_El_vars[t].ub = -self.P_El_Supply[t+timestep]
@@ -89,41 +84,14 @@ class Photovoltaic(ElectricalEntity, pv.PV):
         obj = gurobi.QuadExpr()
         if not self.force_renewables:
             obj.addTerms(
-                [coeff]*self.OP_HORIZON,
+                [coeff]*self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
             t1 = self.timer.currentTimestep
-            t2 = t1+self.OP_HORIZON
+            t2 = t1+self.op_horizon
             obj.addTerms(
                 - 2*coeff*self.P_El_Supply[t1:t2],
                 self.P_El_vars
             )
         return obj
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the entity.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        if reference:
-            p = self.P_El_Ref_Schedule
-        else:
-            p = self.P_El_Schedule
-        co2 = super(Photovoltaic, self).calculate_co2(timestep, co2_emissions,
-                                                      reference)
-        co2 -= sum(p) * self.TIME_SLOT * CO2_EMISSIONS_PV
-        return co2

@@ -1,4 +1,3 @@
-import numpy as np
 import pycity_base.classes.demand.SpaceHeating as sh
 
 from .thermal_entity import ThermalEntity
@@ -90,9 +89,8 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
         )
         self._long_ID = "SH_" + self._ID_string
 
-        ts = self.timer.time_in_year("timesteps", True)
-        ts_total = self.timer.simu_horizon
-        self.P_Th_Demand = self.loadcurve[ts:ts+ts_total] / 1000
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_Th_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
 
     def update_model(self, model, mode=""):
         """Update model variables.
@@ -106,6 +104,6 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
         mode : str, optional
         """
         timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_Th_vars[t].lb = self.P_Th_Demand[t+timestep]
             self.P_Th_vars[t].ub = self.P_Th_Demand[t+timestep]

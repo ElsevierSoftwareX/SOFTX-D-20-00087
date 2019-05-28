@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from .electrical_entity import ElectricalEntity
@@ -50,12 +50,8 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         self._long_ID = "CUL_" + self._ID_string
 
         self.max_curt = MaxCurtailment
-
-        if method == 0:
-            self.P_El_Demand = demand
-        else:
-            self.P_El_Demand = self.loadcurve / 1000
-
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_El_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
         self.P_El_Curt_Demand = self.P_El_Demand * self.max_curt
 
     def populate_model(self, model, mode=""):
@@ -70,10 +66,10 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         mode : str, optional
         """
         super(CurtailableLoad, self).populate_model(model, mode)
-        time_shift = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
-            self.P_El_vars[t].lb = self.P_El_Curt_Demand[t+time_shift]
-            self.P_El_vars[t].ub = self.P_El_Demand[t+time_shift]
+        timestep = self.timer.currentTimestep
+        for t in self.op_time_vec:
+            self.P_El_vars[t].lb = self.P_El_Curt_Demand[t+timestep]
+            self.P_El_vars[t].ub = self.P_El_Demand[t+timestep]
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
@@ -93,11 +89,11 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         """
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars,
             self.P_El_vars
         )
         obj.addTerms(
-            [- 2 * coeff] * self.OP_HORIZON,
+            [- 2 * coeff] * self.op_horizon,
             self.P_El_vars
         )

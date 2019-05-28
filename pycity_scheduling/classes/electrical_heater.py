@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.ElectricalHeater as eh
 
 from .thermal_entity import ThermalEntity
@@ -11,13 +11,31 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
     """
 
     def __init__(self, environment, P_Th_Nom, eta=1,
-                 tMax=85, lowerActivationLimit=1):
+                 tMax=85, lowerActivationLimit=0):
+        """Initialize ElectricalHeater.
+
+        Parameters
+        ----------
+        environment : pycity_scheduling.classes.Environment
+            Common to all other objects. Includes time and weather instances.
+        P_Th_Nom : float
+            Nominal thermal power output in [kW].
+        eta : float, optional
+            Efficiency of the electrical heater.
+        tMax : integer, optional
+            maximum provided temperature in °C
+        lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
+            Define the lower activation limit. For example, heat pumps are
+            typically able to operate between 50 % part load and rated load.
+            In this case, lowerActivationLimit would be 0.5
+            Two special cases:
+            Linear behavior: lowerActivationLimit = 0
+            Two-point controlled: lowerActivationLimit = 1
+        """
         super(ElectricalHeater, self).__init__(environment.timer, environment,
-                                               P_Th_Nom, eta, tMax,
+                                               P_Th_Nom*1000, eta, tMax,
                                                lowerActivationLimit)
         self._long_ID = "EH_" + self._ID_string
-
-        self.P_Th_Nom = P_Th_Nom
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -35,10 +53,10 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         ElectricalEntity.populate_model(self, model, mode)
 
         for var in self.P_Th_vars:
-            var.lb = -self.P_Th_Nom
+            var.lb = -self.qNominal / 1000
             var.ub = 0
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             model.addConstr(
                 - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
             )
@@ -61,7 +79,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars
         )
         return obj

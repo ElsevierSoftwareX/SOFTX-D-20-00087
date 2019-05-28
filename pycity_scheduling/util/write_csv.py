@@ -22,7 +22,7 @@ def schedule_to_csv(input_list, file_name):
     """
     l = []
     for ent in input_list:
-        if isinstance(ent, BatteryEntity):
+        if isinstance(ent, Battery):
             l.append(ent.P_El_Schedule)
             l.append(ent.E_El_Schedule)
         elif isinstance(ent, ElectricalEntity):
@@ -38,7 +38,7 @@ def schedule_to_csv(input_list, file_name):
         n += str(ent) + "\t"
         if isinstance(ent, ThermalEnergyStorage):
             n += str(ent) + " Stor\t"
-        if isinstance(ent, BatteryEntity):
+        if isinstance(ent, Battery):
             n += str(ent) + " Stor\t"
     p = op.join(op.dirname(op.dirname(op.dirname(__file__))), "output",
                 "{0:s}.csv".format(file_name))
@@ -58,7 +58,7 @@ def ref_schedule_to_csv(input_list, file_name):
     """
     l = []
     for ent in input_list:
-        if isinstance(ent, BatteryEntity):
+        if isinstance(ent, Battery):
             l.append(ent.P_El_Ref_Schedule)
             l.append(ent.E_El_Ref_Schedule)
         elif isinstance(ent, ElectricalEntity):
@@ -74,7 +74,7 @@ def ref_schedule_to_csv(input_list, file_name):
         n += str(ent) + "\t"
         if isinstance(ent, ThermalEnergyStorage):
             n += str(ent) + " Stor\t"
-        if isinstance(ent, BatteryEntity):
+        if isinstance(ent, Battery):
             n += str(ent) + " Stor\t"
     p = op.join(op.dirname(op.dirname(op.dirname(__file__))), "output",
                 "{0:s}.csv".format(file_name))

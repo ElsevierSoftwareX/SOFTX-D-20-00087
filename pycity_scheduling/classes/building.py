@@ -1,9 +1,8 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.Building as bd
 
 from .electrical_entity import ElectricalEntity
-from ..exception import PyCitySchedulingInitError
 
 
 class Building(ElectricalEntity, bd.Building):
@@ -89,7 +88,7 @@ class Building(ElectricalEntity, bd.Building):
         P_Th_var_list = []
         P_El_var_list = []
         if not self.hasBes:
-            raise PyCitySchedulingInitError(
+            raise AttributeError(
                 "No BES in %s\nModeling aborted." % str(self)
             )
         for entity in self.get_lower_entities():
@@ -97,10 +96,10 @@ class Building(ElectricalEntity, bd.Building):
             P_Th_var_list.extend(entity.P_Th_vars)
             P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.OP_HORIZON])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.OP_HORIZON])
+            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
             model.addConstr(
                 0 == P_Th_var_sum,
                 "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
@@ -131,7 +130,7 @@ class Building(ElectricalEntity, bd.Building):
         timestep = self.timer.currentTimestep
         if self.objective == "peak_shaving":
             obj.addTerms(
-                [coeff]*self.OP_HORIZON,
+                [coeff]*self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
@@ -142,9 +141,9 @@ class Building(ElectricalEntity, bd.Building):
                 prices = self.environment.prices.co2_prices
             else:
                 # TODO: Print warning.
-                prices = np.ones(self.SIMU_HORIZON)
-            prices = prices[timestep:timestep+self.OP_HORIZON]
-            prices = prices * self.OP_HORIZON / sum(prices)
+                prices = np.ones(self.simu_horizon)
+            prices = prices[timestep:timestep+self.op_horizon]
+            prices = prices * self.op_horizon / sum(prices)
             obj.addTerms(
                 coeff * prices,
                 self.P_El_vars
@@ -182,29 +181,6 @@ class Building(ElectricalEntity, bd.Building):
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the Building.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        co2 = 0
-        for entity in self.get_lower_entities():
-            co2 += entity.calculate_co2(timestep, reference)
-        return co2
-
     def get_lower_entities(self):
         """
 
@@ -215,9 +191,3 @@ class Building(ElectricalEntity, bd.Building):
         if self.hasBes:
             yield self.bes
         yield from self.apartments
-
-    def compute_flexibility(self):
-        if self.bes.hasTes:
-            return self.bes.tes.compute_flexibility()
-        else:
-            return 0, 0, 0, 0

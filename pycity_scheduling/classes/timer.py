@@ -2,12 +2,15 @@ import datetime
 import calendar
 import pycity_base.classes.Timer as ti
 
-from ..exception import PyCitySchedulingInitError
-
 
 class Timer(ti.Timer):
     """
     Extension of pycity class Timer for scheduling purposes
+
+    Notes
+    -----
+     - This class' behaviour may differ from the one of the baseclass, as it
+       keeps an actual date rather than a relative counter only
     """
 
     def __init__(self, step_size=900, op_horizon=96,
@@ -31,15 +34,10 @@ class Timer(ti.Timer):
             Initial date in the format (year, month, day).
         initial_time : tuple, optional
             Initial time in the format (hour, minute, second).
-
-        Notes
-        -----
-         - the behaviour may differ from the one of the baseclass, as this
-           class keeps an actual date rather than a relative counter only
         """
         a, b = divmod(3600, step_size)
         if b != 0:
-            raise PyCitySchedulingInitError(
+            raise ValueError(
                 "`step_size` must be a factor of 3600 (1h)."
             )
         self._dt = datetime.datetime(
@@ -50,7 +48,7 @@ class Timer(ti.Timer):
         initial_day = dt0.weekday() + 1
         a, b = divmod((self._dt - dt0).total_seconds(), step_size)
         if b > 0:
-            raise PyCitySchedulingInitError(
+            raise ValueError(
                 "The difference from the starting point of the simulation "
                 "to the beginning of the year must be a multiple of "
                 "`timeDiscretization`."
@@ -65,6 +63,8 @@ class Timer(ti.Timer):
                                     timestepsHorizon=horizon,
                                     timestepsTotal=horizon,
                                     initialDay=initial_day)
+
+        self.time_slot = step_size / 3600
         self._init_dt = self._dt
         if mpc_horizon is None:
             self.simu_horizon = op_horizon
@@ -187,7 +187,7 @@ class Timer(ti.Timer):
         if unit == "timesteps":
             a, b = divmod(seconds, self.timeDiscretization)
             if b > 0:
-                raise PyCitySchedulingInitError(
+                raise ValueError(
                     "The difference from the starting point of the simulation "
                     "to the beginning of the year must be a multiple of "
                     "`timeDiscretization`."
@@ -198,25 +198,67 @@ class Timer(ti.Timer):
         else:
             return seconds
 
-    def time_in_day(self, unit="timesteps"):
+    def time_in_week(self, unit="timesteps", from_init=False):
         """Time passed since beginning of the day.
 
         Parameters
         ----------
         unit : {"timesteps", "seconds", "days}, optional
             Specifies the unit for the result.
+        from_init : bool, optional
+            Time for init datetime or current datetime.
 
         Returns
         -------
         int :
             Time in specified unit.
         """
-        dt0 = datetime.datetime(self._dt.year, self._dt.month, self._dt.day)
-        seconds = (self._dt - dt0).total_seconds()
+        if from_init:
+            dt1 = self._init_dt
+        else:
+            dt1 = self._dt
+        dt0 = datetime.datetime(dt1.year, dt1.month, dt1.day)
+        dt0 -= datetime.timedelta(days=dt0.weekday())
+        seconds = (dt1 - dt0).total_seconds()
         if unit == "timesteps":
             a, b = divmod(seconds, self.timeDiscretization)
             if b > 0:
-                raise PyCitySchedulingInitError(
+                raise ValueError(
+                    "The difference from the starting point of the simulation "
+                    "to the beginning of the year must be a multiple of "
+                    "`timeDiscretization`."
+                )
+            return int(a)
+        elif unit == "days":
+            return seconds // 86400
+        else:
+            return seconds
+
+    def time_in_day(self, unit="timesteps", from_init=False):
+        """Time passed since beginning of the day.
+
+        Parameters
+        ----------
+        unit : {"timesteps", "seconds", "days}, optional
+            Specifies the unit for the result.
+        from_init : bool, optional
+            Time for init datetime or current datetime.
+
+        Returns
+        -------
+        int :
+            Time in specified unit.
+        """
+        if from_init:
+            dt1 = self._init_dt
+        else:
+            dt1 = self._dt
+        dt0 = datetime.datetime(dt1.year, dt1.month, dt1.day)
+        seconds = (dt1 - dt0).total_seconds()
+        if unit == "timesteps":
+            a, b = divmod(seconds, self.timeDiscretization)
+            if b > 0:
+                raise ValueError(
                     "The difference from the starting point of the simulation "
                     "to the beginning of the year must be a multiple of "
                     "`timeDiscretization`."

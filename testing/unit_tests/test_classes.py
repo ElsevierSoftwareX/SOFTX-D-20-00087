@@ -1,44 +1,441 @@
+import datetime
 import unittest
+
+import numpy as np
+from shapely.geometry import Point
+import gurobipy as gp
 
 from pycity_scheduling.classes import *
 
 
-class TestOptimizationEntity(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestOptimizationEntity, self).__init__(*args, **kwargs)
+gp.setParam('outputflag', 0)
 
-        t = Timer()
-        p = Prices(t)
-        w = Weather(t)
-        e = Environment(t, w, p)
-        cd = CityDistrict(e)
+
+class TestModule(unittest.TestCase):
+    def test_filter_entities(self):
+        e = get_env(4, 8)
         bd = Building(e)
-        cd.addEntity(bd, [0, 0])
         bes = BuildingEnergySystem(e)
+        pv = Photovoltaic(e, 0, 0)
+        bes.addDevice(pv)
         bd.addEntity(bes)
-        tes = ThermalEnergyStorage(e, 1000, 0.5, 0.5)
-        bes.addDevice(tes)
-        bat = Battery(e, 10, 1, 0, 10, 10)
-        bes.addDevice(bat)
-        bl = Boiler(e, 10, 1)
-        eh = ElectricalHeater(e, 10)
-        hp = HeatPump(e, 10)
-        chp = CombinedHeatPower(e, 10, 10, 0.5)
-        bes.addMultipleDevices([bl, eh, hp, chp])
-        ap = Apartment(e)
-        bd.addEntity(ap)
-        fl = FixedLoad(e, method=1, annualDemand=6000,
-                       profileType='H0')
-        dhw = DomesticHotWater(e, 60, method=1, dailyConsumption=10,
-                               supplyTemperature=50)
-        sh = SpaceHeating(e, method=1, livingArea=100, specificDemand=50,
-                          profile_type='HEF')
-        ap.addMultipleEntities([fl, dhw, sh])
-        ev = ElectricalVehicle(e, 10, 10, 1, 0, [1]*96)
-        ap.addEntity(ev)
-        cl = CurtailableLoad(e, 0.5, method=1, annualDemand=1000)
-        dl = DeferrableLoad(e, 10, 10, [1]*96)
-        ap.addMultipleEntities([cl, dl])
 
-    def test_stub(self):
-        pass
+        def do_test(gen):
+            entities = list(gen)
+            self.assertEqual(1, len(entities))
+            self.assertIn(pv, entities)
+
+        do_test(filter_entities(bd.get_entities(), 'PV'))
+        do_test(filter_entities(bd, 'res_devices'))
+        do_test(filter_entities(bd, [Photovoltaic]))
+        do_test(filter_entities(bd, ['PV']))
+        do_test(filter_entities(bd, {'PV': Photovoltaic}))
+        with self.assertRaises(ValueError):
+            next(filter_entities(bd, 'PPV'))
+        with self.assertRaises(ValueError):
+            next(filter_entities(bd, [int]))
+        with self.assertRaises(ValueError):
+            next(filter_entities(bd, None))
+
+
+class TestBattery(unittest.TestCase):
+    def setUp(self):
+        e = get_env(3)
+        self.bat = Battery(e, 10, 20, SOC_Ini=0.875, eta=0.5)
+
+    def test_populate_model(self):
+        model = gp.Model('BatModel')
+        self.bat.populate_model(model)
+        model.addConstr(self.bat.E_El_vars[2] == 10)
+        model.addConstr(self.bat.E_El_vars[0] == 5)
+        obj = gp.QuadExpr()
+        obj.addTerms(
+            [1] * 3,
+            self.bat.P_El_Demand_vars,
+            self.bat.P_El_Demand_vars
+        )
+        model.setObjective(obj)
+        model.optimize()
+
+        var_list = [var.varname for var in model.getVars()]
+        self.assertEqual(12, len(var_list))
+        var_sum = sum(map(lambda v: v.x, self.bat.P_El_vars[1:]))
+        self.assertAlmostEqual(40, var_sum, places=5)
+        var_sum = sum(map(
+            lambda v: v.x,
+            self.bat.P_El_Supply_vars[1:] + self.bat.P_El_Demand_vars[1:]
+        ))
+        self.assertAlmostEqual(40, var_sum, places=5)
+
+    def test_update_model(self):
+        model = gp.Model('BatModel')
+        demand_var = model.addVar()
+        self.bat.P_El_Demand_vars.append(demand_var)
+        self.bat.P_El_Supply_vars.append(model.addVar())
+        self.bat.E_El_vars.append(model.addVar())
+        self.bat.update_model(model)
+        model.addConstr(self.bat.E_El_vars[0] == 10)
+        obj = demand_var * demand_var
+        model.setObjective(obj)
+        model.optimize()
+
+        self.assertAlmostEqual(10, demand_var.x, places=5)
+
+    def test_calculate_co2(self):
+        self.bat.P_El_Schedule = np.array([10]*3)
+        self.assertEqual(0, self.bat.calculate_co2())
+
+
+class TestBoiler(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.bl = Boiler(e, 10, 0.4)
+
+    def test_calculate_co2(self):
+        self.bl.P_Th_Schedule = - np.array([10] * 8)
+        self.bl.P_Th_Ref_Schedule = - np.array([4] * 8)
+        co2_em = np.array([1111]*8)
+
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(23750, co2)
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(11875, co2)
+        co2 = self.bl.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(9500, co2)
+
+
+class TestBuilding(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.bd = Building(e)
+
+    def test_calculate_co2(self):
+        bes = BuildingEnergySystem(self.bd.environment)
+        pv = Photovoltaic(self.bd.environment, 0, 0)
+        bes.addDevice(pv)
+        self.bd.addEntity(bes)
+        self.bd.P_El_Schedule = np.array([-5] * 2 + [5] * 4 + [-5] * 2)
+        self.bd.P_El_Ref_Schedule = np.array([-2] * 2 + [2] * 4 + [-2] * 2)
+        pv.P_El_Schedule = - np.array([10]*8)
+        pv.P_El_Ref_Schedule = - np.array([4]*8)
+        co2_em = np.array([100]*4 + [400]*4)
+
+        co2 = self.bd.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(2750, co2)
+        co2 = self.bd.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(1000, co2)
+        co2 = self.bd.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(1100, co2)
+
+
+class TestCityDistrict(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.cd = CityDistrict(e)
+
+    def test_calculate_costs(self):
+        self.cd.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.cd.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
+        prices = np.array([10]*4 + [20]*4)
+
+        costs = self.cd.calculate_costs(prices=prices, feedin_factor=0.5)
+        self.assertEqual(-100, costs)
+        costs = self.cd.calculate_costs(prices=prices, timestep=4)
+        self.assertEqual(100, costs)
+        costs = self.cd.calculate_costs(prices=prices, reference=True)
+        self.assertEqual(-40, costs)
+
+    def test_calculate_co2(self):
+        pv = Photovoltaic(self.cd.environment, 0, 0)
+        self.cd.addEntity(pv, Point(0, 0))
+        self.cd.P_El_Schedule = np.array([-5]*2 + [5]*4 + [-5]*2)
+        self.cd.P_El_Ref_Schedule = np.array([-2]*2 + [2]*4 + [-2]*2)
+        pv.P_El_Schedule = - np.array([10]*8)
+        pv.P_El_Ref_Schedule = - np.array([4]*8)
+        co2_em = np.array([100]*4 + [400]*4)
+
+        co2 = self.cd.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(2750, co2)
+        co2 = self.cd.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(1000, co2)
+        co2 = self.cd.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(1100, co2)
+
+    def test_self_consumption(self):
+        pv = Photovoltaic(self.cd.environment, 0, 0)
+        self.cd.addEntity(pv, Point(0, 0))
+        self.cd.P_El_Schedule = np.array([4]*2 + [-4]*2 + [-10]*2 + [-2]*2)
+        self.cd.P_El_Ref_Schedule = np.array([2]*2 + [-6]*2 + [-9]*2 + [-1]*2)
+        pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Ref_Schedule = - np.array([0]*8)
+
+        self.assertEqual(0.25, self.cd.self_consumption())
+        self.assertEqual(0.5, self.cd.self_consumption(timestep=4))
+        self.assertEqual(1, self.cd.self_consumption(reference=True))
+
+    def test_autarky(self):
+        pv = Photovoltaic(self.cd.environment, 0, 0)
+        self.cd.addEntity(pv, Point(0, 0))
+        self.cd.P_El_Schedule = np.array([4]*2 + [-4]*2 + [-10]*2 + [-2]*2)
+        self.cd.P_El_Ref_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+        pv.P_El_Ref_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
+
+        self.assertEqual(0.5, self.cd.autarky())
+        self.assertEqual(0, self.cd.autarky(timestep=2))
+        self.assertEqual(1, self.cd.autarky(reference=True))
+
+
+class TestCombinedHeatPower(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.chp = CombinedHeatPower(e, 10, 10, 0.8)
+
+    def test_calculate_co2(self):
+        self.chp.P_Th_Schedule = - np.array([10] * 8)
+        self.chp.P_Th_Ref_Schedule = - np.array([4] * 8)
+        co2_em = np.array([1111]*8)
+
+        co2 = self.chp.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(23750, co2)
+        co2 = self.chp.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(11875, co2)
+        co2 = self.chp.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(9500, co2)
+
+
+class TestDeferrableLoad(unittest.TestCase):
+    def setUp(self):
+        e = get_env(6, 9)
+        self.lt = [0, 1, 1, 1, 0, 1, 1, 1, 0]
+        self.dl = DeferrableLoad(e, 19, 10, load_time=self.lt)
+
+    def test_update_model(self):
+        model = gp.Model('DLModel')
+        self.dl.populate_model(model)
+        obj = gp.QuadExpr()
+        obj.addTerms(
+            [1] * 6,
+            self.dl.P_El_vars,
+            self.dl.P_El_vars
+        )
+        model.setObjective(obj)
+        self.dl.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(10, gp.quicksum(self.dl.P_El_vars), places=5)
+
+        self.dl.timer.mpc_update()
+        self.dl.update_model(model)
+        model.optimize()
+
+        for t, c in enumerate(self.lt[1:7]):
+            if c:
+                self.assertEqual(19, self.dl.P_El_vars[t].ub)
+            else:
+                self.assertEqual(0, self.dl.P_El_vars[t].ub)
+        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[4].x, places=5)
+        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[5].x, places=5)
+
+        self.dl.timer.mpc_update()
+        self.dl.timer.mpc_update()
+        self.dl.P_El_Schedule[1] = 15
+        self.dl.P_El_Schedule[2] = 15
+        self.dl.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(10, self.dl.P_El_vars[0].x, places=5)
+
+
+class TestElectricalEntity(unittest.TestCase):
+    def setUp(self):
+        e = get_env(8, 4)
+        self.ee = ElectricalEntity(e.timer)
+        self.ee.environment = e
+
+    def test_calculate_costs(self):
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.ee.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
+        prices = np.array([10]*4 + [20]*4)
+
+        costs = self.ee.calculate_costs(prices=prices, feedin_factor=0.5)
+        self.assertEqual(-100, costs)
+        costs = self.ee.calculate_costs(prices=prices, timestep=4)
+        self.assertEqual(100, costs)
+        costs = self.ee.calculate_costs(prices=prices, reference=True)
+        self.assertEqual(40, costs)
+
+    def test_self_consumption(self):
+        # properly tested in CityDistrict
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.assertEqual(0, self.ee.self_consumption())
+
+    def test_autarky(self):
+        # properly tested in CityDistrict
+        self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.assertEqual(0, self.ee.autarky())
+
+
+class TestElectricVehicle(unittest.TestCase):
+    def setUp(self):
+        e = get_env(6, 9)
+        self.ct = [1, 1, 1, 0, 0, 0, 1, 1, 1]
+        self.ev = ElectricalVehicle(e, 10, 20, 0.5, charging_time=self.ct)
+
+    def test_populate_model(self):
+        model = gp.Model('EVModel')
+        self.ev.populate_model(model)
+        model.addConstr(self.ev.E_El_vars[2] == 10)
+        model.addConstr(self.ev.E_El_vars[0] == 5)
+        obj = gp.QuadExpr()
+        obj.addTerms(
+            [1] * 6,
+            self.ev.P_El_Demand_vars,
+            self.ev.P_El_Demand_vars
+        )
+        model.setObjective(obj)
+        model.optimize()
+
+        var_list = [var.varname for var in model.getVars()]
+        self.assertEqual(30, len(var_list))
+        var_sum = sum(map(lambda v: v.x, self.ev.P_El_vars[1:]))
+        self.assertAlmostEqual(20, var_sum, places=5)
+        var_sum = sum(map(
+            lambda v: v.x,
+            self.ev.P_El_Supply_vars[1:] + self.ev.P_El_Demand_vars[1:]
+        ))
+        self.assertAlmostEqual(20, var_sum, places=5)
+
+    def test_update_model(self):
+        model = gp.Model('EVModel')
+        self.ev.populate_model(model)
+        self.ev.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(10, self.ev.E_El_vars[2].x, places=5)
+        self.assertAlmostEqual(2, self.ev.E_El_vars[3].x, places=5)
+
+        self.ev.timer.mpc_update()
+        self.ev.update_model(model)
+        model.optimize()
+
+        for t, c in enumerate(self.ct[1:7]):
+            if c:
+                self.assertEqual(20, self.ev.P_El_Demand_vars[t].ub)
+                self.assertEqual(20, self.ev.P_El_Supply_vars[t].ub)
+                self.assertEqual(0, self.ev.P_El_Drive_vars[t].ub)
+            else:
+                self.assertEqual(0, self.ev.P_El_Demand_vars[t].ub)
+                self.assertEqual(0, self.ev.P_El_Supply_vars[t].ub)
+                self.assertEqual(gp.GRB.INFINITY,
+                                 self.ev.P_El_Drive_vars[t].ub)
+        self.assertAlmostEqual(10, self.ev.E_El_vars[1].x, places=5)
+        self.assertAlmostEqual(2, self.ev.E_El_vars[2].x, places=5)
+        self.assertLessEqual(1.6, self.ev.E_El_vars[-1].x)
+
+        self.ev.timer.mpc_update()
+        self.ev.timer.mpc_update()
+        self.ev.update_model(model)
+        model.optimize()
+
+        self.assertAlmostEqual(5, self.ev.E_El_vars[-1].x, places=5)
+
+    def test_get_objective(self):
+        model = gp.Model('EVModel')
+        self.ev.P_El_vars.append(model.addVar())
+        self.ev.P_El_vars.append(model.addVar())
+        self.ev.P_El_vars.append(model.addVar())
+        self.ev.P_El_vars.append(model.addVar())
+        self.ev.P_El_vars.append(model.addVar())
+        self.ev.P_El_vars.append(model.addVar())
+        obj = self.ev.get_objective(11)
+        for i in range(6):
+            ref = (i + 1) / 21 * 6 * 11
+            coeff = obj.getCoeff(i)
+            self.assertAlmostEqual(ref, coeff, places=5)
+
+
+class TestPhotovoltaic(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.pv = Photovoltaic(e, 30, 0.3)
+
+    def test_calculate_co2(self):
+        self.pv.P_El_Schedule = - np.array([10]*8)
+        self.pv.P_El_Ref_Schedule = - np.array([4]*8)
+        co2_em = np.array([1111]*8)
+
+        co2 = self.pv.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(1500, co2)
+        co2 = self.pv.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(750, co2)
+        co2 = self.pv.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(600, co2)
+
+
+class TestPrices(unittest.TestCase):
+    def test_cache(self):
+        Prices.co2_price_cache = None
+        Prices.da_price_cache = None
+        Prices.tou_price_cache = None
+        ti = Timer(op_horizon=4, mpc_horizon=8, step_size=3600,
+                   initial_date=(2015, 1, 1), initial_time=(1, 0, 0))
+        pr = Prices(ti)
+
+        self.assertEqual(35040, len(pr.da_price_cache))
+        self.assertEqual(35040, len(pr.tou_price_cache))
+        self.assertEqual(35040, len(pr.co2_price_cache))
+        self.assertTrue(np.allclose(pr.tou_prices, [23.2621]*6 + [42.2947]*2))
+
+        Prices.da_price_cache[4] = 20
+        ti = Timer(op_horizon=4, mpc_horizon=8, step_size=900,
+                   initial_date=(2015, 1, 1), initial_time=(1, 0, 0))
+        pr = Prices(ti)
+
+        self.assertAlmostEqual(20, pr.da_prices[0], places=4)
+
+
+class TestTimer(unittest.TestCase):
+    def setUp(self):
+        self.timer = Timer(mpc_horizon=192, mpc_step_width=4,
+                           initial_date=(2015, 1, 15), initial_time=(12, 0, 0))
+        self.timer._dt = datetime.datetime(2015, 1, 15, 13)
+
+    def test_time_in_year(self):
+        self.assertEqual(1396, self.timer.time_in_year())
+        self.assertEqual(1392, self.timer.time_in_year(from_init=True))
+
+    def test_time_in_week(self):
+        self.assertEqual(340, self.timer.time_in_week())
+        self.assertEqual(336, self.timer.time_in_week(from_init=True))
+
+    def test_time_in_day(self):
+        self.assertEqual(52, self.timer.time_in_day())
+        self.assertEqual(48, self.timer.time_in_day(from_init=True))
+
+
+class TestWindEnergyConverter(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.wec = WindEnergyConverter(e, [0, 10], [0, 10])
+
+    def test_calculate_co2(self):
+        self.wec.P_El_Schedule = - np.array([10] * 8)
+        self.wec.P_El_Ref_Schedule = - np.array([4] * 8)
+        co2_em = np.array([1111]*8)
+
+        co2 = self.wec.calculate_co2(co2_emissions=co2_em)
+        self.assertEqual(500, co2)
+        co2 = self.wec.calculate_co2(co2_emissions=co2_em, timestep=4)
+        self.assertEqual(250, co2)
+        co2 = self.wec.calculate_co2(co2_emissions=co2_em, reference=True)
+        self.assertEqual(200, co2)
+
+
+def get_env(op_horizon, mpc_horizon=None):
+    ti = Timer(op_horizon=op_horizon,
+               mpc_horizon=mpc_horizon,
+               mpc_step_width=1)
+    we = Weather(ti)
+    pr = Prices(ti)
+    return Environment(ti, we, pr)

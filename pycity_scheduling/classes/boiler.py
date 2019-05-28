@@ -1,8 +1,8 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.Boiler as bl
 
+from pycity_scheduling import constants, util
 from .thermal_entity import ThermalEntity
-from pycity_scheduling.constants import CO2_EMISSIONS_GAS
 
 
 class Boiler(ThermalEntity, bl.Boiler):
@@ -10,18 +10,18 @@ class Boiler(ThermalEntity, bl.Boiler):
     Extension of pycity class Boiler for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, eta,
+    def __init__(self, environment, P_Th_Nom, eta=1,
                  tMax=85, lowerActivationLimit=0):
         """Initialize Boiler.
 
         Parameters
         ----------
-        environment : Environment
-            common to all other objects, includes time and weather instances
-        P_Th_Nom : array_like of float
-            nominal heat output in [kW]
-        eta : array_like of float
-            efficiency
+        environment : pycity_scheduling.classes.Environment
+            Common to all other objects. Includes time and weather instances.
+        P_Th_Nom : float
+            Nominal heat output in [kW].
+        eta : float, optional
+            Efficiency.
         tMax : float, optional
             maximum provided temperature in [°C]
         lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
@@ -74,7 +74,7 @@ class Boiler(ThermalEntity, bl.Boiler):
         """
         obj = gurobi.LinExpr()
         obj.addTerms(
-            [- coeff] * self.OP_HORIZON,
+            [- coeff] * self.op_horizon,
             self.P_Th_vars
         )
         return obj
@@ -97,11 +97,7 @@ class Boiler(ThermalEntity, bl.Boiler):
         float :
             CO2 emissions in [g].
         """
-        if reference:
-            p = self.P_Th_Ref_Schedule
-        else:
-            p = self.P_Th_Schedule
-        if timestep:
-            p = p[:timestep]
-        co2 = -(sum(p) * self.TIME_SLOT * CO2_EMISSIONS_GAS)
+        p = util.get_schedule(self, reference, timestep, thermal=True)
+        co2 = -(sum(p) * self.time_slot / self.eta
+                * constants.CO2_EMISSIONS_GAS)
         return co2

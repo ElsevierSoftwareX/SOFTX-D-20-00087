@@ -1,13 +1,13 @@
-import pycity_scheduling.constants
-import pycity_scheduling.exception
-import pycity_scheduling.functions
-import pycity_scheduling.classes
-import pycity_scheduling.algorithms
+from . import constants
+from . import exception
+from . import classes
+from . import algorithms
+from . import util
 
 __all__ = {
     'constants',
     'exception',
-    'functions',
     'classes',
     'algorithms',
+    'util',
 }

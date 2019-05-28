@@ -1,9 +1,9 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.exception import *
-from pycity_scheduling.functions import populate_models
+from pycity_scheduling.util import populate_models
 
 
 def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
@@ -55,7 +55,7 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
        Online: https://mediatum.ub.tum.de/doc/1187583/1187583.pdf
     """
 
-    op_horizon = city_district.OP_HORIZON
+    op_horizon = city_district.op_horizon
     nodes = city_district.nodes
     n = 1 + len(nodes)
 
@@ -205,10 +205,7 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
         # ------------------------------------------
         # Calculate parameters for stopping criteria
         # ------------------------------------------
-        # TODO: Think about stopping criteria
-        # From an interpretational perspective it would make sense to remove
-        # the `n *` for the r norm and introduce a `1/n` factor for the s norm
-        r_norms.append(n * np.linalg.norm(x_))
+        r_norms.append(np.math.sqrt(n) * np.linalg.norm(x_))
         np.copyto(
             s[0:op_horizon],
             - rho * (

@@ -1,6 +1,6 @@
 import pycity_base.classes.demand.ElectricalDemand as ed
 
-from .electrical_entity import ElectricalEntity
+from pycity_scheduling.classes.electrical_entity import ElectricalEntity
 
 
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
@@ -75,15 +75,12 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
                                         randomizeAppliances,
                                         lightConfiguration, occupancy)
         self._long_ID = "FL_" + self._ID_string
-        self.annualDemand = annualDemand
 
-        if method == 0:
-            self.P_El_Demand = demand
-        else:
-            self.P_El_Demand = self.loadcurve / 1000
+        ts = self.timer.time_in_year(from_init=True)
+        self.P_El_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep
-        for t in range(self.timer.timestepsUsedHorizon):
+        for t in self.op_time_vec:
             self.P_El_vars[t].lb = self.P_El_Demand[t+timestep]
             self.P_El_vars[t].ub = self.P_El_Demand[t+timestep]

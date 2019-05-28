@@ -1,10 +1,9 @@
 import numpy as np
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.demand.ElectricalDemand as ed
 
-from ..exception import PyCitySchedulingInitError
-from ..functions import compute_blocks
 from .electrical_entity import ElectricalEntity
+from pycity_scheduling import util
 
 
 class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
@@ -12,7 +11,8 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
     Extension of pycity class ElectricalDemand for scheduling purposes.
     """
 
-    def __init__(self, environment, P_El_Nom, E_Min_Consumption, time):
+    def __init__(self, environment, P_El_Nom, E_Min_Consumption,
+                 load_time=None, lt_pattern=None):
         """Initialize DeferrableLoad.
 
         Parameters
@@ -23,12 +23,22 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             Nominal elctric power in [kW].
         E_Min_Consumption : float
              Minimal power to be consumed over the time in [kWh].
-        time : array of binaries
+        load_time : array of binaries
             Indicator when deferrable load can be turned on.
-            `time[t] == 0`: device is off in t
-            `time[t] == 1`: device *can* be turned on in t
-            `time` must contain at least one `0` otherwise the model will
-            become infeasible.
+            `load_time[t] == 0`: device is off in t
+            `load_time[t] == 1`: device can be turned on in t
+            It must contain at least one `0` otherwise the model will become
+            infeasible. Its length has to be consistent with `lt_pattern`.
+        lt_pattern : str, optional
+            Define how the `load_time` profile is to be used
+            `None` : Profile matches simulation horizon.
+            'daily' : Profile matches one day.
+            'weekly' : Profile matches one week.
+
+        Raises
+        ------
+        ValueError :
+            If `lt_pattern` does not match `load_time`.
         """
         shape = environment.timer.timestepsTotal
         super(DeferrableLoad, self).__init__(environment.timer, environment, 0,
@@ -36,14 +46,11 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
         self._long_ID = "DL_" + self._ID_string
 
-        if len(time) != 86400 / self.timer.timeDiscretization:
-            raise PyCitySchedulingInitError(
-                "The `time` argument must hold as many values as one day "
-                "has timesteps."
-            )
         self.P_El_Nom = P_El_Nom
         self.E_Min_Consumption = E_Min_Consumption
-        self.time = time
+        self.load_time = util.compute_profile(self.timer, load_time,
+                                              lt_pattern)
+
         self.P_El_bvars = []
         self.P_El_Sum_constrs = []
 
@@ -67,7 +74,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             self.P_El_bvars = []
 
             # Add variables:
-            for t in self.OP_TIME_VEC:
+            for t in self.op_time_vec:
                 self.P_El_bvars.append(
                     model.addVar(
                         vtype=gurobi.GRB.BINARY,
@@ -78,7 +85,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             model.update()
 
             # Set additional constraints:
-            for t in self.OP_TIME_VEC:
+            for t in self.op_time_vec:
                 model.addConstr(
                     self.P_El_vars[t] <= self.P_El_bvars[t] * 1000000
                 )
@@ -86,68 +93,63 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 gurobi.quicksum(
                     (self.P_El_bvars[t] - self.P_El_bvars[t+1])
                     * (self.P_El_bvars[t] - self.P_El_bvars[t+1])
-                    for t in range(self.OP_HORIZON - 1))
+                    for t in range(self.op_horizon - 1))
                 <= 2
             )
 
     def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
-        for t in self.OP_TIME_VEC:
-            self.P_El_vars[t].ub = 0
-
-        blocks, portion = compute_blocks(self.timer, self.time)
-        if len(blocks) == 0:
-            return
         # raises GurobiError if constraints are from a prior scheduling
         # optimization
         try:
-            for constr in self.P_El_Sum_constrs:
-                model.remove(constr)
+            model.remove(self.P_El_Sum_constrs)
         except gurobi.GurobiError:
             pass
         del self.P_El_Sum_constrs[:]
-        # consider already completed consumption
+
+        timestep = self.timer.currentTimestep
+        load_time = self.load_time[timestep:timestep+self.op_horizon]
         completed_load = 0
-        if blocks[0][0] == 0:
-            for val in self.P_El_Actual_Schedule[:timestep][::-1]:
+        if load_time[0]:
+            for val in self.P_El_Schedule[:timestep][::-1]:
                 if val > 0:
                     completed_load += val
                 else:
                     break
-            completed_load *= self.TIME_SLOT
-        # consider future consumption
-        consumption = self.E_Min_Consumption
-        if len(blocks) == 1:
-            consumption *= portion
-        block_vars = self.P_El_vars[blocks[0][0]:blocks[0][1]]
-        for var in block_vars:
-            var.ub = self.P_El_Nom
-        self.P_El_Sum_constrs.append(
-            model.addConstr(
-                gurobi.quicksum(block_vars) * self.TIME_SLOT
-                == consumption - completed_load
-            )
-        )
-        for block in blocks[1:-1]:
-            block_vars = self.P_El_vars[block[0]:block[1]]
-            for var in block_vars:
-                var.ub = self.P_El_Nom
-            self.P_El_Sum_constrs.append(
-                model.addConstr(
-                    gurobi.quicksum(block_vars) * self.TIME_SLOT
-                    == self.E_Min_Consumption
-                )
-            )
-        if len(blocks) > 1:
-            block_vars = self.P_El_vars[blocks[-1][0]:blocks[-1][1]]
-            for var in block_vars:
-                var.ub = self.P_El_Nom
-            self.P_El_Sum_constrs.append(
-                model.addConstr(
-                    gurobi.quicksum(block_vars) * self.TIME_SLOT
-                    == self.E_Min_Consumption * portion
-                )
-            )
+            completed_load *= self.time_slot
+        lin_term = gurobi.LinExpr()
+
+        for t in self.op_time_vec:
+            if load_time[t]:
+                self.P_El_vars[t].ub = self.P_El_Nom
+                lin_term += self.P_El_vars[t]
+            else:
+                self.P_El_vars[t].ub = 0
+                if lin_term.size() > 0:
+                    self.P_El_Sum_constrs.append(
+                        model.addConstr(
+                            lin_term * self.time_slot
+                            == self.E_Min_Consumption - completed_load
+                        )
+                    )
+                    completed_load = 0
+                    lin_term = gurobi.LinExpr()
+
+        if lin_term.size() > 0:
+            current_ts = timestep + self.op_horizon
+            first_ts = current_ts
+            while True:
+                first_ts -= 1
+                if not self.load_time[first_ts-1]:
+                    break
+            last_ts = timestep + self.op_horizon
+            while last_ts < self.simu_horizon:
+                if not self.load_time[last_ts]:
+                    break
+                last_ts += 1
+            portion = (current_ts - first_ts) / (last_ts - first_ts)
+            self.P_El_Sum_constrs.append(model.addConstr(
+                lin_term * self.time_slot == portion * self.E_Min_Consumption
+            ))
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
@@ -166,16 +168,16 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
         gurobi.QuadExpr :
             Objective function.
         """
-        max_loading_time = sum(self.time) * self.TIME_SLOT
+        max_loading_time = sum(self.time) * self.time_slot
         optimal_P_El = self.E_Min_Consumption / max_loading_time
         obj = gurobi.QuadExpr()
         obj.addTerms(
-            [coeff] * self.OP_HORIZON,
+            [coeff] * self.op_horizon,
             self.P_El_vars,
             self.P_El_vars
         )
         obj.addTerms(
-            [- 2 * coeff * optimal_P_El] * self.OP_HORIZON,
+            [- 2 * coeff * optimal_P_El] * self.op_horizon,
             self.P_El_vars
         )
         return obj

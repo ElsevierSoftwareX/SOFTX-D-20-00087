@@ -1,4 +1,4 @@
-import gurobi
+import gurobipy as gurobi
 import pycity_base.classes.supply.BES as bes
 
 from .thermal_entity import ThermalEntity
@@ -40,11 +40,11 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
             if isinstance(entity, ElectricalEntity):
                 P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.OP_TIME_VEC:
+        for t in self.op_time_vec:
             self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
             self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.OP_HORIZON])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.OP_HORIZON])
+            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
             model.addConstr(
                 self.P_Th_vars[t] == P_Th_var_sum,
                 "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
@@ -87,29 +87,6 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
 
         for entity in self.get_lower_entities():
             entity.reset(schedule, reference)
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the BuldingEnergySystem.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        co2 = 0
-        for entity in self.get_lower_entities():
-            co2 += entity.calculate_co2(timestep, reference)
-        return co2
 
     def get_lower_entities(self):
         """
