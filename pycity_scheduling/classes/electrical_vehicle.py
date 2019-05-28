@@ -134,7 +134,7 @@ class ElectricalVehicle(Battery):
                     ))
                 if not charging_time[t+1] and charging_time[t]:
                     self.E_El_SOC_constrs.append(model.addConstr(
-                        self.E_El_vars[t+1] == 0,
+                        self.E_El_vars[t+1] == 0.2 * self.E_El_Max,
                         "Empty battery"
                     ))
 
@@ -146,8 +146,8 @@ class ElectricalVehicle(Battery):
                 if not self.charging_time[first_ts-1]:
                     break
             last_ts = timestep + self.op_horizon
-            while last_ts < self.simu_horizon:
-                if not self.charging_time[last_ts]:
+            while True:
+                if not self.charging_time[last_ts%self.simu_horizon]:
                     break
                 last_ts += 1
             portion = (current_ts - first_ts) / (last_ts - first_ts)

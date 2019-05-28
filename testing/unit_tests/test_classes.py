@@ -313,7 +313,7 @@ class TestElectricVehicle(unittest.TestCase):
         model.optimize()
 
         self.assertAlmostEqual(10, self.ev.E_El_vars[2].x, places=5)
-        self.assertAlmostEqual(0, self.ev.E_El_vars[3].x, places=5)
+        self.assertAlmostEqual(2, self.ev.E_El_vars[3].x, places=5)
 
         self.ev.timer.mpc_update()
         self.ev.update_model(model)
@@ -330,15 +330,15 @@ class TestElectricVehicle(unittest.TestCase):
                 self.assertEqual(gp.GRB.INFINITY,
                                  self.ev.P_El_Drive_vars[t].ub)
         self.assertAlmostEqual(10, self.ev.E_El_vars[1].x, places=5)
-        self.assertAlmostEqual(0, self.ev.E_El_vars[2].x, places=5)
-        self.assertAlmostEqual(3.33333333, self.ev.E_El_vars[-1].x, places=5)
+        self.assertAlmostEqual(2, self.ev.E_El_vars[2].x, places=5)
+        self.assertLessEqual(1.6, self.ev.E_El_vars[-1].x)
 
         self.ev.timer.mpc_update()
         self.ev.timer.mpc_update()
         self.ev.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10, self.ev.E_El_vars[-1].x, places=5)
+        self.assertAlmostEqual(5, self.ev.E_El_vars[-1].x, places=5)
 
     def test_get_objective(self):
         model = gp.Model('EVModel')

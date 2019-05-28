@@ -34,10 +34,10 @@ ev_data['EV.04'] = {'name': 'Ford Focus',
                     'soc_max': 1.0
                     }
 
-ev_data['EV.05'] = {'name': 'Mercedes SLS',
+ev_data['EV.05'] = {'name': 'Renault ZOE',
                     'charging_method': 'standard',
-                    'p_el_nom': 3.0,
-                    'e_el_storage_max': 60.0,
+                    'p_el_nom': 2.3,
+                    'e_el_storage_max': 22,
                     'soc_max': 1.0
                     }
 

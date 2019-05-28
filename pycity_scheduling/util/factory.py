@@ -19,7 +19,6 @@ def generate_standard_environment(**timer_args):
 def _calculate_ev_times(timer):
     dt = int(3600/timer.timeDiscretization)
     ev_time_ranges = [
-        [1] * (24 * dt),
         [0] * (8 * dt) + [1] * (12 * dt) + [0] * (4 * dt),
         [1] * (12 * dt) + [0] * (12 * dt),
         [0] * (12 * dt) + [1] * (12 * dt),
@@ -196,10 +195,11 @@ def generate_tabula_buildings(environment,
             if ev_list[ap_counter]:
                 ev_data = random.choice(list(evd.values()))
                 ev_charging_time = random.choice(ev_time_ranges)
+                soc = 0.5 if ev_data['charging_method'] == 'fast' else 0.75
                 ev = ElectricalVehicle(environment,
                                        E_El_Max=ev_data['e_el_storage_max'],
                                        P_El_Max_Charge=ev_data['p_el_nom'],
-                                       SOC_Ini=random.uniform(0.0, 0.5),
+                                       SOC_Ini=soc,
                                        charging_time=ev_charging_time,
                                        ct_pattern='daily')
                 ap.addEntity(ev)
