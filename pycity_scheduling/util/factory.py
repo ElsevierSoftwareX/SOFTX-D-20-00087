@@ -2,7 +2,6 @@ import random
 
 from shapely.geometry import Point
 
-from pycity_scheduling.exception import PyCitySchedulingInitError
 from pycity_scheduling.classes import *
 from pycity_scheduling.data.tabula_data import tabula_building_data as tbd
 from pycity_scheduling.data.ev_data import ev_data as evd
@@ -17,33 +16,33 @@ def generate_standard_environment(**timer_args):
 
 
 def _calculate_ev_times(timer):
-    dt = int(3600/timer.timeDiscretization)
+    length = int(3600/timer.timeDiscretization)
     ev_time_ranges = [
-        [0] * (8 * dt) + [1] * (12 * dt) + [0] * (4 * dt),
-        [1] * (12 * dt) + [0] * (12 * dt),
-        [0] * (12 * dt) + [1] * (12 * dt),
-        [1] * (10 * dt) + [0] * (12 * dt) + [1] * (2 * dt),
-        [1] * (9 * dt) + [0] * (12 * dt) + [1] * (3 * dt),
-        [1] * (8 * dt) + [0] * (12 * dt) + [1] * (4 * dt),
-        [1] * (7 * dt) + [0] * (12 * dt) + [1] * (5 * dt),
-        [1] * (6 * dt) + [0] * (12 * dt) + [1] * (6 * dt),
-        [1] * (5 * dt) + [0] * (12 * dt) + [1] * (7 * dt),
+        [0] * (8 * length) + [1] * (12 * length) + [0] * (4 * length),
+        [1] * (12 * length) + [0] * (12 * length),
+        [0] * (12 * length) + [1] * (12 * length),
+        [1] * (10 * length) + [0] * (12 * length) + [1] * (2 * length),
+        [1] * (9 * length) + [0] * (12 * length) + [1] * (3 * length),
+        [1] * (8 * length) + [0] * (12 * length) + [1] * (4 * length),
+        [1] * (7 * length) + [0] * (12 * length) + [1] * (5 * length),
+        [1] * (6 * length) + [0] * (12 * length) + [1] * (6 * length),
+        [1] * (5 * length) + [0] * (12 * length) + [1] * (7 * length),
     ]
     return ev_time_ranges
 
 
 def _calculate_dl_times(timer):
-    dt = int(3600 / timer.timeDiscretization)
+    length = int(3600/timer.timeDiscretization)
     dl_time_ranges = [
-        [1] * (8 * dt) + [0] * (16 * dt),
-        [0] * (8 * dt) + [1] * (4 * dt) + [0] * (12 * dt),
-        [0] * (12 * dt) + [1] * (4 * dt) + [0] * (8 * dt),
-        [0] * (16 * dt) + [1] * (4 * dt) + [0] * (4 * dt),
-        [0] * (20 * dt) + [1] * (4 * dt),
-        [0] * (17 * dt) + [1] * (4 * dt) + [0] * (3 * dt),
-        [0] * (7 * dt) + [1] * (4 * dt) + [0] * (13 * dt),
-        [0] * (10 * dt) + [1] * (4 * dt) + [0] * (10 * dt),
-        [0] * (2 * dt) + [1] * (4 * dt) + [0] * (18 * dt),
+        [1] * (8 * length) + [0] * (16 * length),
+        [0] * (8 * length) + [1] * (4 * length) + [0] * (12 * length),
+        [0] * (12 * length) + [1] * (4 * length) + [0] * (8 * length),
+        [0] * (16 * length) + [1] * (4 * length) + [0] * (4 * length),
+        [0] * (20 * length) + [1] * (4 * length),
+        [0] * (17 * length) + [1] * (4 * length) + [0] * (3 * length),
+        [0] * (7 * length) + [1] * (4 * length) + [0] * (13 * length),
+        [0] * (10 * length) + [1] * (4 * length) + [0] * (10 * length),
+        [0] * (2 * length) + [1] * (4 * length) + [0] * (18 * length),
     ]
     return dl_time_ranges
 
@@ -54,40 +53,41 @@ def generate_tabula_buildings(environment,
                               heating_distribution=None,
                               device_probabilities=None,
                               objective='price',
-                              seed=1):
-    """
-    Generates a building list based on available TABULA data from:
-    http://www.episcope.eu/
+                              seed=None):
+    """Generate buildings based on the TABULA data.
 
-    Heating units are automatically dimensioned and added to each building.
-    A TES always covers the thermal energy demand of a building for at least
-    two hours.
+    Generate buildings based on the TABULA data from: http://www.episcope.eu/
+    Heating units are automatically dimensioned and added to each building. A
+    TES always covers the thermal energy demand of a building for at least two
+    hours.
 
     Parameters
     ----------
-    environment : Environment
+    environment : pycity_scheduling.classes.Environment
     number : int
         Number of houses to be generated.
     building_distribution : dict, optional
         The distribution of the houses among the tabula standard buildings. If
         omitted an equal distribution will be used.
-        Keys :
+        Keys : str
             'DE.N.<SFH|MFH>.<n>.Gen' or '<SFH|MFH>.<year>'
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     heating_distribution : dict, optional
         The distribution of heating devices among the houses. If omitted an
         equal distribution will be used.
-        Keys :
+        Keys : str
             {'HP', 'EH', 'CHP', 'BL'}
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     device_probabilities : dict, optional
         The probabilities of the houses / apartments to have the given device.
-        Keys :
+        Keys : str
             {'FL', 'DL', 'EV', 'PV', 'BAT'}
-        Values :
+        Values : sloat
             Number between 0 and 1.
+    objective : str, optional
+        The objective for all buildings.
     seed: int, optional
         Specify a seed for the randomization. If omitted, a non-deterministic
         city district will be generated.
@@ -97,8 +97,6 @@ def generate_tabula_buildings(environment,
     list of pycity_scheduling.classes.Building :
         List of generated buildings.
     """
-    standard_devices = {'FL': 1, 'DL': 0, 'PV': 0, 'EV': 0, 'BAT': 0}
-
     if building_distribution is None:
         share = 1/len(tbd)
         building_distribution = {b: share for b in tbd}
@@ -106,40 +104,34 @@ def generate_tabula_buildings(environment,
         share = 1/len(heating_devices)
         heating_distribution = {d: share for d in heating_devices}
     if device_probabilities is None:
-        device_probabilities = standard_devices
+        device_probabilities = {'FL': 1}
 
     building_dicts = []
     for building, share in building_distribution.items():
         building_dicts += [tbd[building]] * round(share * number)
     if len(building_dicts) != number:
-        raise PyCitySchedulingInitError("Bad building distribution.")
+        raise ValueError("Bad building distribution.")
 
     heating_list = []
     for heating, share in heating_distribution.items():
         heating_list += [heating_devices[heating]] * round(share * number)
     if len(heating_list) != number:
-        raise PyCitySchedulingInitError("Bad heating distribution.")
+        raise ValueError("Bad heating distribution.")
 
     if any(map(lambda x: not 0 <= x <= 1, device_probabilities.values())):
-        raise PyCitySchedulingInitError("Bad device probabilities")
+        raise ValueError("Bad device probabilities")
 
     number_ap = sum(building['apartments'] for building in building_dicts)
     a = round(device_probabilities.get('FL', 0) * number_ap)
-    b = number_ap - a
-    fl_list = [True] * a + [False] * b
+    fl_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('DL', 0) * number_ap)
-    b = number_ap - a
-    dl_list = [True] * a + [False] * b
+    dl_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('EV', 0) * number_ap)
-    b = number_ap - a
-    ev_list = [True] * a + [False] * b
-
+    ev_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('PV', 0) * number)
-    b = number - a
-    pv_list = [True] * a + [False] * b
+    pv_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('BAT', 0) * number)
-    b = number - a
-    bat_list = [True] * a + [False] * b
+    bat_list = [True] * a + [False] * (number_ap - a)
 
     ev_time_ranges = _calculate_ev_times(environment.timer)
     dl_time_ranges = _calculate_dl_times(environment.timer)
@@ -232,10 +224,10 @@ def generate_tabula_buildings(environment,
             bes.addDevice(pv)
 
         if bat_list[i]:
-            #TODO: Workaround for unstable implementation in pycity_base
+            # TODO: Workaround for unstable implementation in pycity_base
             try:
                 power_curve = bd.get_electric_power_curve()
-            except:
+            except Exception:
                 power_curve = [0]
             if len(power_curve) == 0:
                 power_curve = [0]
@@ -275,42 +267,42 @@ def generate_tabula_district(environment,
     sfh_building_distribution : dict, optional
         The distribution of the houses among the tabula standard buildings. If
         omitted an equal distribution will be used.
-        Keys :
+        Keys : str
             'DE.N.<SFH|MFH>.<n>.Gen' or '<SFH|MFH>.<year>'
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     sfh_heating_distribution : dict, optional
         The distribution of heating devices among the houses. If omitted an
         equal distribution will be used.
-        Keys :
+        Keys : str
             {'HP', 'EH', 'CHP', 'BL'}
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     sfh_device_probabilities : dict, optional
         The probabilities of the houses / apartments to have the given device.
-        Keys :
+        Keys : str
             {'FL', 'DL', 'EV', 'PV', 'BAT'}
-        Values :
+        Values : float
             Number between 0 and 1.
     mfh_building_distribution : dict, optional
         The distribution of the houses among the tabula standard buildings. If
         omitted an equal distribution will be used.
-        Keys :
+        Keys : str
             'DE.N.<SFH|MFH>.<n>.Gen' or '<SFH|MFH>.<year>'
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     mfh_heating_distribution : dict, optional
         The distribution of heating devices among the houses. If omitted an
         equal distribution will be used.
-        Keys :
+        Keys : str
             {'HP', 'EH', 'CHP', 'BL'}
-        Values :
+        Values : float
             Number between 0 and 1. The sum over all values must be one.
     mfh_device_probabilities : dict, optional
         The probabilities of the houses / apartments to have the given device.
-        Keys :
+        Keys : str
             {'FL', 'DL', 'EV', 'PV', 'BAT'}
-        Values :
+        Values : float
             Number between 0 and 1.
     agg_objective : str, optional
         Objective function for the aggregator. Defaults to 'price'.
