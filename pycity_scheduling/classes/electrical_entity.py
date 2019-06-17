@@ -3,7 +3,6 @@ import gurobipy as gurobi
 
 from pycity_scheduling import constants, classes, util
 from .optimization_entity import OptimizationEntity
-from ..exception import PyCitySchedulingGurobiException
 
 
 class ElectricalEntity(OptimizationEntity):
@@ -40,17 +39,11 @@ class ElectricalEntity(OptimizationEntity):
             )
         model.update()
 
-    def update_schedule(self, mode=""):
-        timestep = self.timer.currentTimestep
-        try:
-            self.P_El_Schedule[timestep:timestep+self.op_horizon] \
-                = [var.x for var in self.P_El_vars]
-        except gurobi.GurobiError:
-            self.P_El_Schedule[timestep:timestep+self.op_horizon].fill(0)
-            raise PyCitySchedulingGurobiException(
-                "{0}: Could not read from variables."
-                .format(str(self))
-            )
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        t1 = self.timer.currentTimestep
+        t2 = t1 + self.op_horizon
+        self.P_El_Schedule[t1:t2] = [var.x for var in self.P_El_vars]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

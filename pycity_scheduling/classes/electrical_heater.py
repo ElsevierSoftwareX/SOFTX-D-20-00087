@@ -84,9 +84,10 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         )
         return obj
 
-    def update_schedule(self, mode=""):
-        ThermalEntity.update_schedule(self, mode)
-        ElectricalEntity.update_schedule(self, mode)
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        ThermalEntity.update_schedule(self)
+        ElectricalEntity.update_schedule(self)
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

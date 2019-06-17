@@ -87,9 +87,10 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
                 "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
             )
 
-    def update_schedule(self, mode=""):
-        ThermalEntity.update_schedule(self, mode)
-        ElectricalEntity.update_schedule(self, mode)
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        ThermalEntity.update_schedule(self)
+        ElectricalEntity.update_schedule(self)
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.

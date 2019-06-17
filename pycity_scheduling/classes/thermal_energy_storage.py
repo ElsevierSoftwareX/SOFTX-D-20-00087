@@ -3,7 +3,6 @@ import gurobipy as gurobi
 import pycity_base.classes.supply.ThermalEnergyStorage as tes
 
 from .thermal_entity import ThermalEntity
-from ..exception import PyCitySchedulingGurobiException
 
 
 class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
@@ -117,17 +116,12 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             "{0:s}_P_Th_t=0".format(self._long_ID)
         )
 
-    def update_schedule(self, mode=""):
-        super(ThermalEnergyStorage, self).update_schedule(mode)
-        timestep = self.timer.currentTimestep
-        try:
-            self.E_Th_Schedule[timestep:timestep+self.op_horizon] \
-                = [var.x for var in self.E_Th_vars]
-        except gurobi.GurobiError:
-            self.E_Th_Schedule[timestep:timestep+self.op_horizon].fill(0)
-            raise PyCitySchedulingGurobiException(
-                str(self) + ": Could not read from variables."
-            )
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        super(ThermalEnergyStorage, self).update_schedule()
+        t1 = self.timer.currentTimestep
+        t2 = t1 + self.op_horizon
+        self.E_Th_Schedule[t1:t2] = [var.x for var in self.E_Th_vars]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

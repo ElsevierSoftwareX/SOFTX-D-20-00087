@@ -154,8 +154,10 @@ class Building(ElectricalEntity, bd.Building):
         for entity in self.get_lower_entities():
             entity.update_model(model, mode)
 
-    def update_schedule(self, mode=""):
-        super(Building, self).update_schedule(mode)
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        super(Building, self).update_schedule()
+        
         for entity in self.get_lower_entities():
             entity.update_schedule()
 

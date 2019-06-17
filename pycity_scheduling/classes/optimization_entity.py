@@ -60,7 +60,13 @@ class OptimizationEntity(object):
     def update_model(self, model, mode=""):
         pass
 
-    def update_schedule(self, mode=""):
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution.
+
+        Retrieve the solution from the scheduling model and write it to the
+        schedule. The model must be optimal. The time / position of the
+        solution in the schedule is determined by `self.timer.currentTimestep`.
+        """
         raise NotImplementedError
 
     def set_new_uncertainty(self, unc):
