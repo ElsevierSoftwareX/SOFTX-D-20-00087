@@ -1,13 +1,15 @@
 import numpy as np
 import gurobipy as gurobi
 
-from pycity_scheduling.classes import *
-from pycity_scheduling.exception import *
+from pycity_scheduling import util
+from pycity_scheduling.classes import (Building, Photovoltaic,
+                                       WindEnergyConverter)
+from pycity_scheduling.exception import (MaxIterationError, UnoptimalError)
 from pycity_scheduling.util import populate_models
 
 
 def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
-                  eps_dual=1.0, rho=2.0, max_iterations=10000):
+                  eps_dual=1.0, rho=2.0, max_iterations=1000, debug=True):
     """Perform Exchange ADMM on a city district.
 
     Do the scheduling of electrical energy in a city district using the
@@ -30,6 +32,8 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
         Stepsize for the ADMM algorithm.
     max_iterations : int, optional
         Maximum number of ADMM iterations.
+    debug : bool, optional
+        Specify wether detailed debug information shall be printed.
 
     Returns
     -------
@@ -92,11 +96,13 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
     while r_norms[-1] > eps_primal or s_norms[-1] > eps_dual:
         iteration += 1
         if iteration > max_iterations:
-            raise PyCitySchedulingMaxIteration(
-                "Exceeded iteration limit of {0} iterations\n"
-                "Norms were ||r|| =  {1}, ||s|| = {2}"
-                .format(max_iterations, r_norms[-1], s_norms[-1])
-            )
+            if debug:
+                print(
+                    "Exceeded iteration limit of {0} iterations. "
+                    "Norms are ||r|| =  {1}, ||s|| = {2}."
+                    .format(max_iterations, r_norms[-1], s_norms[-1])
+                )
+            raise MaxIterationError("Iteration Limit exceeded.")
 
         np.copyto(old_x_, x_)
 
@@ -138,20 +144,10 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
                     current_P_El_Schedule[node_id],
                     [var.x for var in entity.P_El_vars]
                 )
-            except gurobi.GurobiError:
-                print("Model Status: %i" % model.status)
-                if model.status == 4:  # and settings.DEBUG:
-                    model.computeIIS()
-                    model.write("infeasible.ilp")
-                if model.status == 12:  # and settings.DEBUG:
-                    print("Last P_El_Schedule:")
-                    print(current_P_El_Schedule[node_id])
-                    print("Last x_:")
-                    print(x_)
-                raise PyCitySchedulingGurobiException(
-                    "{0}: Could not read from variables at iteration {1}."
-                    .format(str(entity), iteration)
-                )
+            except Exception as e:
+                if debug:
+                    util.analyze_model(model, e)
+                raise UnoptimalError("Could not retrieve schedule from model.")
 
         # ----------------------
         # 2) optimize aggregator
@@ -183,15 +179,10 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
                 current_P_El_Schedule[0],
                 [var.x for var in city_district.P_El_vars]
             )
-        except gurobi.GurobiError:
-            print("Model Status: %i" % model.status)
-            if model.status == 4:  # and settings.DEBUG:
-                model.computeIIS()
-                model.write("infeasible.ilp")
-            raise PyCitySchedulingGurobiException(
-                "{0}: Could not read from variables."
-                .format(str(city_district))
-            )
+        except Exception as e:
+            if debug:
+                util.analyze_model(model, e)
+            raise UnoptimalError("Could not retrieve schedule from model.")
 
         # --------------------------
         # 3) incentive signal update

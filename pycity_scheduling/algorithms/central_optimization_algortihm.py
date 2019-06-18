@@ -1,9 +1,11 @@
 import gurobipy as gurobi
 
+from pycity_scheduling import util
+from pycity_scheduling.exception import UnoptimalError
 from pycity_scheduling.util import populate_models
 
 
-def central_optimization(city_district, models=None, beta=1):
+def central_optimization(city_district, models=None, beta=1, debug=True):
     """Implementation of the central optimization algorithm.
 
     Schedule all buildings together with respect to the aggregator objective.
@@ -19,6 +21,8 @@ def central_optimization(city_district, models=None, beta=1):
     beta : float, optional
         Tradeoff factor between system and customer objective. The customer
         objective is multiplied with beta.
+    debug : bool, optional
+        Specify wether detailed debug information shall be printed.
     """
 
     nodes = city_district.node
@@ -37,8 +41,12 @@ def central_optimization(city_district, models=None, beta=1):
     model.setObjective(obj)
 
     model.optimize()
-
-    for node in city_district.node.values():
-        entity = node['entity']
-        entity.update_schedule()
-    city_district.update_schedule()
+    try:
+        for node in city_district.node.values():
+            entity = node['entity']
+            entity.update_schedule()
+        city_district.update_schedule()
+    except Exception as e:
+        if debug:
+            util.analyze_model(model, e)
+        raise UnoptimalError("Could not retrieve schedule from model.")

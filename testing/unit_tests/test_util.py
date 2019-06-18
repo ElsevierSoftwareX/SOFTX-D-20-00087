@@ -1,6 +1,7 @@
 import unittest
 
 import numpy as np
+import gurobipy as gp
 
 import pycity_scheduling.util as util
 
@@ -21,6 +22,16 @@ class TestSubpackage(unittest.TestCase):
         weekly = [0]*24 + [0]*11 + [1, 0]*2 + [1]*9 + [0]*120
         profile = util.compute_profile(t, weekly, 'weekly')
         self.assertTrue(np.array_equal([0, 1, 0, 1], profile))
+
+    def test_analyze_model(self):
+        m = gp.Model()
+        m.setParam('OutputFlag', False)
+        a = m.addVar()
+        m.addConstr(a <= -1)
+        m.optimize()
+        util.analyze_model(m)
+
+        self.assertEqual(1, m.Params.OutputFlag)
 
 
 class TimerStub:
