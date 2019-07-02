@@ -1,5 +1,6 @@
 import random
 
+import numpy as np
 from shapely.geometry import Point
 
 from pycity_scheduling.classes import *
@@ -338,3 +339,46 @@ def generate_tabula_district(environment,
     positions = [Point(0, 0) for _ in building_list]
     cd.addMultipleEntities(building_list, positions)
     return cd
+
+
+def generate_simple_building(env, fl=0, sh=0, eh=0, tes=0, bat=0):
+    """Generate a simple building with loads and storages.
+
+    Parameters
+    ----------
+    env : pycity_scheduling.classes.Environment
+    fl : float, optional
+        Demand of the FixedLoad in [kW].
+    sh : float, optional
+        Demand of the SpaceHeating in [kW].
+    eh : float, optional
+        Power of the ElectricHeater in [kW].
+    tes : float, optional
+        Capacity of the ThermalEnergyStorage in [kWh].
+    bat : float, optional
+        Capacity of the Battery in [kWh].
+
+    Returns
+    -------
+    pycity_scheduling.classes.Building
+    """
+    ti = env.timer
+
+    bd = Building(env)
+    ap = Apartment(env)
+    bd.addEntity(ap)
+    bes = BuildingEnergySystem(env)
+    bd.addEntity(bes)
+    if fl:
+        ap.addEntity(FixedLoad(env, demand=np.full(ti.simu_horizon, fl)))
+    if sh:
+        ap.addEntity(SpaceHeating(env, loadcurve=np.full(ti.simu_horizon, sh)))
+    if eh:
+        bes.addDevice(ElectricalHeater(env, P_Th_Nom=eh))
+    if tes:
+        bes.addDevice(ThermalEnergyStorage(env, E_Th_Max=tes, SOC_Ini=0.5))
+    if bat:
+        bes.addDevice(
+            Battery(env, E_El_Max=bat, P_El_Max_Charge=bat/ti.time_slot)
+        )
+    return bd
