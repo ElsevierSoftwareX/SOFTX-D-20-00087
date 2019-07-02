@@ -60,7 +60,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         self.COP = cop
         self.P_Th_Nom = P_Th_Nom
 
-        self.El_Th_Coupling_constr = None
+        self.El_Th_coupl_constr = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -120,15 +120,45 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         ThermalEntity.save_ref_schedule(self)
         ElectricalEntity.save_ref_schedule(self)
 
-    def reset(self, schedule=True, reference=False):
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds variables, sets the correct bounds to the thermal variable and
+        adds a coupling constraint.
+        """
+        ThermalEntity.populate_deviation_model(self, model, mode)
+        ElectricalEntity.populate_deviation_model(self, model, mode)
+
+        self.P_Th_Act_var.lb = -self.P_Th_Nom
+        self.P_Th_Act_var.ub = 0
+        self.El_Th_coupl_constr = model.addConstr(
+            self.P_El_Act_var + self.P_Th_Act_var == 0
+        )
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep.
+
+        Changes the coefficient of the coupling constraint to the current COP.
+        """
+        model.chgCoeff(self.El_Th_coupl_constr,
+                       self.P_El_Act_var, self.COP[timestep])
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        ThermalEntity.update_actual_schedule(self, timestep)
+        ElectricalEntity.update_actual_schedule(self, timestep)
+
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        ThermalEntity.reset(self, schedule, reference)
-        ElectricalEntity.reset(self, schedule, reference)
+        ThermalEntity.reset(self, schedule, actual, reference)
+        ElectricalEntity.reset(self, schedule, actual, reference)

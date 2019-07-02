@@ -17,7 +17,9 @@ class ElectricalEntity(OptimizationEntity):
 
         self.P_El_vars = []
         self.P_El_Schedule = np.zeros(self.simu_horizon)
+        self.P_El_Act_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.P_El_Act_var = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -44,6 +46,7 @@ class ElectricalEntity(OptimizationEntity):
         t1 = self.timer.currentTimestep
         t2 = t1 + self.op_horizon
         self.P_El_Schedule[t1:t2] = [var.x for var in self.P_El_vars]
+        self.P_El_Act_Schedule[t1:t2] = self.P_El_Schedule[t1:t2]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
@@ -52,33 +55,50 @@ class ElectricalEntity(OptimizationEntity):
             self.P_El_Schedule
         )
 
-    def reset(self, schedule=True, reference=False):
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model."""
+        self.P_El_Act_var = model.addVar(
+            name="%s_P_El_Actual" % self._long_ID
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        self.P_El_Act_Schedule[timestep] = self.P_El_Act_var.x
+
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
         if schedule:
             self.P_El_Schedule.fill(0)
+        if actual:
+            self.P_El_Act_Schedule.fill(0)
         if reference:
             self.P_El_Ref_Schedule.fill(0)
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False,
+    def calculate_costs(self, schedule=None, timestep=None, prices=None,
                         feedin_factor=None):
         """Calculate electricity costs for the ElectricalEntity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
             Energy prices for simulation horizon.
-        reference : bool, optional
-            `True` if costs for reference schedule.
         feedin_factor : float, optional
             Factor which is multiplied to the prices for feed-in revenue.
 
@@ -87,7 +107,7 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Electricity costs in [ct].
         """
-        p = util.get_schedule(self, reference, timestep)
+        p = util.get_schedule(self, schedule, timestep)
         if prices is None:
             prices = self.environment.prices.tou_prices
         if timestep:
@@ -98,53 +118,82 @@ class ElectricalEntity(OptimizationEntity):
         costs += self.time_slot * np.dot(prices[p<0], p[p<0]) * feedin_factor
         return costs
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
+    def calculate_adj_costs(self, timestep=None, prices=None,
+                            total_adjustments=True):
+        """Calculate costs for adjustments.
+
+        Parameters
+        ----------
+        timestep : int, optional
+            If specified, calculate costs only to this timestep.
+        prices : array_like, optional
+            Adjustment prices for all timesteps in simulation horizon.
+        total_adjustments : bool, optional
+            `True` if positive and negative deviations shall be considered.
+            `False` if only positive deviations shall be considered.
+
+        Returns
+        -------
+        float :
+            Adjustment costs in [ct].
+        """
+        if prices is None:
+            prices = self.environment.prices.tou_prices
+        if timestep:
+            prices = prices[:timestep]
+        adj_power = self.calculate_adj_power(timestep, total_adjustments)
+        costs = self.time_slot * np.dot(adj_power, prices)
+        return costs
+
+    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the entity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate emissions only to this timestep.
         co2_emissions : array_like, optional
             Specific CO2 emissions for all timesteps in the simulation horizon
             in [g/kWh].
-        reference : bool, optional
-            `True` if CO2 emissions for reference schedule.
 
         Returns
         -------
         float :
             CO2 emissions in [g].
         """
-        p = util.get_schedule(self, reference, timestep)
+        p = util.get_schedule(self, schedule, timestep)
         if co2_emissions is None:
             co2_emissions = self.environment.prices.co2_prices
         if timestep:
             co2_emissions = co2_emissions[:timestep]
         bat_schedule = sum(
-            util.get_schedule(e, reference, timestep)
+            util.get_schedule(e, schedule, timestep)
             for e in classes.filter_entities(self, 'BAT')
         )
         p = p - bat_schedule
         co2 = self.time_slot * np.dot(p[p>0], co2_emissions[p>0])
 
         gas_schedule = sum(
-            util.get_schedule(e, reference, timestep, thermal=True).sum()
+            util.get_schedule(e, schedule, timestep, thermal=True).sum()
             * (1+e.sigma) / e.omega
             for e in classes.filter_entities(self, 'CHP')
         )
         gas_schedule += sum(
-            util.get_schedule(e, reference, timestep, thermal=True).sum()
+            util.get_schedule(e, schedule, timestep, thermal=True).sum()
             / e.eta
             for e in classes.filter_entities(self, 'BL')
         )
         pv_schedule = sum(
-            util.get_schedule(e, reference, timestep).sum()
+            util.get_schedule(e, schedule, timestep).sum()
             for e in classes.filter_entities(self, 'PV')
         )
         wec_schedule = sum(
-            util.get_schedule(e, reference, timestep).sum()
+            util.get_schedule(e, schedule, timestep).sum()
             for e in classes.filter_entities(self, 'WEC')
         )
         co2 -= gas_schedule * self.time_slot * constants.CO2_EMISSIONS_GAS
@@ -152,6 +201,50 @@ class ElectricalEntity(OptimizationEntity):
         co2 -= wec_schedule * self.time_slot * constants.CO2_EMISSIONS_WIND
 
         return co2
+
+    def calculate_adj_power(self, timestep=None, total_adjustments=True):
+        """Compute adjustment power.
+
+        Parameters
+        ----------
+        timestep : int, optional
+            If specified, calculate power curve up to this timestep only.
+        total_adjustments : bool, optional
+            `True` if positive and negative deviations shall be considered.
+            `False` if only positive deviations shall be considered.
+
+        Returns
+        -------
+        array of float :
+            Adjustment power in [kW].
+        """
+        adjustments = self.P_El_Act_Schedule - self.P_El_Schedule
+        if timestep:
+            adjustments = adjustments[:timestep]
+        if total_adjustments:
+            return abs(adjustments)
+        else:
+            return np.maximum(adjustments, 0)
+
+    def calculate_adj_energy(self, timestep=None, total_adjustments=True):
+        """Compute the cumulated absolute energy of all adjustments.
+
+        Parameters
+        ----------
+        timestep : int, optional
+            If specified, calculate energy only to this timestep.
+        total_adjustments : bool, optional
+            `True` if positive and negative deviations shall be considered.
+            `False` if only positive deviations shall be considered.
+
+        Returns
+        -------
+        float :
+            Adjustments in [kWh].
+        """
+        p = self.calculate_adj_power(timestep, total_adjustments)
+        adjustments = self.time_slot * sum(p)
+        return adjustments
 
     def metric_delta_g(self):
         """Compute the factor "Delta g".
@@ -177,7 +270,7 @@ class ElectricalEntity(OptimizationEntity):
                  / abs(P_El_Max_ref - P_El_Min_ref))
         return g
 
-    def peak_to_average_ratio(self, timestep=None, reference=False):
+    def peak_to_average_ratio(self, schedule=None, timestep=None):
         """Compute the ratio of peak demand to average demand.
 
         The ratio of the absolute peak demand of the specified schedule
@@ -187,23 +280,26 @@ class ElectricalEntity(OptimizationEntity):
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate ratio only to this timestep.
-        reference : bool, optional
-            `True` if ratio for reference schedule.
 
         Returns
         -------
         float :
             Peak to average ratio.
         """
-        p = util.get_schedule(self, reference, timestep)
-        peak = max(map(abs, p))
+        p = util.get_schedule(self, schedule, timestep)
+        peak = max(max(p), -min(p))
         mean = abs(np.mean(p))
         r = peak / mean
         return r
 
-    def peak_reduction_ratio(self, timestep=None):
+    def peak_reduction_ratio(self, actual=False, timestep=None):
         """Compute the ratio of the peak reduction.
 
         The reduction of the absolute peak demand of the specified schedule
@@ -213,6 +309,9 @@ class ElectricalEntity(OptimizationEntity):
 
         Parameters
         ----------
+        actual : bool, optionalimport nu
+            If True use actual Schedule.
+            If False use normal Schedule.
         timestep : int, optional
             If specified, calculate ratio only to this timestep.
 
@@ -221,23 +320,25 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Peak reduction ratio.
         """
-        p = self.P_El_Schedule
+        p = util.get_schedule(self, actual)
         ref = self.P_El_Ref_Schedule
         if timestep:
-            p = p[:timestep]
             ref = ref[:timestep]
-        dr_peak = max(map(abs, p))
-        ref_peak = max(map(abs, ref))
+        dr_peak = max(max(p), -min(p))
+        ref_peak = max(max(ref), -min(ref))
         r = (dr_peak - ref_peak) / ref_peak
         return r
 
-    def self_consumption(self, reference=False, timestep=None):
+    def self_consumption(self, schedule=None, timestep=None):
         """Calculate the self consumption.
 
         Parameters
         ----------
-        reference : bool, optional
-            `True` if self consumption for reference schedule.
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate self consumption only to this timestep.
 
@@ -246,29 +347,32 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Self consumption.
         """
-        p = util.get_schedule(self, reference, timestep)
+        p = util.get_schedule(self, schedule, timestep)
         res_schedule = sum(
-            util.get_schedule(e, reference, timestep)
+            util.get_schedule(e, schedule, timestep)
             for e in classes.filter_entities(self, 'res_devices')
         )
         if not isinstance(res_schedule, np.ndarray):
             return 0
-        generation = res_schedule.sum()
+        generation = sum(res_schedule)
         if generation == 0:
             return 1
         neg_load = res_schedule - p
         np.clip(neg_load, a_min=None, a_max=0, out=neg_load)
-        consumption = np.maximum(neg_load, res_schedule).sum()
+        consumption = sum(np.maximum(neg_load, res_schedule))
         self_consumption = consumption / generation
         return self_consumption
 
-    def autarky(self, reference=False, timestep=None):
+    def autarky(self, schedule=None, timestep=None):
         """Calculate the autarky.
 
         Parameters
         ----------
-        reference : bool, optional
-            `True` if autarky for reference schedule.
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate autarky only to this timestep.
 
@@ -277,18 +381,18 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Autarky.
         """
-        p = util.get_schedule(self, reference, timestep)
+        p = util.get_schedule(self, schedule, timestep)
         res_schedule = - sum(
-            util.get_schedule(e, reference, timestep)
+            util.get_schedule(e, schedule, timestep)
             for e in classes.filter_entities(self, 'res_devices')
         )
         if not isinstance(res_schedule, np.ndarray):
             return 0
         load = p + res_schedule
         np.clip(load, a_min=0, a_max=None, out=load)
-        consumption = load.sum()
+        consumption = sum(load)
         if consumption == 0:
             return 1
-        cover = np.minimum(res_schedule, load).sum()
+        cover = sum(np.minimum(res_schedule, load))
         autarky = cover / consumption
         return autarky

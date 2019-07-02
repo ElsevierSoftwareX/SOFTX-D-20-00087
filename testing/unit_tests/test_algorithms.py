@@ -7,8 +7,8 @@ from pycity_scheduling.algorithms import algorithms
 
 
 class TestAlgorithms(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestAlgorithms, self).__init__(*args, **kwargs)
+
+    def setUp(self):
 
         t = Timer(op_horizon=2)
         p = Prices(t)
@@ -53,15 +53,9 @@ class TestAlgorithms(unittest.TestCase):
         self.bd1 = bd1
         self.bd2 = bd2
 
-    def setUp(self):
-        self.timer.reset()
-        self.cd.reset()
-        self.bd1.reset()
-        self.bd2.reset()
-
     def test_exchange_admm(self):
         f = algorithms['exchange-admm']
-        r = f(self.cd, rho=2, eps_primal=0.001)
+        f(self.cd, rho=2, eps_primal=0.001)
 
         self.assertEqual(20, self.bd1.P_El_Schedule[0])
         self.assertEqual(20, self.bd1.P_El_Schedule[1])
@@ -69,15 +63,6 @@ class TestAlgorithms(unittest.TestCase):
         self.assertEqual(40, self.bd2.P_El_Schedule[1])
         self.assertAlmostEqual(60, self.cd.P_El_Schedule[0], 2)
         self.assertAlmostEqual(60, self.cd.P_El_Schedule[1], 2)
-
-        # print(r[0])
-        # print(r[1][-5:])
-        # print(r[2][-5:])
-        # print(r[3])
-        #
-        # print(self.cd.P_El_Schedule)
-        # for bd in self.cd.get_lower_entities():
-        #     print(bd.P_El_Schedule)
 
     def test_dual_decomposition(self):
         f = algorithms['dual-decomposition']

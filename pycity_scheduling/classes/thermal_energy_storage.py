@@ -59,7 +59,10 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         self.E_Th_vars = []
         self.E_Th_Init_constr = None
         self.E_Th_Schedule = np.zeros(self.simu_horizon)
+        self.E_Th_Act_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.E_Th_Act_var = None
+        self.E_Th_Act_coupl_constr = None
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model
@@ -122,6 +125,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         t1 = self.timer.currentTimestep
         t2 = t1 + self.op_horizon
         self.E_Th_Schedule[t1:t2] = [var.x for var in self.E_Th_vars]
+        self.E_Th_Act_Schedule[t1:t2] = self.E_Th_Schedule[t1:t2]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
@@ -131,19 +135,62 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.E_Th_Schedule
         )
 
-    def reset(self, schedule=True, reference=False):
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds a variable for the thermal power and energy. If `mode == 'full'`
+        also adds a coupling constraint between them.
+        """
+        super().populate_deviation_model(model)
+
+        self.P_Th_Act_var.lb = -gurobi.GRB.INFINITY
+        self.E_Th_Act_var = model.addVar(
+            ub=self.E_Th_Max,
+            name="%s_E_Th_Actual" % self._long_ID
+        )
+        if mode == 'full':
+            self.E_Th_Act_coupl_constr = model.addConstr(
+                self.E_Th_Act_var - self.P_Th_Act_var * self.time_slot == 0
+
+            )
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        if mode == 'full':
+            if timestep == 0:
+                E_Th_Ini = self.SOC_Ini * self.E_Th_Max
+            else:
+                E_Th_Ini = self.E_Th_Act_Schedule[timestep-1]
+            self.E_Th_Act_coupl_constr.RHS = E_Th_Ini * (1-self.Th_Loss_coeff)
+        else:
+            self.P_Th_Act_var.lb = self.P_Th_Schedule[timestep]
+            self.P_Th_Act_var.ub = self.P_Th_Schedule[timestep]
+            self.E_Th_Act_var.lb = self.E_Th_Schedule[timestep]
+            self.E_Th_Act_var.ub = self.E_Th_Schedule[timestep]
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        super().update_actual_schedule(timestep)
+
+        self.E_Th_Act_Schedule[timestep] = self.E_Th_Act_var.x
+
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(ThermalEnergyStorage, self).reset(schedule, reference)
+        super(ThermalEnergyStorage, self).reset(schedule, actual, reference)
 
         if schedule:
             self.E_Th_Schedule.fill(0)
+        if actual:
+            self.E_Th_Act_Schedule.fill(0)
         if reference:
             self.E_Th_Ref_Schedule.fill(0)

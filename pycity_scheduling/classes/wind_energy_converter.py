@@ -88,3 +88,20 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
                 self.P_El_vars
             )
         return obj
+
+    def simulate(self):
+        t1 = self.timer.currentTimestep
+        t2 = t1 + self.timer.mpc_step_width
+        if self.force_renewables:
+            p = self.P_El_Supply
+        else:
+            p = np.minimum(self.P_El_Supply, self.P_El_Schedule)
+        np.copyto(self.P_El_Act_Schedule[t1:t2], p[t1:t2])
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        self.P_El_Act_var.lb = -self.P_El_Supply[timestep]
+        if mode == 'full' and not self.force_renewables:
+            self.P_El_Act_var.ub = 0
+        else:
+            self.P_El_Act_var.ub = -self.P_El_Supply[timestep]

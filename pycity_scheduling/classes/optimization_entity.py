@@ -69,9 +69,6 @@ class OptimizationEntity(object):
         """
         raise NotImplementedError
 
-    def set_new_uncertainty(self, unc):
-        pass
-
     def get_objective(self, coeff=1):
         return None
 
@@ -79,20 +76,68 @@ class OptimizationEntity(object):
         """Save the schedule of the current reference scheduling."""
         raise NotImplementedError
 
-    def reset(self, schedule=True, reference=False):
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds variables for electric and / or thermal power and - if
+        applicable - a variable for the electeric or thermal energy. Since only
+        one timestep is simulated only one variable per physical unit is added.
+
+        Parameters
+        ----------
+        model : gurobipy.Model
+            Deviation model for computing the actual schedule.
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
+        raise NotImplementedError
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update the deviation model for the current timestep.
+
+        Parameters
+        ----------
+        model : gurobipy.Model
+            Deviation model for computing the actual schedule.
+        timestep : int
+            Current timestep of simulation.
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
         pass
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False):
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution.
+
+        Parameters
+        ----------
+        timestep : int
+            Current timestep of simulation.
+        """
+        raise NotImplementedError
+
+    def reset(self, schedule=True, actual=True, reference=False):
+        pass
+
+    def calculate_costs(self, schedule=None, timestep=None, prices=None,
+                        feedin_factor=None):
         """Calculate electricity costs for the OptimizationEntity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
             Energy prices for simulation horizon.
-        reference : bool, optional
-            `True` if costs for reference schedule.
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
 
         Returns
         -------
@@ -101,18 +146,20 @@ class OptimizationEntity(object):
         """
         return 0
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
+    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the entity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional
             CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
 
         Returns
         -------

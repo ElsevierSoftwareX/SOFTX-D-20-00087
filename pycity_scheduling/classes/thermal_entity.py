@@ -16,7 +16,9 @@ class ThermalEntity(OptimizationEntity):
 
         self.P_Th_vars = []
         self.P_Th_Schedule = np.zeros(self.simu_horizon)
+        self.P_Th_Act_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.P_Th_Act_var = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -43,6 +45,17 @@ class ThermalEntity(OptimizationEntity):
         t1 = self.timer.currentTimestep
         t2 = t1 + self.op_horizon
         self.P_Th_Schedule[t1:t2] = [var.x for var in self.P_Th_vars]
+        self.P_Th_Act_Schedule[t1:t2] = self.P_Th_Schedule[t1:t2]
+
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model."""
+        self.P_Th_Act_var = model.addVar(
+            name="%s_P_Th_Actual" % self._long_ID
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        self.P_Th_Act_Schedule[timestep] = self.P_Th_Act_var.x
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
@@ -51,17 +64,21 @@ class ThermalEntity(OptimizationEntity):
             self.P_Th_Schedule
         )
 
-    def reset(self, schedule=True, reference=False):
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
         if schedule:
             self.P_Th_Schedule.fill(0)
+        if actual:
+            self.P_Th_Act_Schedule.fill(0)
         if reference:
             self.P_Th_Ref_Schedule.fill(0)

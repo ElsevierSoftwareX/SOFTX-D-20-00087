@@ -182,3 +182,8 @@ class ElectricalVehicle(Battery):
             self.P_El_vars
         )
         return obj
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        super(ElectricalVehicle, self).update_deviation_model(model, timestep,
+                                                              '')
