@@ -81,6 +81,19 @@ class TestBattery(unittest.TestCase):
 
         self.assertAlmostEqual(10, demand_var.x, places=5)
 
+    def test_update_schedule(self):
+        m1, var_list = get_model(3)
+        m1.optimize()
+        self.bat.P_El_vars = var_list
+        m2, var_list = get_model(3, 2)
+        m2.optimize()
+        self.bat.E_El_vars = var_list
+        a = np.arange(3)
+
+        self.bat.update_schedule()
+        self.assertTrue(np.array_equal(a, self.bat.P_El_Schedule))
+        self.assertTrue(np.array_equal(a * 2, self.bat.E_El_Schedule))
+
     def test_calculate_co2(self):
         self.bat.P_El_Schedule = np.array([10]*3)
         self.assertEqual(0, self.bat.calculate_co2())
@@ -249,9 +262,21 @@ class TestDeferrableLoad(unittest.TestCase):
 
 class TestElectricalEntity(unittest.TestCase):
     def setUp(self):
-        e = get_env(8, 4)
+        e = get_env(4, 8, 4)
         self.ee = ElectricalEntity(e.timer)
         self.ee.environment = e
+
+    def test_update_schedule(self):
+        m, var_list = get_model(4)
+        m.optimize()
+        self.ee.P_El_vars = var_list
+        a = np.arange(4)
+
+        self.ee.update_schedule()
+        self.assertTrue(np.array_equal(a, self.ee.P_El_Schedule[:4]))
+        self.ee.timer.mpc_update()
+        self.ee.update_schedule()
+        self.assertTrue(np.array_equal(a, self.ee.P_El_Schedule[4:]))
 
     def test_calculate_costs(self):
         self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
@@ -398,6 +423,44 @@ class TestPrices(unittest.TestCase):
         self.assertAlmostEqual(20, pr.da_prices[0], places=4)
 
 
+class TestThermalEnergyStorage(unittest.TestCase):
+    def setUp(self):
+        e = get_env(3)
+        self.tes = ThermalEnergyStorage(e, 40, 0.5)
+
+    def test_update_schedule(self):
+        m1, var_list = get_model(3)
+        m1.optimize()
+        self.tes.P_Th_vars = var_list
+        m2, var_list = get_model(3, 2)
+        m2.optimize()
+        self.tes.E_Th_vars = var_list
+        a = np.arange(3)
+
+        self.tes.update_schedule()
+        self.assertTrue(np.array_equal(a, self.tes.P_Th_Schedule))
+        self.assertTrue(np.array_equal(a * 2, self.tes.E_Th_Schedule))
+
+
+class TestThermalEntity(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8, 4)
+        self.th = ThermalEntity(e.timer)
+        self.th.environment = e
+
+    def test_update_schedule(self):
+        m, var_list = get_model(4)
+        m.optimize()
+        self.th.P_Th_vars = var_list
+        a = np.arange(4)
+
+        self.th.update_schedule()
+        self.assertTrue(np.array_equal(a, self.th.P_Th_Schedule[:4]))
+        self.th.timer.mpc_update()
+        self.th.update_schedule()
+        self.assertTrue(np.array_equal(a, self.th.P_Th_Schedule[4:]))
+
+
 class TestTimer(unittest.TestCase):
     def setUp(self):
         self.timer = Timer(mpc_horizon=192, mpc_step_width=4,
@@ -435,10 +498,19 @@ class TestWindEnergyConverter(unittest.TestCase):
         self.assertEqual(200, co2)
 
 
-def get_env(op_horizon, mpc_horizon=None):
+def get_env(op_horizon, mpc_horizon=None, mpc_step_width=1):
     ti = Timer(op_horizon=op_horizon,
                mpc_horizon=mpc_horizon,
-               mpc_step_width=1)
+               mpc_step_width=mpc_step_width)
     we = Weather(ti)
     pr = Prices(ti)
     return Environment(ti, we, pr)
+
+
+def get_model(var_length, factor=1):
+    m = gp.Model()
+    var_list = []
+    for i in range(var_length):
+        b = i*factor
+        var_list.append(m.addVar(lb=b, ub=b))
+    return m, var_list

@@ -1,9 +1,11 @@
 import gurobipy as gurobi
 
+from pycity_scheduling import util
+from pycity_scheduling.exception import UnoptimalError
 from pycity_scheduling.util import populate_models
 
 
-def stand_alone_optimization(city_district, models=None):
+def stand_alone_optimization(city_district, models=None, debug=True):
     """Implementation of the reference optimization algorithm.
 
     Schedule all entities in `city_district` on their own.
@@ -13,11 +15,8 @@ def stand_alone_optimization(city_district, models=None):
     city_district : CityDistrict
     models : dict, optional
         Holds a single `gurobi.Model` for the whole district.
-
-    Notes
-    -----
-     - Name should be replaced with "stand_alone" as "reference" is too
-       confusing
+    debug : bool, optional
+        Specify wether detailed debug information shall be printed.
     """
 
     nodes = city_district.node
@@ -39,8 +38,12 @@ def stand_alone_optimization(city_district, models=None):
     model.setObjective(obj)
 
     model.optimize()
-
-    for node in city_district.node.values():
-        entity = node['entity']
-        entity.update_schedule()
-    city_district.update_schedule()
+    try:
+        for node in city_district.node.values():
+            entity = node['entity']
+            entity.update_schedule()
+        city_district.update_schedule()
+    except Exception as e:
+        if debug:
+            util.analyze_model(model, e)
+        raise UnoptimalError("Could not retrieve schedule from model.")

@@ -72,12 +72,13 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         for entity in self.All_Demands_list:
             entity.update_model(model, mode)
 
-    def update_schedule(self, mode=""):
-        ThermalEntity.update_schedule(self, mode)
-        ElectricalEntity.update_schedule(self, mode)
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        ThermalEntity.update_schedule(self)
+        ElectricalEntity.update_schedule(self)
 
         for entity in self.get_lower_entities():
-            entity.update_schedule(mode)
+            entity.update_schedule()
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

@@ -3,7 +3,6 @@ import numpy as np
 import pycity_base.classes.supply.Battery as bat
 
 from .electrical_entity import ElectricalEntity
-from pycity_scheduling.exception import PyCitySchedulingGurobiException
 
 
 class Battery(ElectricalEntity, bat.Battery):
@@ -165,20 +164,14 @@ class Battery(ElectricalEntity, bat.Battery):
         )
         return obj
 
-    def update_schedule(self, mode=""):
-        super(Battery, self).update_schedule(mode)
-        timestep = self.timer.currentTimestep
-        try:
-            self.E_El_Schedule[timestep:timestep+self.op_horizon] \
-                = [var.x for var in self.E_El_vars]
-            self.E_El_Act_Schedule[timestep:timestep+self.op_horizon] \
-                = self.E_El_Schedule[timestep:timestep+self.op_horizon]
-        except gurobi.GurobiError:
-            self.E_El_Schedule[timestep:self.op_horizon + timestep].fill(0)
-            self.E_El_Act_Schedule[timestep:self.op_horizon + timestep].fill(0)
-            raise PyCitySchedulingGurobiException(
-                str(self) + ": Could not read from variables."
-            )
+    def update_schedule(self):
+        """Update the schedule with the scheduling model solution."""
+        super(Battery, self).update_schedule()
+
+        t1 = self.timer.currentTimestep
+        t2 = t1 + self.op_horizon
+        self.E_El_Schedule[t1:t2] = [var.x for var in self.E_El_vars]
+        self.E_El_Act_Schedule[t1:t2] = self.E_El_Schedule[t1:t2]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

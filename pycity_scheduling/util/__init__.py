@@ -1,6 +1,7 @@
 import math
 
 import numpy as np
+from gurobipy import GRB
 
 from .populate_models import populate_models
 from .write_csv import schedule_to_csv
@@ -146,3 +147,49 @@ def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
     if timestep:
         sched = sched[:timestep]
     return sched
+
+
+_status_codes = [
+    'LOADED',
+    'OPTIMAL',
+    'INFEASIBLE',
+    'INF_OR_UNBD',
+    'UNBOUNDED',
+    'CUTOFF',
+    'ITERATION_LIMIT',
+    'NODE_LIMIT',
+    'TIME_LIMIT',
+    'SOLUTION_LIMIT',
+    'INTERRUPTED',
+    'NUMERIC',
+    'SUBOPTIMAL',
+    'INPROGRESS',
+    'USER_OBJ_LIMIT',
+]
+
+status_codes_map = {eval(c, {}, GRB.__dict__): c for c in _status_codes}
+
+
+def analyze_model(model, exception=None):
+    """Analyze a Gurobi model which is not optimal.
+
+    Parameters
+    ----------
+    model : gurobipy.Model
+        Model with `status != GRB.OPTIAML`
+    exception : Exception, optional
+        Original exception, whose message will be printed
+    """
+    model.setParam('OutputFlag', True)
+    if model.status == GRB.INF_OR_UNBD:
+        model.dualreductions = 0
+        model.optimize()
+    status = model.status
+    print("Model status is {}.".format(status_codes_map[status]))
+    if exception:
+        print("Original Error:")
+        print(exception)
+    if status == GRB.INFEASIBLE:
+        model.computeIIS()
+        model.write('model.ilp')
+        print("IIS written to 'model.ilp'.")
