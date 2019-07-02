@@ -76,6 +76,48 @@ class OptimizationEntity(object):
         """Save the schedule of the current reference scheduling."""
         raise NotImplementedError
 
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds variables for electric and / or thermal power and - if
+        applicable - a variable for the electeric or thermal energy. Since only
+        one timestep is simulated only one variable per physical unit is added.
+
+        Parameters
+        ----------
+        model : gurobipy.Model
+            Deviation model for computing the actual schedule.
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
+        raise NotImplementedError
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update the deviation model for the current timestep.
+
+        Parameters
+        ----------
+        model : gurobipy.Model
+            Deviation model for computing the actual schedule.
+        timestep : int
+            Current timestep of simulation.
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
+        pass
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution.
+
+        Parameters
+        ----------
+        timestep : int
+            Current timestep of simulation.
+        """
+        raise NotImplementedError
+
     def reset(self, schedule=True, actual=True, reference=False):
         pass
 

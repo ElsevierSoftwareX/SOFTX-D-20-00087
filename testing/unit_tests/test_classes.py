@@ -94,6 +94,51 @@ class TestBattery(unittest.TestCase):
         self.assertTrue(np.array_equal(a, self.bat.P_El_Schedule))
         self.assertTrue(np.array_equal(a * 2, self.bat.E_El_Schedule))
 
+    def test_populate_deviation_model(self):
+        m = gp.Model()
+        self.bat.populate_deviation_model(m, 'full')
+        m.update()
+
+        c = self.bat.E_El_Act_coupl_constr
+        self.assertEqual(-0.125, m.getCoeff(c, self.bat.P_El_Act_Demand_var))
+        self.assertEqual(0.5, m.getCoeff(c, self.bat.P_El_Act_Supply_var))
+        self.assertEqual(1, m.getCoeff(c, self.bat.E_El_Act_var))
+
+    def test_update_deviation_model(self):
+        m = gp.Model()
+        self.bat.populate_deviation_model(m)
+        self.bat.P_El_Schedule = np.arange(-1, 2) * 4
+        self.bat.E_El_Schedule = np.arange(-1, 2)
+        self.bat.update_deviation_model(m, 0)
+        m.optimize()
+
+        self.assertEqual(0, self.bat.P_El_Act_Demand_var.x)
+        self.assertEqual(4, self.bat.P_El_Act_Supply_var.x)
+
+        self.bat.update_deviation_model(m, 2)
+        m.optimize()
+
+        self.assertEqual(4, self.bat.P_El_Act_Demand_var.x)
+        self.assertEqual(0, self.bat.P_El_Act_Supply_var.x)
+
+        m = gp.Model()
+        self.bat.populate_deviation_model(m, 'full')
+        self.bat.E_El_Act_Schedule = np.full(3, 9)
+        self.bat.update_deviation_model(m, 2, mode='full')
+        self.bat.E_El_Act_var.Obj = 100
+        self.bat.P_El_Act_Demand_var.Obj = 1
+        m.optimize()
+
+        self.assertEqual(0, self.bat.E_El_Act_var.x)
+        self.assertEqual(18, self.bat.P_El_Act_Supply_var.x)
+        self.assertEqual(9, self.bat.E_El_Act_coupl_constr.RHS)
+
+        self.bat.E_El_Act_var.Obj = -100
+        m.optimize()
+
+        self.assertEqual(10, self.bat.E_El_Act_var.x)
+        self.assertEqual(8, self.bat.P_El_Act_Demand_var.x)
+
     def test_calculate_co2(self):
         self.bat.P_El_Schedule = np.array([10]*3)
         self.assertEqual(0, self.bat.calculate_co2())
@@ -260,6 +305,28 @@ class TestDeferrableLoad(unittest.TestCase):
         self.assertAlmostEqual(10, self.dl.P_El_vars[0].x, places=5)
 
 
+class TestFixedLoad(unittest.TestCase):
+    def setUp(self):
+        e = get_env(2, 4)
+        load = np.arange(1, 5)
+        self.fl = FixedLoad(e, method=0, demand=load)
+
+    def test_update_deviation_model(self):
+        m = gp.Model()
+        unc = np.full_like(4, 2)
+        self.fl.set_new_uncertainty(unc)
+        self.fl.populate_deviation_model(m)
+        self.fl.update_deviation_model(m, 0)
+        m.optimize()
+
+        self.assertEqual(2, self.fl.P_El_Act_var.x)
+
+        self.fl.update_deviation_model(m, 2)
+        m.optimize()
+
+        self.assertEqual(6, self.fl.P_El_Act_var.x)
+
+
 class TestElectricalEntity(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8, 4)
@@ -383,6 +450,30 @@ class TestElectricVehicle(unittest.TestCase):
             self.assertAlmostEqual(ref, coeff, places=5)
 
 
+class TestHeatPump(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.hp = HeatPump(e, 10, cop=np.full(8, 11))
+
+    def test_populate_devitation_model(self):
+        m = gp.Model()
+        self.hp.populate_deviation_model(m)
+        m.update()
+
+        c = self.hp.El_Th_coupl_constr
+        self.assertEqual(1, m.getCoeff(c, self.hp.P_El_Act_var))
+        self.assertEqual(1, m.getCoeff(c, self.hp.P_Th_Act_var))
+
+    def test_update_devitation_model(self):
+        m = gp.Model()
+        self.hp.populate_deviation_model(m)
+        self.hp.update_deviation_model(m, 0)
+        m.update()
+
+        c = self.hp.El_Th_coupl_constr
+        self.assertEqual(11, m.getCoeff(c, self.hp.P_El_Act_var))
+
+
 class TestPhotovoltaic(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8)
@@ -441,6 +532,47 @@ class TestThermalEnergyStorage(unittest.TestCase):
         self.assertTrue(np.array_equal(a, self.tes.P_Th_Schedule))
         self.assertTrue(np.array_equal(a * 2, self.tes.E_Th_Schedule))
 
+    def test_populate_deviation_model(self):
+        m = gp.Model()
+        self.tes.populate_deviation_model(m, 'full')
+        m.update()
+
+        c = self.tes.E_Th_Act_coupl_constr
+        self.assertEqual(-0.25, m.getCoeff(c, self.tes.P_Th_Act_var))
+        self.assertEqual(1, m.getCoeff(c, self.tes.E_Th_Act_var))
+
+    def test_update_deviation_model(self):
+        m = gp.Model()
+        self.tes.populate_deviation_model(m)
+        self.tes.P_Th_Schedule = np.arange(-1, 2) * 4
+        self.tes.E_Th_Schedule = np.arange(-1, 2)
+        self.tes.update_deviation_model(m, 0)
+        m.optimize()
+
+        self.assertEqual(-4, self.tes.P_Th_Act_var.x)
+
+        self.tes.update_deviation_model(m, 2)
+        m.optimize()
+
+        self.assertEqual(4, self.tes.P_Th_Act_var.x)
+
+        m = gp.Model()
+        self.tes.populate_deviation_model(m, 'full')
+        self.tes.E_Th_Act_Schedule = np.full(3, 10)
+        self.tes.update_deviation_model(m, 2, mode='full')
+        self.tes.E_Th_Act_var.Obj = 1
+        m.optimize()
+
+        self.assertEqual(0, self.tes.E_Th_Act_var.x)
+        self.assertEqual(-40, self.tes.P_Th_Act_var.x)
+        self.assertEqual(10, self.tes.E_Th_Act_coupl_constr.RHS)
+
+        self.tes.E_Th_Act_var.Obj = -1
+        m.optimize()
+
+        self.assertEqual(40, self.tes.E_Th_Act_var.x)
+        self.assertEqual(120, self.tes.P_Th_Act_var.x)
+
 
 class TestThermalEntity(unittest.TestCase):
     def setUp(self):
@@ -459,6 +591,28 @@ class TestThermalEntity(unittest.TestCase):
         self.th.timer.mpc_update()
         self.th.update_schedule()
         self.assertTrue(np.array_equal(a, self.th.P_Th_Schedule[4:]))
+
+
+class TestSpaceHeating(unittest.TestCase):
+    def setUp(self):
+        e = get_env(2, 4)
+        load = np.arange(1, 5)
+        self.sh = SpaceHeating(e, method=0, loadcurve=load)
+
+    def test_update_deviation_model(self):
+        m = gp.Model()
+        unc = np.full_like(4, 2)
+        self.sh.set_new_uncertainty(unc)
+        self.sh.populate_deviation_model(m)
+        self.sh.update_deviation_model(m, 0)
+        m.optimize()
+
+        self.assertEqual(2, self.sh.P_Th_Act_var.x)
+
+        self.sh.update_deviation_model(m, 2)
+        m.optimize()
+
+        self.assertEqual(6, self.sh.P_Th_Act_var.x)
 
 
 class TestTimer(unittest.TestCase):

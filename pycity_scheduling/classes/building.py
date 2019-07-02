@@ -1,8 +1,11 @@
 import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.Building as bd
+from pycity_scheduling import util
 
 from .electrical_entity import ElectricalEntity
+from .thermal_entity import ThermalEntity
+from pycity_scheduling.exception import UnoptimalError
 
 
 class Building(ElectricalEntity, bd.Building):
@@ -68,6 +71,8 @@ class Building(ElectricalEntity, bd.Building):
         self.profile_type = profile_type
         self.building_type = building_type
         self.storage_end_equality = storage_end_equality
+
+        self.deviation_model = None
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model.
@@ -160,6 +165,97 @@ class Building(ElectricalEntity, bd.Building):
         
         for entity in self.get_lower_entities():
             entity.update_schedule()
+
+    def populate_deviation_model(self, model, mode=""):
+        """Populate the deviation model.
+
+        Parameters
+        ----------
+        model : gurobi.Model
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
+        super(Building, self).populate_deviation_model(model, mode)
+
+        P_Th_var_list = []
+        P_El_var_list = []
+        if not self.hasBes:
+            raise AttributeError(
+                "No BES in %s\nModeling aborted." % str(self)
+            )
+        for entity in self.get_lower_entities():
+            entity.populate_deviation_model(model, mode)
+            if isinstance(entity, ThermalEntity):
+                P_Th_var_list.append(entity.P_Th_Act_var)
+            if isinstance(entity, ElectricalEntity):
+                P_El_var_list.append(entity.P_El_Act_var)
+
+        self.P_El_Act_var.lb = -gurobi.GRB.INFINITY
+        P_Th_var_sum = gurobi.quicksum(P_Th_var_list)
+        P_El_var_sum = gurobi.quicksum(P_El_var_list)
+        model.addConstr(0 == P_Th_var_sum)
+        model.addConstr(self.P_El_Act_var == P_El_var_sum)
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        for entity in self.get_lower_entities():
+            entity.update_deviation_model(model, timestep, mode)
+        p = self.P_El_Schedule[timestep]
+        model.setObjective(
+            self.P_El_Act_var * self.P_El_Act_var - 2 * p * self.P_El_Act_var
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        super(Building, self).update_actual_schedule(timestep)
+
+        for entity in self.get_lower_entities():
+            entity.update_actual_schedule(timestep)
+
+    def _init_deviation_model(self, mode=""):
+        model = gurobi.Model(self._long_ID + "_deviation_model")
+        model.setParam("OutputFlag", False)
+        model.setParam("LogFile", "")
+        self.populate_deviation_model(model, mode)
+        self.deviation_model = model
+
+    def simulate(self, mode='', debug=True):
+        """Simulation of pseudo real behaviour.
+
+        Simulate `self.timer.mpc_step_width` timesteps from current timestep
+        on.
+
+        Parameters
+        ----------
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        debug : bool, optional
+            Specify wether detailed debug information shall be printed.
+        """
+        if self.deviation_model is None:
+            self._init_deviation_model(mode)
+
+        timestep = self.timer.currentTimestep
+        for t in range(self.timer.mpc_step_width):
+            self.update_deviation_model(self.deviation_model,
+                                        t + timestep, mode)
+            # minimize deviation from schedule
+            obj = gurobi.QuadExpr(
+                (self.P_El_Act_var - self.P_El_Schedule[t + timestep])
+                *
+                (self.P_El_Act_var - self.P_El_Schedule[t + timestep])
+            )
+            self.deviation_model.setObjective(obj)
+            self.deviation_model.optimize()
+            if self.deviation_model.status != 2:
+                if debug:
+                    util.analyze_model(self.deviation_model)
+                raise UnoptimalError(
+                    "Could not retrieve solution from deviation model."
+                )
+            self.update_actual_schedule(t + timestep)
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

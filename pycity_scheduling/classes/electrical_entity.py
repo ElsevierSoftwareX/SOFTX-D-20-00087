@@ -19,6 +19,7 @@ class ElectricalEntity(OptimizationEntity):
         self.P_El_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Act_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.P_El_Act_var = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -53,6 +54,16 @@ class ElectricalEntity(OptimizationEntity):
             self.P_El_Ref_Schedule,
             self.P_El_Schedule
         )
+
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model."""
+        self.P_El_Act_var = model.addVar(
+            name="%s_P_El_Actual" % self._long_ID
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        self.P_El_Act_Schedule[timestep] = self.P_El_Act_var.x
 
     def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.

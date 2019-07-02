@@ -89,6 +89,26 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         ThermalEntity.update_schedule(self)
         ElectricalEntity.update_schedule(self)
 
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds variables, sets the correct bounds to the thermal variable and
+        adds a coupling constraint.
+        """
+        ThermalEntity.populate_deviation_model(self, model, mode)
+        ElectricalEntity.populate_deviation_model(self, model, mode)
+
+        self.P_Th_Act_var.lb = -self.qNominal / 1000
+        self.P_Th_Act_var.ub = 0
+        model.addConstr(
+            - self.P_Th_Act_var == self.eta * self.P_El_Act_var
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        ThermalEntity.update_actual_schedule(self, timestep)
+        ElectricalEntity.update_actual_schedule(self, timestep)
+
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
         ThermalEntity.save_ref_schedule(self)

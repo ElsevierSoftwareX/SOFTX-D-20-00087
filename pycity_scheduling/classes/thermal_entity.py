@@ -18,6 +18,7 @@ class ThermalEntity(OptimizationEntity):
         self.P_Th_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Act_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.P_Th_Act_var = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -45,6 +46,16 @@ class ThermalEntity(OptimizationEntity):
         t2 = t1 + self.op_horizon
         self.P_Th_Schedule[t1:t2] = [var.x for var in self.P_Th_vars]
         self.P_Th_Act_Schedule[t1:t2] = self.P_Th_Schedule[t1:t2]
+
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model."""
+        self.P_Th_Act_var = model.addVar(
+            name="%s_P_Th_Actual" % self._long_ID
+        )
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        self.P_Th_Act_Schedule[timestep] = self.P_Th_Act_var.x
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

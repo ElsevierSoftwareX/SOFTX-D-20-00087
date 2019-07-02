@@ -1,7 +1,7 @@
-import numpy as np
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from pycity_scheduling.classes.electrical_entity import ElectricalEntity
+from pycity_scheduling import util
 
 
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
@@ -92,6 +92,29 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
             self.P_El_vars[t].ub = self.P_El_Schedule[t+timestep]
 
     def update_schedule(self, mode=""):
+        pass
+
+    def set_new_uncertainty(self, uncertainty):
+        """Set uncertainty for the actual schedule.
+
+        Parameters
+        ----------
+        uncertainty : numpy.ndarray or int or float
+            If array it is used as the uncertainty vector directly.
+            If int or float an uncertainty vector with this standard deviation
+            is computed and used.
+        """
+        if isinstance(uncertainty, (int, float)):
+            uncertainty = util.get_uncertainty(uncertainty, self.simu_horizon)
+        self.P_El_Act_Schedule = self.P_El_Schedule * uncertainty
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        self.P_El_Act_var.lb = self.P_El_Act_Schedule[timestep]
+        self.P_El_Act_var.ub = self.P_El_Act_Schedule[timestep]
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
         pass
 
     def reset(self, schedule=True, actual=True, reference=False):

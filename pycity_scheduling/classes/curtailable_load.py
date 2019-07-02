@@ -97,3 +97,12 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             [- 2 * coeff] * self.op_horizon,
             self.P_El_vars
         )
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        if mode == 'full':
+            self.P_El_Act_var.lb = self.P_El_Curt_Demand[timestep]
+            self.P_El_Act_var.ub = self.P_El_Demand[timestep]
+        else:
+            self.P_El_Act_var.lb = self.P_El_Schedule[timestep]
+            self.P_El_Act_var.ub = self.P_El_Schedule[timestep]

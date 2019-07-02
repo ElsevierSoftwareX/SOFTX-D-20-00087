@@ -181,3 +181,8 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             self.P_El_vars
         )
         return obj
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        self.P_El_Act_var.lb = self.P_El_Schedule[timestep]
+        self.P_El_Act_var.ub = self.P_El_Schedule[timestep]

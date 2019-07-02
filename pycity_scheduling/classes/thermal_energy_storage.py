@@ -61,6 +61,8 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         self.E_Th_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Act_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.E_Th_Act_var = None
+        self.E_Th_Act_coupl_constr = None
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model
@@ -132,6 +134,45 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.E_Th_Ref_Schedule,
             self.E_Th_Schedule
         )
+
+    def populate_deviation_model(self, model, mode=""):
+        """Add variables for this entity to the deviation model.
+
+        Adds a variable for the thermal power and energy. If `mode == 'full'`
+        also adds a coupling constraint between them.
+        """
+        super().populate_deviation_model(model)
+
+        self.P_Th_Act_var.lb = -gurobi.GRB.INFINITY
+        self.E_Th_Act_var = model.addVar(
+            ub=self.E_Th_Max,
+            name="%s_E_Th_Actual" % self._long_ID
+        )
+        if mode == 'full':
+            self.E_Th_Act_coupl_constr = model.addConstr(
+                self.E_Th_Act_var - self.P_Th_Act_var * self.time_slot == 0
+
+            )
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        if mode == 'full':
+            if timestep == 0:
+                E_Th_Ini = self.SOC_Ini * self.E_Th_Max
+            else:
+                E_Th_Ini = self.E_Th_Act_Schedule[timestep-1]
+            self.E_Th_Act_coupl_constr.RHS = E_Th_Ini * (1-self.Th_Loss_coeff)
+        else:
+            self.P_Th_Act_var.lb = self.P_Th_Schedule[timestep]
+            self.P_Th_Act_var.ub = self.P_Th_Schedule[timestep]
+            self.E_Th_Act_var.lb = self.E_Th_Schedule[timestep]
+            self.E_Th_Act_var.ub = self.E_Th_Schedule[timestep]
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        super().update_actual_schedule(timestep)
+
+        self.E_Th_Act_Schedule[timestep] = self.E_Th_Act_var.x
 
     def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.

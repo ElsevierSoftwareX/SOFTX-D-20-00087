@@ -182,7 +182,7 @@ def analyze_model(model, exception=None):
     """
     model.setParam('OutputFlag', True)
     if model.status == GRB.INF_OR_UNBD:
-        model.dualreductions = 0
+        model.setParam('dualreductions', 0)
         model.optimize()
     status = model.status
     print("Model status is {}.".format(status_codes_map[status]))

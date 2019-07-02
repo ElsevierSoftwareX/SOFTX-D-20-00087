@@ -80,6 +80,46 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         for entity in self.get_lower_entities():
             entity.update_schedule()
 
+    def populate_deviation_model(self, model, mode=""):
+        """
+        Parameters
+        ----------
+        model : gurobi.Model
+        mode : str, optional
+            If 'full' use all possibilities to minimize adjustments.
+            Else do not try to compensate adjustments.
+        """
+        ThermalEntity.populate_deviation_model(self, model, mode)
+        ElectricalEntity.populate_deviation_model(self, model, mode)
+
+        P_Th_var_list = []
+        P_El_var_list = []
+        for entity in self.Th_Demand_list:
+            entity.populate_deviation_model(model, mode)
+            P_Th_var_list.append(entity.P_Th_Act_var)
+        for entity in self.El_Demand_list:
+            entity.populate_deviation_model(model, mode)
+            P_El_var_list.append(entity.P_El_Act_var)
+        self.P_Th_Act_var.lb = -gurobi.GRB.INFINITY
+        self.P_El_Act_var.lb = -gurobi.GRB.INFINITY
+        P_Th_var_sum = gurobi.quicksum(P_Th_var_list)
+        P_El_var_sum = gurobi.quicksum(P_El_var_list)
+        model.addConstr(self.P_Th_Act_var == P_Th_var_sum)
+        model.addConstr(self.P_El_Act_var == P_El_var_sum)
+
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        for entity in self.get_lower_entities():
+            entity.update_deviation_model(model, timestep, mode)
+
+    def update_actual_schedule(self, timestep):
+        """Update the actual schedule with the deviation model solution."""
+        ThermalEntity.update_actual_schedule(self, timestep)
+        ElectricalEntity.update_actual_schedule(self, timestep)
+
+        for entity in self.get_lower_entities():
+            entity.update_actual_schedule(timestep)
+
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
         ThermalEntity.save_ref_schedule(self)

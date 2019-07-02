@@ -79,6 +79,15 @@ class Boiler(ThermalEntity, bl.Boiler):
         )
         return obj
 
+    def update_deviation_model(self, model, timestep, mode=""):
+        """Update deviation model for the current timestep."""
+        if mode == 'full':
+            self.P_Th_Act_var.lb = -self.P_Th_Nom
+            self.P_Th_Act_var.ub = 0
+        else:
+            self.P_Th_Act_var.lb = self.P_Th_Schedule[timestep]
+            self.P_Th_Act_var.ub = self.P_Th_Schedule[timestep]
+
     def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the Boiler.
 
