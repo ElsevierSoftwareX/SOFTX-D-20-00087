@@ -200,15 +200,10 @@ def generate_tabula_buildings(environment,
             bd.addEntity(ap)
             ap_counter += 1
 
-        # TODO: Workaround for unstable implementation in pycity_base
-        power_curve = bd.get_space_heating_power_curve()
-        if len(power_curve) == 0:
-            power_curve = [0]
-        p_th_max = max(power_curve)/1000.0 + 1.0
-        heating_device = heating_list[i](environment, P_Th_Nom=p_th_max)
-        tes = ThermalEnergyStorage(environment, E_Th_Max=2.0*p_th_max,
-                                   SOC_Ini=0.5, SOC_End=0.5, tMax=60.0,
-                                   tSurroundings=20.0)
+        p_th = max(sum(e.P_Th_Schedule for e in filter_entities(bd, 'SH'))) + 1
+        heating_device = heating_list[i](environment, P_Th_Nom=p_th)
+        tes = ThermalEnergyStorage(environment, E_Th_Max=2.0*p_th, SOC_Ini=0.5,
+                                   SOC_End=0.5, tMax=60.0, tSurroundings=20.0)
         bes.addDevice(heating_device)
         bes.addDevice(tes)
 
@@ -225,15 +220,8 @@ def generate_tabula_buildings(environment,
             bes.addDevice(pv)
 
         if bat_list[i]:
-            # TODO: Workaround for unstable implementation in pycity_base
-            try:
-                power_curve = bd.get_electric_power_curve()
-            except Exception:
-                power_curve = [0]
-            if len(power_curve) == 0:
-                power_curve = [0]
-            capacity = max(power_curve)/1000.0
-            bat = Battery(environment, E_El_Max=capacity, P_El_Max_Charge=4.6,
+            p_el = max(sum(e.P_El_Schedule for e in filter_entities(bd, 'FL')))
+            bat = Battery(environment, E_El_Max=p_el, P_El_Max_Charge=4.6,
                           SOC_Ini=0.5, P_El_Max_Discharge=4.6)
             bes.addDevice(bat)
 
