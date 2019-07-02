@@ -18,9 +18,9 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         ----------
         environment : Environment
             Common Environment instance.
-        velocity : array_like (numpy.ndarray)
+        velocity : numpy.ndarray
             Wind speeds in [m/s].
-        power : array_like (numpy.ndarray)
+        power : anumpy.ndarray
             Power for given velocities in [kW].
         hub_height : float, optional
             Height of the wind energy converter in [m].

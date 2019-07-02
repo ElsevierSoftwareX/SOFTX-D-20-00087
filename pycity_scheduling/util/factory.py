@@ -190,9 +190,9 @@ def generate_tabula_buildings(environment,
                 ev_charging_time = random.choice(ev_time_ranges)
                 soc = 0.5 if ev_data['charging_method'] == 'fast' else 0.75
                 ev = ElectricalVehicle(environment,
-                                       E_El_Max=ev_data['e_el_storage_max'],
-                                       P_El_Max_Charge=ev_data['p_el_nom'],
-                                       SOC_Ini=soc,
+                                       E_El_max=ev_data['e_el_storage_max'],
+                                       P_El_max_charge=ev_data['p_el_nom'],
+                                       soc_init=soc,
                                        charging_time=ev_charging_time,
                                        ct_pattern='daily')
                 ap.addEntity(ev)
@@ -201,9 +201,9 @@ def generate_tabula_buildings(environment,
             ap_counter += 1
 
         p_th = max(sum(e.P_Th_Schedule for e in filter_entities(bd, 'SH'))) + 1
-        heating_device = heating_list[i](environment, P_Th_Nom=p_th)
-        tes = ThermalEnergyStorage(environment, E_Th_Max=2.0*p_th, SOC_Ini=0.5,
-                                   SOC_End=0.5, tMax=60.0, tSurroundings=20.0)
+        heating_device = heating_list[i](environment, P_Th_nom=p_th)
+        tes = ThermalEnergyStorage(environment, E_Th_max=2.0*p_th,
+                                   soc_init=0.5)
         bes.addDevice(heating_device)
         bes.addDevice(tes)
 
@@ -221,8 +221,8 @@ def generate_tabula_buildings(environment,
 
         if bat_list[i]:
             p_el = max(sum(e.P_El_Schedule for e in filter_entities(bd, 'FL')))
-            bat = Battery(environment, E_El_Max=p_el, P_El_Max_Charge=4.6,
-                          SOC_Ini=0.5, P_El_Max_Discharge=4.6)
+            bat = Battery(environment, E_El_max=p_el, P_El_max_charge=4.6,
+                          P_El_max_discharge=4.6, soc_init=0.5)
             bes.addDevice(bat)
 
         buildings.append(bd)
@@ -362,11 +362,11 @@ def generate_simple_building(env, fl=0, sh=0, eh=0, tes=0, bat=0):
     if sh:
         ap.addEntity(SpaceHeating(env, loadcurve=np.full(ti.simu_horizon, sh)))
     if eh:
-        bes.addDevice(ElectricalHeater(env, P_Th_Nom=eh))
+        bes.addDevice(ElectricalHeater(env, P_Th_nom=eh))
     if tes:
-        bes.addDevice(ThermalEnergyStorage(env, E_Th_Max=tes, SOC_Ini=0.5))
+        bes.addDevice(ThermalEnergyStorage(env, E_Th_max=tes, soc_init=0.5))
     if bat:
         bes.addDevice(
-            Battery(env, E_El_Max=bat, P_El_Max_Charge=bat/ti.time_slot)
+            Battery(env, E_El_max=bat, P_El_max_charge=bat/ti.time_slot)
         )
     return bd

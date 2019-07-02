@@ -10,31 +10,29 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
     Extension of pycity class ElectricalHeater for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, eta=1,
-                 tMax=85, lowerActivationLimit=0):
+    def __init__(self, environment, P_Th_nom, eta=1, lower_activation_limit=0):
         """Initialize ElectricalHeater.
 
         Parameters
         ----------
         environment : pycity_scheduling.classes.Environment
             Common to all other objects. Includes time and weather instances.
-        P_Th_Nom : float
+        P_Th_nom : float
             Nominal thermal power output in [kW].
         eta : float, optional
             Efficiency of the electrical heater.
-        tMax : integer, optional
-            maximum provided temperature in °C
-        lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
-            Define the lower activation limit. For example, heat pumps are
-            typically able to operate between 50 % part load and rated load.
-            In this case, lowerActivationLimit would be 0.5
-            Two special cases:
-            Linear behavior: lowerActivationLimit = 0
-            Two-point controlled: lowerActivationLimit = 1
+        lower_activation_limit : float, optional
+            Must be in [0, 1]. Lower activation limit of the electrical heater
+            as a percentage of the rated power. When the electrical heater is
+            running its power nust be zero or between the lower activation
+            limit and its rated power.
+            `lower_activation_limit = 0`: Linear behavior
+            `lower_activation_limit = 1`: Two-point controlled
         """
+        # Flow temperature of 55 C
         super(ElectricalHeater, self).__init__(environment.timer, environment,
-                                               P_Th_Nom*1000, eta, tMax,
-                                               lowerActivationLimit)
+                                               P_Th_nom*1000, eta, 55,
+                                               lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
 
     def populate_model(self, model, mode=""):

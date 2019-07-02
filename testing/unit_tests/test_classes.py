@@ -41,7 +41,7 @@ class TestModule(unittest.TestCase):
 class TestBattery(unittest.TestCase):
     def setUp(self):
         e = get_env(3)
-        self.bat = Battery(e, 10, 20, SOC_Ini=0.875, eta=0.5)
+        self.bat = Battery(e, 10, 20, soc_init=0.875, eta=0.5)
 
     def test_populate_model(self):
         model = gp.Model('BatModel')

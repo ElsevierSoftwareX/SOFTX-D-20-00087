@@ -10,8 +10,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     Extension of pycity class ThermalEnergyStorage for scheduling purposes.
     """
 
-    def __init__(self, environment, E_Th_Max, SOC_Ini, SOC_End=None,
-                 tMax=60, tSurroundings=20, kLosses=0,
+    def __init__(self, environment, E_Th_max, soc_init=0.5, loss_factor=0,
                  storage_end_equality=False):
         """Initialize ThermalEnergyStorage.
 
@@ -19,36 +18,27 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         ----------
         environment : Environment
             Common Environment instance.
-        E_Th_Max : float
+        E_Th_max : float
             Amount of energy the TES is able to store in [kWh].
-        SOC_Ini : float
+        soc_init : float
             Initial state of charge.
-        SOC_End : float, optional
-            Final state of charge.
-        tMax : float, optional
-            Maximum storage temperature in [°C].
-        tSurroundings : float, optional
-            Temperature of the storage's surroundings in [°C].
-        kLosses : float, optional
+        loss_factor : float, optional
             Storage's loss factor (area*U_value) in [W/K].
         storage_end_equality : bool, optional
             `True` if the soc at the end of the scheduling has to be equal to
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        tInit = SOC_Ini * (tMax - tSurroundings) + tSurroundings
-        capacity = E_Th_Max / self.cWater / (tMax - tSurroundings) * 3.6e6
+        # Room temperature of 20 C and flow temperature of 55 C
+        capacity = E_Th_max / self.cWater / 35 * 3.6e6
         super(ThermalEnergyStorage, self).__init__(
-            environment.timer, environment, tInit,
-            capacity, tMax, tSurroundings, kLosses
+            environment.timer, environment, 55,
+            capacity, 55, 20, loss_factor
         )
         self._long_ID = "TES_" + self._ID_string
 
-        self.E_Th_Max = E_Th_Max
-        self.SOC_Ini = SOC_Ini
-        if SOC_End is None:
-            SOC_End = SOC_Ini
-        self.SOC_End = SOC_End
+        self.E_Th_Max = E_Th_max
+        self.SOC_Ini = soc_init
         self.storage_end_equality = storage_end_equality
 
         # TODO: very simple storage model which assumes tFlow == tSurroundings
@@ -97,9 +87,9 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
                    + self.P_Th_vars[t] * self.time_slot,
                 "{0:s}_P_Th_t={1}".format(self._long_ID, t)
             )
-        self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_End
+        self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_Ini
         if self.storage_end_equality:
-            self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_End
+            self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_Ini
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep

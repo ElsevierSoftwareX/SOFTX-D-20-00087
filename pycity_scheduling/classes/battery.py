@@ -10,8 +10,8 @@ class Battery(ElectricalEntity, bat.Battery):
     Extension of pycity class Battery for scheduling purposes
     """
 
-    def __init__(self, environment, E_El_Max, P_El_Max_Charge,
-                 P_El_Max_Discharge=None, SOC_Ini=0.5, eta=1,
+    def __init__(self, environment, E_El_max, P_El_max_charge,
+                 P_El_max_discharge=None, soc_init=0.5, eta=1,
                  storage_end_equality=False):
         """Initialize Battery.
 
@@ -19,13 +19,13 @@ class Battery(ElectricalEntity, bat.Battery):
         ----------
         environment : Environment object
             Common Environment instance.
-        E_El_Max : float
+        E_El_max : float
             Electric capacity of the battery [kWh].
-        P_El_Max_Charge : float
+        P_El_max_charge : float
             Maximum charging power [kW].
-        P_El_Max_Discharge : float
+        P_El_max_discharge : float
             Maximum discharging power [kW].
-        SOC_Ini : float, optional
+        soc_init : float, optional
             Initial state of charge.
         eta : float, optional
             Charging and discharging efficiency. Must be in (0,1].
@@ -34,16 +34,16 @@ class Battery(ElectricalEntity, bat.Battery):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        capacity = E_El_Max * 3600 * 1000
-        soc_init = SOC_Ini * capacity  # absolute SOC
-        super(Battery, self).__init__(environment.timer, environment, soc_init,
+        capacity = E_El_max * 3600 * 1000
+        soc_abs = soc_init * capacity  # absolute SOC
+        super(Battery, self).__init__(environment.timer, environment, soc_abs,
                                       capacity, 0, eta, eta)
         self._long_ID = "BAT_" + self._ID_string
 
-        self.E_El_Max = E_El_Max
-        self.SOC_Ini = SOC_Ini  # relative SOC
-        self.P_El_Max_Charge = P_El_Max_Charge
-        self.P_El_Max_Discharge = P_El_Max_Discharge or P_El_Max_Charge
+        self.E_El_Max = E_El_max
+        self.SOC_Ini = soc_init  # relative SOC
+        self.P_El_Max_Charge = P_El_max_charge
+        self.P_El_Max_Discharge = P_El_max_discharge or P_El_max_charge
         self.storage_end_equality = storage_end_equality
 
         self.P_El_Demand_vars = []

@@ -10,38 +10,37 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
     Extension of pycity class CHP for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, P_El_Nom=None, eta=1, tMax=85,
-                 lowerActivationLimit=0):
+    def __init__(self, environment, P_Th_nom, P_El_nom=None, eta=1,
+                 lower_activation_limit=0):
         """Initialize CombinedHeatPower.
 
         Parameters
         ----------
         environment : pycity_scheduling.classes.Environment
             Common to all other objects. Includes time and weather instances.
-        P_Th_Nom : float
+        P_Th_nom : float
             Nominal thermal power output in [kW].
-        P_El_Nom : float, optional
-            Nominal electrical power output in [kW]. Defaults to `P_Th_Nom`.
+        P_El_nom : float, optional
+            Nominal electrical power output in [kW]. Defaults to `P_Th_nom`.
         eta : float, optional
             Total efficiency of the CHP.
-        tMax : integer, optional
-            maximum provided temperature in °C
-        lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
-            Define the lower activation limit. For example, heat pumps are
-            typically able to operate between 50 % part load and rated load.
-            In this case, lowerActivationLimit would be 0.5
-            Two special cases:
-            Linear behavior: lowerActivationLimit = 0
-            Two-point controlled: lowerActivationLimit = 1
+        lower_activation_limit : float, optional
+            Must be in [0, 1]. Lower activation limit of the CHP as a
+            percentage of the rated power. When the CHP is running its power
+            must be zero or between the lower activation limit and its rated
+            power.
+            `lower_activation_limit = 0`: Linear behavior
+            `lower_activation_limit = 1`: Two-point controlled
         """
-        q_nominal = P_Th_Nom * 1000
-        if P_El_Nom is None:
+        q_nominal = P_Th_nom * 1000
+        if P_El_nom is None:
             p_nominal = q_nominal
         else:
-            p_nominal = P_El_Nom * 1000
+            p_nominal = P_El_nom * 1000
+        # Flow temperature of 55 C
         super(CombinedHeatPower, self).__init__(environment.timer, environment,
                                                 p_nominal, q_nominal, eta,
-                                                tMax, lowerActivationLimit)
+                                                55, lower_activation_limit)
         self._long_ID = "CHP_" + self._ID_string
 
     def populate_model(self, model, mode=""):

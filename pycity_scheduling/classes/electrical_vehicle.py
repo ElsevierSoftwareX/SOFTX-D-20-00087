@@ -10,19 +10,19 @@ class ElectricalVehicle(Battery):
     Class representing an electrical vehicle for scheduling purposes.
     """
 
-    def __init__(self, environment, E_El_Max, P_El_Max_Charge,
-                 SOC_Ini=0.5, charging_time=None, ct_pattern=None):
+    def __init__(self, environment, E_El_max, P_El_max_charge,
+                 soc_init=0.5, charging_time=None, ct_pattern=None):
         """Initialize ElectricalVehicle.
 
         Parameters
         ----------
         environment : Environment
             Common Environment instance.
-        E_El_Max : float
+        E_El_max : float
             Electric capacity of the battery in [kWh].
-        P_El_Max_Charge : float
+        P_El_max_charge : float
             Maximum charging power in [kW].
-        SOC_Ini : float, optional
+        soc_init : float, optional
             Initial state of charge. Defaults to 50%.
         charging_time : array of binaries
             Indicator when electrical vehicle can be charged.
@@ -36,12 +36,10 @@ class ElectricalVehicle(Battery):
             'daily' : Profile matches one day.
             'weekly' : Profile matches one week.
         """
-        super(ElectricalVehicle, self).__init__(environment,
-                                                E_El_Max,
-                                                P_El_Max_Charge,
-                                                P_El_Max_Charge,
-                                                SOC_Ini=SOC_Ini,
-                                                eta=1,
+        super(ElectricalVehicle, self).__init__(environment, E_El_max,
+                                                P_El_max_charge,
+                                                P_El_max_charge,
+                                                soc_init, eta=1,
                                                 storage_end_equality=False)
         self._kind = "electricalvehicle"
         self._long_ID = "EV_" + self._ID_string

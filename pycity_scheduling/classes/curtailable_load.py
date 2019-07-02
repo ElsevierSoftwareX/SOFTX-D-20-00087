@@ -9,7 +9,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
     Extension of pycity class ElectricalDemand for scheduling purposes.
     """
 
-    def __init__(self, environment, MaxCurtailment, method=0, demand=0,
+    def __init__(self, environment, max_curtailment, method=0, demand=0,
                  annualDemand=0, profileType="H0", singleFamilyHouse=True):
         """Initialize a curtailable load.
 
@@ -17,7 +17,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         ----------
         environment : Environment
             Common Environment instance.
-        MaxCurtailment : float
+        max_curtailment : float
             Maximal Curtailment of the load
         method : {0, 1}, optional
             - 0: provide load curve directly
@@ -49,7 +49,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         )
         self._long_ID = "CUL_" + self._ID_string
 
-        self.max_curt = MaxCurtailment
+        self.max_curt = max_curtailment
         ts = self.timer.time_in_year(from_init=True)
         self.P_El_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
         self.P_El_Curt_Demand = self.P_El_Demand * self.max_curt
