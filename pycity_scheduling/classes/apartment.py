@@ -87,21 +87,23 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
 
-    def reset(self, schedule=True, reference=False):
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        ThermalEntity.reset(self, schedule, reference)
-        ElectricalEntity.reset(self, schedule, reference)
+        ThermalEntity.reset(self, schedule, actual, reference)
+        ElectricalEntity.reset(self, schedule, actual, reference)
 
         for entity in self.get_lower_entities():
-            entity.reset(schedule, reference)
+            entity.reset(schedule, actual, reference)
 
     def addEntity(self, entity):
         """Add entity to apartment.

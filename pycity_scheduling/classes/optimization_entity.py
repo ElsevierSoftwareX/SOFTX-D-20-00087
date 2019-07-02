@@ -63,9 +63,6 @@ class OptimizationEntity(object):
     def update_schedule(self, mode=""):
         raise NotImplementedError
 
-    def set_new_uncertainty(self, unc):
-        pass
-
     def get_objective(self, coeff=1):
         return None
 
@@ -73,20 +70,26 @@ class OptimizationEntity(object):
         """Save the schedule of the current reference scheduling."""
         raise NotImplementedError
 
-    def reset(self, schedule=True, reference=False):
+    def reset(self, schedule=True, actual=True, reference=False):
         pass
 
-    def calculate_costs(self, timestep=None, prices=None, reference=False):
+    def calculate_costs(self, schedule=None, timestep=None, prices=None,
+                        feedin_factor=None):
         """Calculate electricity costs for the OptimizationEntity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
             Energy prices for simulation horizon.
-        reference : bool, optional
-            `True` if costs for reference schedule.
+        feedin_factor : float, optional
+            Factor which is multiplied to the prices for feed-in revenue.
 
         Returns
         -------
@@ -95,18 +98,20 @@ class OptimizationEntity(object):
         """
         return 0
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
+    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the entity.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional
             CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
 
         Returns
         -------

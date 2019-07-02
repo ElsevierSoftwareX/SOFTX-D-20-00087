@@ -98,9 +98,9 @@ class TestBoiler(unittest.TestCase):
 
         co2 = self.bl.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(23750, co2)
-        co2 = self.bl.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.bl.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(11875, co2)
-        co2 = self.bl.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.bl.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
 
@@ -122,9 +122,9 @@ class TestBuilding(unittest.TestCase):
 
         co2 = self.bd.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(2750, co2)
-        co2 = self.bd.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.bd.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(1000, co2)
-        co2 = self.bd.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.bd.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(1100, co2)
 
 
@@ -140,9 +140,9 @@ class TestCityDistrict(unittest.TestCase):
 
         costs = self.cd.calculate_costs(prices=prices, feedin_factor=0.5)
         self.assertEqual(-100, costs)
-        costs = self.cd.calculate_costs(prices=prices, timestep=4)
+        costs = self.cd.calculate_costs(timestep=4, prices=prices)
         self.assertEqual(100, costs)
-        costs = self.cd.calculate_costs(prices=prices, reference=True)
+        costs = self.cd.calculate_costs(schedule='ref', prices=prices)
         self.assertEqual(-40, costs)
 
     def test_calculate_co2(self):
@@ -156,9 +156,9 @@ class TestCityDistrict(unittest.TestCase):
 
         co2 = self.cd.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(2750, co2)
-        co2 = self.cd.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.cd.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(1000, co2)
-        co2 = self.cd.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.cd.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(1100, co2)
 
     def test_self_consumption(self):
@@ -171,7 +171,7 @@ class TestCityDistrict(unittest.TestCase):
 
         self.assertEqual(0.25, self.cd.self_consumption())
         self.assertEqual(0.5, self.cd.self_consumption(timestep=4))
-        self.assertEqual(1, self.cd.self_consumption(reference=True))
+        self.assertEqual(1, self.cd.self_consumption(schedule='ref'))
 
     def test_autarky(self):
         pv = Photovoltaic(self.cd.environment, 0, 0)
@@ -183,7 +183,7 @@ class TestCityDistrict(unittest.TestCase):
 
         self.assertEqual(0.5, self.cd.autarky())
         self.assertEqual(0, self.cd.autarky(timestep=2))
-        self.assertEqual(1, self.cd.autarky(reference=True))
+        self.assertEqual(1, self.cd.autarky(schedule='ref'))
 
 
 class TestCombinedHeatPower(unittest.TestCase):
@@ -198,9 +198,9 @@ class TestCombinedHeatPower(unittest.TestCase):
 
         co2 = self.chp.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(23750, co2)
-        co2 = self.chp.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.chp.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(11875, co2)
-        co2 = self.chp.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.chp.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
 
@@ -255,14 +255,17 @@ class TestElectricalEntity(unittest.TestCase):
 
     def test_calculate_costs(self):
         self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
+        self.ee.P_El_Act_Schedule = np.array([2]*4 + [-4]*4)
         self.ee.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
         prices = np.array([10]*4 + [20]*4)
 
         costs = self.ee.calculate_costs(prices=prices, feedin_factor=0.5)
         self.assertEqual(-100, costs)
-        costs = self.ee.calculate_costs(prices=prices, timestep=4)
+        costs = self.ee.calculate_costs(timestep=4, prices=prices)
         self.assertEqual(100, costs)
-        costs = self.ee.calculate_costs(prices=prices, reference=True)
+        costs = self.ee.calculate_costs(schedule='act', prices=prices)
+        self.assertEqual(20, costs)
+        costs = self.ee.calculate_costs(schedule='ref', prices=prices)
         self.assertEqual(40, costs)
 
     def test_self_consumption(self):
@@ -367,9 +370,9 @@ class TestPhotovoltaic(unittest.TestCase):
 
         co2 = self.pv.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(1500, co2)
-        co2 = self.pv.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.pv.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(750, co2)
-        co2 = self.pv.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.pv.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(600, co2)
 
 
@@ -426,9 +429,9 @@ class TestWindEnergyConverter(unittest.TestCase):
 
         co2 = self.wec.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(500, co2)
-        co2 = self.wec.calculate_co2(co2_emissions=co2_em, timestep=4)
+        co2 = self.wec.calculate_co2(timestep=4, co2_emissions=co2_em)
         self.assertEqual(250, co2)
-        co2 = self.wec.calculate_co2(co2_emissions=co2_em, reference=True)
+        co2 = self.wec.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(200, co2)
 
 

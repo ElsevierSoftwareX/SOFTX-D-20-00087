@@ -60,6 +60,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         self.E_Th_vars = []
         self.E_Th_Init_constr = None
         self.E_Th_Schedule = np.zeros(self.simu_horizon)
+        self.E_Th_Act_Schedule = np.zeros(self.simu_horizon)
         self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
@@ -123,8 +124,11 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         try:
             self.E_Th_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_Th_vars]
+            self.E_Th_Act_Schedule[timestep:timestep+self.op_horizon] \
+                = self.E_Th_Schedule[timestep:timestep+self.op_horizon]
         except gurobi.GurobiError:
             self.E_Th_Schedule[timestep:timestep+self.op_horizon].fill(0)
+            self.E_Th_Act_Schedule[timestep:timestep+self.op_horizon].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )
@@ -137,19 +141,23 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.E_Th_Schedule
         )
 
-    def reset(self, schedule=True, reference=False):
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(ThermalEnergyStorage, self).reset(schedule, reference)
+        super(ThermalEnergyStorage, self).reset(schedule, actual, reference)
 
         if schedule:
             self.E_Th_Schedule.fill(0)
+        if actual:
+            self.E_Th_Act_Schedule.fill(0)
         if reference:
             self.E_Th_Ref_Schedule.fill(0)

@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 
 from .populate_models import populate_models
@@ -7,35 +9,29 @@ from .write_csv import schedule_to_csv
 __all__ = [
     'populate_models',
     'schedule_to_csv',
-    'get_normal_params',
+    'get_uncertainty',
     'compute_profile',
     'get_schedule',
 ]
 
 
-def get_normal_params(sigma_lognormal):
-    """Calculates the sigma and my for a normal distribution.
+def get_uncertainty(sigma, timesteps):
+    """Calculate uncertainty factors for each timestep.
 
     Calculates the sigma and my for the normal distribution, which lead to a
     sigma as specified and a my of 1 for the corresponding lognormal
-    distribution.
+    distribution. These are then used to generate `timesteps` factors.
 
     Parameters
     ----------
-    sigma_lognormal : float
+    sigma : float
         Sigma of the lognormal distribution.
-
-    Returns
-    -------
-    float :
-        Sigma of the normal distribution.
-    float :
-        My of the normal distribution.
+    timesteps : int
+        Number of time steps for which uncertainty factors shall be generated.
     """
-    import math
-    sigma_normal = math.sqrt(math.log(sigma_lognormal**2+1))
+    sigma_normal = math.sqrt(math.log(sigma**2+1))
     my_normal = -sigma_normal**2/2
-    return sigma_normal, my_normal
+    return np.random.lognormal(my_normal, sigma_normal, timesteps)
 
 
 def compute_profile(timer, profile, pattern=None):
@@ -98,17 +94,19 @@ def compute_profile(timer, profile, pattern=None):
         )
 
 
-def get_schedule(entity, reference=False, timestep=None,
-                 energy=False, thermal=False):
+def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
+                 thermal=False):
     """Retrieve a schedule from an OptimizationEntity.
 
     Parameters
     ----------
     entity : pycity_scheduling.classes.OptimizationEntity
         Entity to retrieve the schedule from.
-    reference : bool, optional
-        If `True` retrieve reference schedule.
-        If `False` retrieve normal schedule.
+    schedule_type : str, optional
+        Specify which schedule to use.
+        `None` : Normal schedule
+        'act', 'actual' : Actual schedule
+        'ref', 'reference' : Reference schedule
     timestep : int, optional
         If specified, trim schedule to this timestep.
     energy : bool, optional
@@ -120,17 +118,29 @@ def get_schedule(entity, reference=False, timestep=None,
 
     Returns
     -------
-    np.ndarray :
+    numpy.ndarray :
         Specified schedule.
 
     Raises
     ------
+    ValueError:
+        When an unknown `schedule_type` is given.
     KeyError :
         When specified schedule cannot be found.
     """
     schedule_name = 'E_' if energy else 'P_'
     schedule_name += 'Th_' if thermal else 'El_'
-    schedule_name += 'Ref_' if reference else ''
+    if schedule_type is None:
+        pass
+    elif schedule_type.lower() in ['act', 'actual']:
+        schedule_name += 'Act_'
+    elif schedule_type.lower() in ['ref', 'reference']:
+        schedule_name += 'Ref_'
+    else:
+        raise ValueError(
+            "Unknown `schedule_type`: '{}'. Must be `None`, 'act' or 'ref'."
+            .format(schedule_type)
+        )
     schedule_name += 'Schedule'
     sched = entity.__dict__.get(schedule_name)
     if timestep:

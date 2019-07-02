@@ -1,3 +1,4 @@
+import numpy as np
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from pycity_scheduling.classes.electrical_entity import ElectricalEntity
@@ -6,6 +7,9 @@ from pycity_scheduling.classes.electrical_entity import ElectricalEntity
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
     """
     Extension of pycity class ElectricalDemand for scheduling purposes.
+
+    As for all uncontrollable loads, the `P_El_Schedule` contains the forecast
+    of the load and `P_El_Act_Schedule` contains the actual load.
     """
 
     def __init__(self, environment, method=0, demand=0, annualDemand=0,
@@ -77,10 +81,18 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         self._long_ID = "FL_" + self._ID_string
 
         ts = self.timer.time_in_year(from_init=True)
-        self.P_El_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        self.P_El_Schedule = p
+        self.P_El_Act_Schedule = p
 
     def update_model(self, model, mode=""):
         timestep = self.timer.currentTimestep
         for t in self.op_time_vec:
-            self.P_El_vars[t].lb = self.P_El_Demand[t+timestep]
-            self.P_El_vars[t].ub = self.P_El_Demand[t+timestep]
+            self.P_El_vars[t].lb = self.P_El_Schedule[t+timestep]
+            self.P_El_vars[t].ub = self.P_El_Schedule[t+timestep]
+
+    def update_schedule(self, mode=""):
+        pass
+
+    def reset(self, schedule=True, actual=True, reference=False):
+        pass

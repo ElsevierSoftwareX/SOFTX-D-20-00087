@@ -53,6 +53,7 @@ class Battery(ElectricalEntity, bat.Battery):
         self.E_El_Init_constr = None
         self.E_El_coupl_constrs = []
         self.E_El_Schedule = np.zeros(self.simu_horizon)
+        self.E_El_Act_Schedule = np.zeros(self.simu_horizon)
         self.E_El_Ref_Schedule = np.zeros(self.simu_horizon)
 
     def populate_model(self, model, mode=""):
@@ -130,7 +131,7 @@ class Battery(ElectricalEntity, bat.Battery):
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
-            E_El_Ini = self.E_El_Schedule[timestep - 1]
+            E_El_Ini = self.E_El_Act_Schedule[timestep - 1]
         delta = (
             (self.etaCharge * self.P_El_Demand_vars[0]
              - (1 / self.etaDischarge) * self.P_El_Supply_vars[0])
@@ -170,8 +171,11 @@ class Battery(ElectricalEntity, bat.Battery):
         try:
             self.E_El_Schedule[timestep:timestep+self.op_horizon] \
                 = [var.x for var in self.E_El_vars]
+            self.E_El_Act_Schedule[timestep:timestep+self.op_horizon] \
+                = self.E_El_Schedule[timestep:timestep+self.op_horizon]
         except gurobi.GurobiError:
             self.E_El_Schedule[timestep:self.op_horizon + timestep].fill(0)
+            self.E_El_Act_Schedule[timestep:self.op_horizon + timestep].fill(0)
             raise PyCitySchedulingGurobiException(
                 str(self) + ": Could not read from variables."
             )
@@ -184,13 +188,15 @@ class Battery(ElectricalEntity, bat.Battery):
             self.E_El_Schedule
         )
 
-    def reset(self, schedule=True, reference=False):
+    def reset(self, schedule=True, actual=True, reference=False):
         """Reset entity for new simulation.
 
         Parameters
         ----------
         schedule : bool, optional
             Specify if to reset schedule.
+        actual : bool, optional
+            Specify if to reset actual schedule.
         reference : bool, optional
             Specify if to reset reference schedule.
         """
@@ -198,5 +204,7 @@ class Battery(ElectricalEntity, bat.Battery):
 
         if schedule:
             self.E_El_Schedule.fill(0)
+        if actual:
+            self.E_El_Act_Schedule.fill(0)
         if reference:
             self.E_El_Ref_Schedule.fill(0)

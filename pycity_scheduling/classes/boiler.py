@@ -79,25 +79,27 @@ class Boiler(ThermalEntity, bl.Boiler):
         )
         return obj
 
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
+    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the Boiler.
 
         Parameters
         ----------
+        schedule : str, optional
+            Specify which schedule to use.
+            `None` : Normal schedule
+            'act', 'actual' : Actual schedule
+            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional
             CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
 
         Returns
         -------
         float :
             CO2 emissions in [g].
         """
-        p = util.get_schedule(self, reference, timestep, thermal=True)
+        p = util.get_schedule(self, schedule, timestep, thermal=True)
         co2 = -(sum(p) * self.time_slot / self.eta
                 * constants.CO2_EMISSIONS_GAS)
         return co2
