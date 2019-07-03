@@ -36,23 +36,41 @@ class OptimizationEntity(object):
 
     @property
     def op_horizon(self):
+        """Number of time steps in a scheduling period."""
         return self.timer.timestepsUsedHorizon
 
     @property
     def op_time_vec(self):
+        """Iterator over scheduling period."""
         return range(self.timer.timestepsUsedHorizon)
 
     @property
     def simu_horizon(self):
+        """Number of time steps in the whole simulation horizon."""
         return self.timer.simu_horizon
 
     @property
-    def simu_time_vec(self):
-        return range(self.timer.simu_horizon)
+    def time_slot(self):
+        """Length of a time step as a portion of an hour.
+
+        Examples
+        --------
+        time step length = 60 mins => time_slot = 1
+        time step length = 15 mins => time_slot = 0.25
+        """
+        return self.timer.time_slot
 
     @property
-    def time_slot(self):
-        return self.timer.time_slot
+    def timestep(self):
+        """Time step indicating the current scheduling."""
+        return self.timer.currentTimestep
+
+    @property
+    def op_slice(self):
+        """Slice to select values of current scheduling from whole horizon."""
+        t1 = self.timer.currentTimestep
+        t2 = t1 + self.timer.timestepsUsedHorizon
+        return slice(t1, t2)
 
     def populate_model(self, model, mode=""):
         raise NotImplementedError

@@ -42,10 +42,9 @@ class ThermalEntity(OptimizationEntity):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        t1 = self.timer.currentTimestep
-        t2 = t1 + self.op_horizon
-        self.P_Th_Schedule[t1:t2] = [var.x for var in self.P_Th_vars]
-        self.P_Th_Act_Schedule[t1:t2] = self.P_Th_Schedule[t1:t2]
+        op_slice = self.op_slice
+        self.P_Th_Schedule[op_slice] = [var.x for var in self.P_Th_vars]
+        self.P_Th_Act_Schedule[op_slice] = self.P_Th_Schedule[op_slice]
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model."""

@@ -130,7 +130,7 @@ class Battery(ElectricalEntity, bat.Battery):
             model.remove(self.E_El_Init_constr)
         except gurobi.GurobiError:
             pass
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
@@ -172,10 +172,9 @@ class Battery(ElectricalEntity, bat.Battery):
         """Update the schedule with the scheduling model solution."""
         super(Battery, self).update_schedule()
 
-        t1 = self.timer.currentTimestep
-        t2 = t1 + self.op_horizon
-        self.E_El_Schedule[t1:t2] = [var.x for var in self.E_El_vars]
-        self.E_El_Act_Schedule[t1:t2] = self.E_El_Schedule[t1:t2]
+        op_slice = self.op_slice
+        self.E_El_Schedule[op_slice] = [var.x for var in self.E_El_vars]
+        self.E_El_Act_Schedule[op_slice] = self.E_El_Schedule[op_slice]
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.

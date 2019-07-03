@@ -48,7 +48,7 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         return np.interp(log_wind, self.velocity, self.power, right=0)
 
     def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         for t in self.op_time_vec:
             self.P_El_vars[t].lb = -self.P_El_Supply[t+timestep]
             if self.force_renewables:
@@ -81,22 +81,19 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
                 self.P_El_vars,
                 self.P_El_vars
             )
-            t1 = self.timer.currentTimestep
-            t2 = t1 + self.op_horizon
             obj.addTerms(
-                - 2 * coeff * self.P_El_Supply[t1:t2],
+                - 2 * coeff * self.P_El_Supply[self.op_slice],
                 self.P_El_vars
             )
         return obj
 
     def simulate(self):
-        t1 = self.timer.currentTimestep
-        t2 = t1 + self.timer.mpc_step_width
+        op_slice = self.op_slice
         if self.force_renewables:
             p = self.P_El_Supply
         else:
             p = np.minimum(self.P_El_Supply, self.P_El_Schedule)
-        np.copyto(self.P_El_Act_Schedule[t1:t2], p[t1:t2])
+        np.copyto(self.P_El_Act_Schedule[op_slice], p[op_slice])
 
     def update_deviation_model(self, model, timestep, mode=""):
         """Update deviation model for the current timestep."""

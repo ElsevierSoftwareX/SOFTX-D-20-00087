@@ -94,7 +94,7 @@ class ElectricalVehicle(Battery):
             model.remove(self.E_El_Init_constr)
         except gurobi.GurobiError:
             pass
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
@@ -114,7 +114,7 @@ class ElectricalVehicle(Battery):
         except gurobi.GurobiError:
             pass
         del self.E_El_SOC_constrs[:]
-        charging_time = self.charging_time[timestep:timestep+self.op_horizon]
+        charging_time = self.charging_time[self.op_slice]
         for t in self.op_time_vec:
             if charging_time[t]:
                 self.P_El_Demand_vars[t].ub = self.P_El_Max_Charge

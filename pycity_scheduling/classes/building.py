@@ -132,7 +132,6 @@ class Building(ElectricalEntity, bd.Building):
             Objective function.
         """
         obj = gurobi.QuadExpr()
-        timestep = self.timer.currentTimestep
         if self.objective == "peak_shaving":
             obj.addTerms(
                 [coeff]*self.op_horizon,
@@ -147,7 +146,7 @@ class Building(ElectricalEntity, bd.Building):
             else:
                 # TODO: Print warning.
                 prices = np.ones(self.simu_horizon)
-            prices = prices[timestep:timestep+self.op_horizon]
+            prices = prices[self.op_slice]
             prices = prices * self.op_horizon / sum(prices)
             obj.addTerms(
                 coeff * prices,
@@ -237,7 +236,7 @@ class Building(ElectricalEntity, bd.Building):
         if self.deviation_model is None:
             self._init_deviation_model(mode)
 
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         for t in range(self.timer.mpc_step_width):
             self.update_deviation_model(self.deviation_model,
                                         t + timestep, mode)

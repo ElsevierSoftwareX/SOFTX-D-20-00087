@@ -66,7 +66,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         mode : str, optional
         """
         super(CurtailableLoad, self).populate_model(model, mode)
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         for t in self.op_time_vec:
             self.P_El_vars[t].lb = self.P_El_Curt_Demand[t+timestep]
             self.P_El_vars[t].ub = self.P_El_Demand[t+timestep]

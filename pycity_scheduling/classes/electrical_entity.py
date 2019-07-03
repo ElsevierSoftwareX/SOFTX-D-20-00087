@@ -43,10 +43,9 @@ class ElectricalEntity(OptimizationEntity):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        t1 = self.timer.currentTimestep
-        t2 = t1 + self.op_horizon
-        self.P_El_Schedule[t1:t2] = [var.x for var in self.P_El_vars]
-        self.P_El_Act_Schedule[t1:t2] = self.P_El_Schedule[t1:t2]
+        op_slice = self.op_slice
+        self.P_El_Schedule[op_slice] = [var.x for var in self.P_El_vars]
+        self.P_El_Act_Schedule[op_slice] = self.P_El_Schedule[op_slice]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

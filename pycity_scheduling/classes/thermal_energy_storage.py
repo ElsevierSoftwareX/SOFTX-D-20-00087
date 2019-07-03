@@ -92,7 +92,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_Ini
 
     def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
+        timestep = self.timestep
         try:
             model.remove(self.E_Th_Init_constr)
         except gurobi.GurobiError:
@@ -112,10 +112,10 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
         super(ThermalEnergyStorage, self).update_schedule()
-        t1 = self.timer.currentTimestep
-        t2 = t1 + self.op_horizon
-        self.E_Th_Schedule[t1:t2] = [var.x for var in self.E_Th_vars]
-        self.E_Th_Act_Schedule[t1:t2] = self.E_Th_Schedule[t1:t2]
+
+        op_slice = self.op_slice
+        self.E_Th_Schedule[op_slice] = [var.x for var in self.E_Th_vars]
+        self.E_Th_Act_Schedule[op_slice] = self.E_Th_Schedule[op_slice]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

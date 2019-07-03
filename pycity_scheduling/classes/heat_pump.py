@@ -86,9 +86,8 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
             ))
 
     def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
         for t in self.op_time_vec:
-            cop = self.COP[t+timestep]
+            cop = self.COP[t+self.timestep]
             model.chgCoeff(self.coupl_constrs[t], self.P_El_vars[t], cop)
 
     def update_schedule(self):

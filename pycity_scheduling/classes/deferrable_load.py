@@ -106,8 +106,8 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             pass
         del self.P_El_Sum_constrs[:]
 
-        timestep = self.timer.currentTimestep
-        load_time = self.load_time[timestep:timestep+self.op_horizon]
+        timestep = self.timestep
+        load_time = self.load_time[self.op_slice]
         completed_load = 0
         if load_time[0]:
             for val in self.P_El_Schedule[:timestep][::-1]:
