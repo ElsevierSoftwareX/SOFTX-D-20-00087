@@ -34,6 +34,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
                                                P_Th_nom*1000, eta, 55,
                                                lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
+        self.P_Th_Nom = P_Th_nom
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -51,7 +52,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         ElectricalEntity.populate_model(self, model, mode)
 
         for var in self.P_Th_vars:
-            var.lb = -self.qNominal / 1000
+            var.lb = -self.P_Th_Nom
             var.ub = 0
 
         for t in self.op_time_vec:
@@ -96,7 +97,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         ThermalEntity.populate_deviation_model(self, model, mode)
         ElectricalEntity.populate_deviation_model(self, model, mode)
 
-        self.P_Th_Act_var.lb = -self.qNominal / 1000
+        self.P_Th_Act_var.lb = -self.P_Th_Nom
         self.P_Th_Act_var.ub = 0
         model.addConstr(
             - self.P_Th_Act_var == self.eta * self.P_El_Act_var

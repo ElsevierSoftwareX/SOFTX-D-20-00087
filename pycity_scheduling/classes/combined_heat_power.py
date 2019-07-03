@@ -42,6 +42,7 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
                                                 p_nominal, q_nominal, eta,
                                                 55, lower_activation_limit)
         self._long_ID = "CHP_" + self._ID_string
+        self.P_Th_Nom = P_Th_nom
 
     def populate_model(self, model, mode=""):
         """Add variables and constraints to Gurobi model.
@@ -60,10 +61,10 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         ElectricalEntity.populate_model(self, model, mode)
 
         for var in self.P_Th_vars:
-            var.lb = -self.qNominal / 1000
+            var.lb = -self.P_Th_Nom
             var.ub = 0
         for var in self.P_El_vars:
-            var.lb = -self.pNominal / 1000
+            var.lb = -self.P_Th_Nom
             var.ub = 0
 
         # original function
@@ -122,10 +123,8 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         ThermalEntity.populate_deviation_model(self, model, mode)
         ElectricalEntity.populate_deviation_model(self, model, mode)
 
-        self.P_Th_Act_var.lb = -self.qNominal / 1000
+        self.P_Th_Act_var.lb = -self.P_Th_Nom
         self.P_Th_Act_var.ub = 0
-        self.P_El_Act_var.lb = -self.pNominal / 1000
-        self.P_El_Act_var.ub = 0
         model.addConstr(
             self.P_Th_Act_var * self.sigma == self.P_El_Act_var
         )

@@ -34,7 +34,6 @@ class Boiler(ThermalEntity, bl.Boiler):
                                      1000*P_Th_nom, eta, 55,
                                      lower_activation_limit)
         self._long_ID = "BL_" + self._ID_string
-
         self.P_Th_Nom = P_Th_nom
 
     def populate_model(self, model, mode=""):
