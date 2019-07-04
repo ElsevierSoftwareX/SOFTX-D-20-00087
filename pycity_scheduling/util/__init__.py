@@ -16,7 +16,7 @@ __all__ = [
 
 
 def get_uncertainty(sigma, timesteps):
-    """Calculate uncertainty factors for each timestep.
+    """Compute uncertainty factors with constant standard deviation.
 
     Calculates the sigma and my for the normal distribution, which lead to a
     sigma as specified and a my of 1 for the corresponding lognormal
@@ -28,10 +28,52 @@ def get_uncertainty(sigma, timesteps):
         Sigma of the lognormal distribution.
     timesteps : int
         Number of time steps for which uncertainty factors shall be generated.
+
+    Notes
+    -----
+     - This function is supposed to be used once at the beginning of the
+       simulation.
     """
     sigma_normal = math.sqrt(math.log(sigma**2+1))
     my_normal = -sigma_normal**2/2
     return np.random.lognormal(my_normal, sigma_normal, timesteps)
+
+
+def get_incr_uncertainty(sigma, timesteps, first_timestep):
+    """Compute uncertainty factors with increasing standard deviation.
+
+    All time steps up to `first_timestep` get no uncertainty (factor of `1`).
+    For the following time steps samples are drawn from a lognormal
+    distribution with linearly increasing standard deviation. The standard
+    deviation of the last time steps is `sigma`.
+
+    Parameters
+    ----------
+    sigma : float
+        Standard deviation of the last time step.
+    timesteps : int
+        Total number of time steps for which factors shall be generated.
+    first_timestep : int
+        First time step, from which on uncertainties are generated.
+
+    Returns
+    -------
+    numpy.ndarray :
+        Uncertainty factors.
+
+    Notes
+    -----
+     - This function is supposed to be used before each optimization, where
+       `first_timestep` is the time step indicating the current scheduling
+       period.
+    """
+    length = timesteps - first_timestep
+    incr_sigmas = np.arange(1, length + 1) * sigma / length
+    sigmas_normal = np.sqrt(np.log(incr_sigmas**2+1))
+    mys_normal = -sigmas_normal**2/2
+    p2 = np.random.lognormal(mys_normal, sigmas_normal)
+    p1 = np.ones(first_timestep)
+    return np.concatenate((p1, p2))
 
 
 def compute_profile(timer, profile, pattern=None):
