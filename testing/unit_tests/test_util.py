@@ -54,16 +54,6 @@ class TestSubpackage(unittest.TestCase):
         profile = util.compute_profile(t, weekly, 'weekly')
         self.assertTrue(np.array_equal([0, 1, 0, 1], profile))
 
-    def test_analyze_model(self):
-        m = gp.Model()
-        m.setParam('OutputFlag', False)
-        a = m.addVar()
-        m.addConstr(a <= -1)
-        m.optimize()
-        util.analyze_model(m)
-
-        self.assertEqual(1, m.Params.OutputFlag)
-
 
 class TimerStub:
     def __init__(self):

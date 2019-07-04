@@ -1,6 +1,5 @@
 import gurobipy as gurobi
 
-from pycity_scheduling import util
 from pycity_scheduling.exception import NonoptimalError
 from pycity_scheduling.util import populate_models
 
@@ -48,5 +47,6 @@ def central_optimization(city_district, models=None, beta=1, debug=True):
         city_district.update_schedule()
     except Exception as e:
         if debug:
-            util.analyze_model(model, e)
+            import pycity_scheduling.util.debug as debug
+            debug.analyze_model(model, e)
         raise NonoptimalError("Could not retrieve schedule from model.")

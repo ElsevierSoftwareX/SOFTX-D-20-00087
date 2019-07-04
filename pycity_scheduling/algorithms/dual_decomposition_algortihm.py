@@ -1,7 +1,6 @@
 import numpy as np
 import gurobipy as gurobi
 
-from pycity_scheduling import util
 from pycity_scheduling.classes import (Building, Photovoltaic,
                                        WindEnergyConverter)
 from pycity_scheduling.exception import (MaxIterationError, NonoptimalError)
@@ -86,8 +85,11 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
                 entity.update_schedule()
             except Exception as e:
                 if debug:
-                    util.analyze_model(model, e)
-                raise NonoptimalError("Could not retrieve schedule from model.")
+                    import pycity_scheduling.util.debug as debug
+                    debug.analyze_model(model, e)
+                raise NonoptimalError(
+                    "Could not retrieve schedule from model."
+                )
 
         # ----------------------
         # 2) optimize aggregator
@@ -110,7 +112,8 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
             city_district.update_schedule()
         except Exception as e:
             if debug:
-                util.analyze_model(model, e)
+                import pycity_scheduling.util.debug as debug
+                debug.analyze_model(model, e)
             raise NonoptimalError("Could not retrieve schedule from model.")
 
         # ----------------------

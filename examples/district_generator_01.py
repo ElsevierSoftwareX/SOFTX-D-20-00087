@@ -1,4 +1,5 @@
 import pycity_scheduling.util.factory as factory
+import pycity_scheduling.util.debug as debug
 
 env = factory.generate_standard_environment()
 
@@ -45,5 +46,5 @@ district = factory.generate_tabula_district(env, num_sfh, num_mfh,
                                             mfh_distribution,
                                             mfh_heating_distribution,
                                             mfh_device_probs)
-for nid, node in district.nodes.items():
-    print(nid, node)
+
+debug.print_district(district, 1)

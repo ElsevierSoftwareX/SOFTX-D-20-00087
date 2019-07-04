@@ -1,7 +1,6 @@
 import numpy as np
 import gurobipy as gurobi
 
-from pycity_scheduling import util
 from pycity_scheduling.classes import (Building, Photovoltaic,
                                        WindEnergyConverter)
 from pycity_scheduling.exception import (MaxIterationError, NonoptimalError)
@@ -146,8 +145,11 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
                 )
             except Exception as e:
                 if debug:
-                    util.analyze_model(model, e)
-                raise NonoptimalError("Could not retrieve schedule from model.")
+                    import pycity_scheduling.util.debug as debug
+                    debug.analyze_model(model, e)
+                raise NonoptimalError(
+                    "Could not retrieve schedule from model."
+                )
 
         # ----------------------
         # 2) optimize aggregator
@@ -181,7 +183,8 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
             )
         except Exception as e:
             if debug:
-                util.analyze_model(model, e)
+                import pycity_scheduling.util.debug as debug
+                debug.analyze_model(model, e)
             raise NonoptimalError("Could not retrieve schedule from model.")
 
         # --------------------------
