@@ -38,7 +38,7 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
     runtimes[0] = list()
 
     if models is None:
-        models = populate_models(city_district, "dual-decomposition")
+        models = populate_models(city_district, 'dual-decomposition')
 
     for node_id, node in nodes.items():
         node['entity'].update_model(models[node_id])

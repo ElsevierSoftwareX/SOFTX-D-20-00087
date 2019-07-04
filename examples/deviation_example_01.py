@@ -18,7 +18,7 @@ bd.apartments[0].Th_Demand_list[0].set_new_uncertainty(np.full(8, 1.5))
 bd.apartments[0].El_Demand_list[0].set_new_uncertainty(np.full(8, 1.5))
 
 
-models = populate_models(district, 'admm')
+models = populate_models(district, 'exchange-admm')
 run_simulation(district, 'exchange-admm', models)
 
 

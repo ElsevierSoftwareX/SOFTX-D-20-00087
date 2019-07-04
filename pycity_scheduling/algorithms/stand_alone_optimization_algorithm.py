@@ -22,7 +22,7 @@ def stand_alone_optimization(city_district, models=None, debug=True):
     nodes = city_district.node
 
     if models is None:
-        models = populate_models(city_district, "stand-alone")
+        models = populate_models(city_district, 'stand-alone')
     model = models[0]
 
     city_district.update_model(model)

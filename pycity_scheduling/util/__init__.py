@@ -1,9 +1,8 @@
 import math
 
 import numpy as np
-from gurobipy import GRB
+import gurobipy as gurobi
 
-from .populate_models import populate_models
 from .write_csv import schedule_to_csv
 
 
@@ -95,6 +94,61 @@ def compute_profile(timer, profile, pattern=None):
         )
 
 
+def populate_models(city_district, algorithm):
+    """Create optimization models for scheduling.
+
+    Creates Gurobi model(s) for a scheduling. One model for reference, local or
+    central scheduling and multiple models (one for each node and one for the
+    aggregator) for Exchange ADMM or Dual Decomposition.
+
+    Parameters
+    ----------
+    city_district : pycity_scheduling.classes.CityDistrict
+        District for which models shall be generated.
+    algorithm : str
+        Define which algorithm the models are used for. Must be one of
+        'exchange-admm', 'dual-decompostition', 'stand-alone', 'local' or
+        'central'.
+
+    Returns
+    -------
+    dict :
+        int -> gurobipy.Model
+        `0` : Central or aggregator model.
+        node ids : Bulding models.
+    """
+    gurobi.setParam('OutputFlag', False)
+    op_horizon = city_district.op_horizon
+    op_time_vec = city_district.op_time_vec
+    nodes = city_district.node
+
+    # create dictionary
+    models = {}
+    if algorithm in ['stand-alone', 'local', 'central']:
+        m = gurobi.Model("Central Scheduling Model")
+        P_El_var_list = []
+        for node in nodes.values():
+            entity = node['entity']
+            entity.populate_model(m)
+            P_El_var_list.extend(entity.P_El_vars)
+        city_district.populate_model(m)
+        for t in op_time_vec:
+            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::op_horizon])
+            m.addConstr(city_district.P_El_vars[t] == P_El_var_sum)
+        models[0] = m
+    elif algorithm in ['exchange-admm', 'dual-decomposition']:
+        m = gurobi.Model("Aggregator Scheduling Model")
+        city_district.populate_model(m)
+        models[0] = m
+        for node_id, node in nodes.items():
+            m = gurobi.Model(str(node_id) + " Scheduling Model")
+            node['entity'].populate_model(m)
+            models[node_id] = m
+    else:
+        raise ValueError("Unknown algorithm: {}".format(algorithm))
+    return models
+
+
 def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
                  thermal=False):
     """Retrieve a schedule from an OptimizationEntity.
@@ -167,7 +221,7 @@ _status_codes = [
     'USER_OBJ_LIMIT',
 ]
 
-status_codes_map = {eval(c, {}, GRB.__dict__): c for c in _status_codes}
+status_codes_map = {eval(c, {}, gurobi.GRB.__dict__): c for c in _status_codes}
 
 
 def analyze_model(model, exception=None):
@@ -181,7 +235,7 @@ def analyze_model(model, exception=None):
         Original exception, whose message will be printed
     """
     model.setParam('OutputFlag', True)
-    if model.status == GRB.INF_OR_UNBD:
+    if model.status == gurobi.GRB.INF_OR_UNBD:
         model.setParam('dualreductions', 0)
         model.optimize()
     status = model.status
@@ -189,7 +243,7 @@ def analyze_model(model, exception=None):
     if exception:
         print("Original Error:")
         print(exception)
-    if status == GRB.INFEASIBLE:
+    if status == gurobi.GRB.INFEASIBLE:
         model.computeIIS()
         model.write('model.ilp')
         print("IIS written to 'model.ilp'.")

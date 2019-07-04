@@ -28,7 +28,7 @@ def central_optimization(city_district, models=None, beta=1, debug=True):
     nodes = city_district.node
 
     if models is None:
-        models = populate_models(city_district, "central")
+        models = populate_models(city_district, 'central')
     model = models[0]
     city_district.update_model(model)
 

@@ -77,7 +77,7 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
     runtimes[0] = list()
 
     if models is None:
-        models = populate_models(city_district, "admm")
+        models = populate_models(city_district, 'exchange-admm')
 
     old_P_El_Schedule[0] = np.zeros(op_horizon)
     current_P_El_Schedule[0] = np.zeros(op_horizon)

@@ -22,7 +22,7 @@ def local_optimization(city_district, models=None, debug=True):
     nodes = city_district.node
 
     if models is None:
-        models = populate_models(city_district, "local")
+        models = populate_models(city_district, 'local')
     model = models[0]
     city_district.update_model(model)
 
