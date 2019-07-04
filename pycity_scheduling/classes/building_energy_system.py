@@ -158,17 +158,3 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
             yield self.battery
         if self.hasPv:
             yield self.pv
-
-    def get_heating_entities(self):
-        """Yields
-        ------
-        All contianed heating devices.
-        """
-        if self.hasBoiler:
-            yield self.boiler
-        if self.hasChp:
-            yield self.chp
-        if self.hasElectricalHeater:
-            yield self.electricalHeater
-        if self.hasHeatpump:
-            yield self.heatpump
