@@ -58,7 +58,8 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         self.COP = cop
         self.P_Th_Nom = P_Th_nom
 
-        self.El_Th_coupl_constr = None
+        self.coupl_constrs = []
+        self.Act_coupl_constr = None
 
     def populate_model(self, model, mode=""):
         """Add variables to Gurobi model.
@@ -77,13 +78,18 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         for var in self.P_Th_vars:
             var.lb = -self.P_Th_Nom
-            var.ub = -self.lowerActivationLimit*self.P_Th_Nom
-
+            var.ub = 0
         for t in self.op_time_vec:
-            model.addConstr(
-                -self.P_Th_vars[t] == self.COP[t] * self.P_El_vars[t],
+            self.coupl_constrs.append(model.addConstr(
+                self.P_El_vars[t] - self.P_Th_vars[t] == 0,
                 "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
-            )
+            ))
+
+    def update_model(self, model, mode=""):
+        timestep = self.timer.currentTimestep
+        for t in self.op_time_vec:
+            cop = self.COP[t+timestep]
+            model.chgCoeff(self.coupl_constrs[t], self.P_El_vars[t], cop)
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
@@ -129,7 +135,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         self.P_Th_Act_var.lb = -self.P_Th_Nom
         self.P_Th_Act_var.ub = 0
-        self.El_Th_coupl_constr = model.addConstr(
+        self.Act_coupl_constr = model.addConstr(
             self.P_El_Act_var + self.P_Th_Act_var == 0
         )
 
@@ -138,7 +144,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         Changes the coefficient of the coupling constraint to the current COP.
         """
-        model.chgCoeff(self.El_Th_coupl_constr,
+        model.chgCoeff(self.Act_coupl_constr,
                        self.P_El_Act_var, self.COP[timestep])
 
     def update_actual_schedule(self, timestep):

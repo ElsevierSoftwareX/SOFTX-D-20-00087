@@ -455,12 +455,30 @@ class TestHeatPump(unittest.TestCase):
         e = get_env(4, 8)
         self.hp = HeatPump(e, 10, cop=np.full(8, 11))
 
+    def test_populate_model(self):
+        m = gp.Model()
+        self.hp.populate_model(m)
+        m.update()
+
+        c = self.hp.coupl_constrs[0]
+        self.assertEqual(1, m.getCoeff(c, self.hp.P_El_vars[0]))
+        self.assertEqual(-1, m.getCoeff(c, self.hp.P_Th_vars[0]))
+
+    def test_update_model(self):
+        m = gp.Model()
+        self.hp.populate_model(m)
+        self.hp.update_model(m)
+        m.update()
+
+        c = self.hp.coupl_constrs[0]
+        self.assertEqual(11, m.getCoeff(c, self.hp.P_El_vars[0]))
+
     def test_populate_devitation_model(self):
         m = gp.Model()
         self.hp.populate_deviation_model(m)
         m.update()
 
-        c = self.hp.El_Th_coupl_constr
+        c = self.hp.Act_coupl_constr
         self.assertEqual(1, m.getCoeff(c, self.hp.P_El_Act_var))
         self.assertEqual(1, m.getCoeff(c, self.hp.P_Th_Act_var))
 
@@ -470,7 +488,7 @@ class TestHeatPump(unittest.TestCase):
         self.hp.update_deviation_model(m, 0)
         m.update()
 
-        c = self.hp.El_Th_coupl_constr
+        c = self.hp.Act_coupl_constr
         self.assertEqual(11, m.getCoeff(c, self.hp.P_El_Act_var))
 
 
