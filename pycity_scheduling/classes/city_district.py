@@ -10,7 +10,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
     as the aggregator.
     """
 
-    def __init__(self, environment, objective="price"):
+    def __init__(self, environment, objective='price', valley_profile=None):
         """Initialize CityDistrict.
 
         Parameters
@@ -19,14 +19,16 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         objective : str, optional
             Objective for the aggregator. Defaults to 'price'.
             - 'price' : Optimize for the prices given by `prices.da_prices`.
-            - 'valley_filling' : Try to flatten the scheudle as much as
-                                 possible.
+            - 'peak-shaving' : Try to flatten the scheudle as much as
+                               possible.
             - 'none' : No objective.
+        valley_profile : np.ndarray, optional
+            Profile to be filled with valley filling.
         """
         super(CityDistrict, self).__init__(environment)
         self._long_ID = "CD_" + self._ID_string
-
         self.objective = objective
+        self.valley_profile = valley_profile
 
     def populate_model(self, model, mode=""):
         super(CityDistrict, self).populate_model(model, mode)
@@ -36,17 +38,36 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
 
     def get_objective(self, coeff=1):
         obj = gurobi.QuadExpr()
-        if self.objective == "valley_filling":
+        if self.objective == 'peak-shaving':
             obj.addTerms(
                 [1] * self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
-        elif self.objective == "price":
-            prices = self.environment.prices.da_prices
+        elif self.objective == 'valley-filling':
             obj.addTerms(
-                prices[self.op_slice],
+                [1] * self.op_horizon,
+                self.P_El_vars,
                 self.P_El_vars
+            )
+            valley = self.valley_profile[self.op_slice]
+            obj.addTerms(
+                2 * valley,
+                self.P_El_vars
+            )
+        elif self.objective == 'price':
+            prices = self.environment.prices.da_prices[self.op_slice]
+            s = sum(abs(prices))
+            if s > 0:
+                prices = prices * self.op_horizon / s
+                obj.addTerms(
+                    coeff * prices,
+                    self.P_El_vars
+                )
+        elif self.objective != 'none':
+            raise ValueError(
+                "Unknown objective {}. Must be 'peak-shaving', "
+                "'valley-filling', 'price' or 'none'".format(self.objective)
             )
         return obj
 

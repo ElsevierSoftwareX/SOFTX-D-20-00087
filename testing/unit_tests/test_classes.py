@@ -167,6 +167,19 @@ class TestBuilding(unittest.TestCase):
         e = get_env(4, 8)
         self.bd = Building(e)
 
+    def test_get_objective(self):
+        m, var_list = get_model(4)
+        self.bd.P_El_vars = var_list
+        m.optimize()
+
+        self.bd.environment.prices.tou_prices = np.array([1]*2 + [4]*6)
+        self.assertAlmostEqual(8.4, self.bd.get_objective().getValue())
+        self.bd.environment.prices.co2_prices = np.array([4]*2 + [1]*6)
+        self.bd.objective = 'co2'
+        self.assertAlmostEqual(3.6, self.bd.get_objective().getValue())
+        self.bd.objective = 'peak-shaving'
+        self.assertAlmostEqual(14, self.bd.get_objective().getValue())
+
     def test_calculate_co2(self):
         bes = BuildingEnergySystem(self.bd.environment)
         pv = Photovoltaic(self.bd.environment, 0, 0)
@@ -190,6 +203,19 @@ class TestCityDistrict(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8)
         self.cd = CityDistrict(e)
+
+    def test_get_objective(self):
+        m, var_list = get_model(4)
+        self.cd.P_El_vars = var_list
+        m.optimize()
+
+        self.cd.environment.prices.da_prices = np.array([1]*2 + [4]*6)
+        self.assertAlmostEqual(8.4, self.cd.get_objective().getValue())
+        self.cd.objective = 'peak-shaving'
+        self.assertAlmostEqual(14, self.cd.get_objective().getValue())
+        self.cd.objective = 'valley-filling'
+        self.cd.valley_profile = np.array([-1]*8)
+        self.assertAlmostEqual(2, self.cd.get_objective().getValue())
 
     def test_calculate_costs(self):
         self.cd.P_El_Schedule = np.array([10]*4 + [-20]*4)

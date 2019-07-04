@@ -14,9 +14,9 @@ class TestAlgorithms(unittest.TestCase):
         p = Prices(t)
         w = Weather(t)
         e = Environment(t, w, p)
-        cd = CityDistrict(e, objective='valley_filling')
+        cd = CityDistrict(e, objective='peak-shaving')
 
-        bd1 = Building(e, objective='peak_shaving')
+        bd1 = Building(e, objective='peak-shaving')
         cd.addEntity(bd1, [0, 0])
         bes = BuildingEnergySystem(e)
         bd1.addEntity(bes)
@@ -32,7 +32,7 @@ class TestAlgorithms(unittest.TestCase):
         sh = SpaceHeating(e, method=0, loadcurve=load)
         ap.addEntity(sh)
 
-        bd2 = Building(e, objective='peak_shaving')
+        bd2 = Building(e, objective='peak-shaving')
         cd.addEntity(bd2, [0, 0])
         bes = BuildingEnergySystem(e)
         bd2.addEntity(bes)

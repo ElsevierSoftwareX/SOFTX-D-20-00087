@@ -17,7 +17,7 @@ class Building(ElectricalEntity, bd.Building):
      - exchange of thermal energy is currently not supported / turned off
     """
 
-    def __init__(self, environment, objective="price", name=None,
+    def __init__(self, environment, objective='price', name=None,
                  profile_type=None, building_type=None,
                  storage_end_equality=False):
         """Initialize building.
@@ -30,7 +30,9 @@ class Building(ElectricalEntity, bd.Building):
             - 'price' : Optimize for the prices given by `prices.tou_prices`.
             - 'co2' : Optimize for the CO2 emissions given by
                       `prices.co2_prices`.
-            - 'peak_shaving' : Try to flatten the scheudle as much as possible.
+            - 'peak-shaving' : Try to flatten the schedule as much as possible.
+            - 'none' : No objective (leave all flexibility to other
+                       participants).
         name : str, optional
             Name for the building.
             If name is None set it to self._long_ID
@@ -117,9 +119,9 @@ class Building(ElectricalEntity, bd.Building):
     def get_objective(self, coeff=1):
         """Objective function of the building.
 
-        Return the objective function of the bulding wheighted with coeff.
-        Depending on self.objective build objective function for shape
-        shifting, or price / CO2 minimization.
+        Return the objective function of the building wheighted with `coeff`.
+        Depending on `self.objective` build objective function for peak
+        shaving, price / CO2 minimization or empty objective.
 
         Parameters
         ----------
@@ -132,25 +134,29 @@ class Building(ElectricalEntity, bd.Building):
             Objective function.
         """
         obj = gurobi.QuadExpr()
-        if self.objective == "peak_shaving":
+        if self.objective == 'peak-shaving':
             obj.addTerms(
                 [coeff]*self.op_horizon,
                 self.P_El_vars,
                 self.P_El_vars
             )
-        else:
-            if self.objective == "price":
+        elif self.objective in ['price', 'co2']:
+            if self.objective == 'price':
                 prices = self.environment.prices.tou_prices
-            elif self.objective == "co2":
-                prices = self.environment.prices.co2_prices
             else:
-                # TODO: Print warning.
-                prices = np.ones(self.simu_horizon)
+                prices = self.environment.prices.co2_prices
             prices = prices[self.op_slice]
-            prices = prices * self.op_horizon / sum(prices)
-            obj.addTerms(
-                coeff * prices,
-                self.P_El_vars
+            s = sum(abs(prices))
+            if s > 0:
+                prices = prices * self.op_horizon / s
+                obj.addTerms(
+                    coeff * prices,
+                    self.P_El_vars
+                )
+        elif self.objective != 'none':
+            raise ValueError(
+                "Unknown objective {}. Must be 'peak-shaving', 'price', 'co2' "
+                "or 'none'".format(self.objective)
             )
         return obj
 
