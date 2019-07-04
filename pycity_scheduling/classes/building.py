@@ -5,7 +5,7 @@ from pycity_scheduling import util
 
 from .electrical_entity import ElectricalEntity
 from .thermal_entity import ThermalEntity
-from pycity_scheduling.exception import UnoptimalError
+from pycity_scheduling.exception import NonoptimalError
 
 
 class Building(ElectricalEntity, bd.Building):
@@ -251,7 +251,7 @@ class Building(ElectricalEntity, bd.Building):
             if self.deviation_model.status != 2:
                 if debug:
                     util.analyze_model(self.deviation_model)
-                raise UnoptimalError(
+                raise NonoptimalError(
                     "Could not retrieve solution from deviation model."
                 )
             self.update_actual_schedule(t + timestep)

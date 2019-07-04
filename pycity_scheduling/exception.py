@@ -6,5 +6,5 @@ class MaxIterationError(SchedulingError):
     """Exception raised, when the maximum number of iterations is reached."""
 
 
-class UnoptimalError(SchedulingError):
+class NonoptimalError(SchedulingError):
     """Exception raised, when a model does not lead to an optimal solution."""
