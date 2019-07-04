@@ -11,8 +11,8 @@ class ThermalEntity(OptimizationEntity):
     This class provides functionalities common to all thermal entities.
     """
 
-    def __init__(self, timer, *args, **kwargs):
-        super(ThermalEntity, self).__init__(timer, *args, **kwargs)
+    def __init__(self, environment, *args, **kwargs):
+        super(ThermalEntity, self).__init__(environment, *args, **kwargs)
 
         self.P_Th_vars = []
         self.P_Th_Schedule = np.zeros(self.simu_horizon)

@@ -29,10 +29,8 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         force_renewables : bool, optional
             `True` if generation may not be reduced for optimization puposes.
         """
-        super(WindEnergyConverter, self).__init__(
-            environment.timer, environment,
-            velocity, power, hub_height, roughness
-        )
+        super(WindEnergyConverter, self).__init__(environment, velocity, power,
+                                                  hub_height, roughness)
         self._long_ID = "WEC_" + self._ID_string
 
         self.force_renewables = force_renewables

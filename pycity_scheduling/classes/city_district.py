@@ -23,7 +23,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                                  possible.
             - 'none' : No objective.
         """
-        super(CityDistrict, self).__init__(environment.timer, environment)
+        super(CityDistrict, self).__init__(environment)
         self._long_ID = "CD_" + self._ID_string
 
         self.objective = objective

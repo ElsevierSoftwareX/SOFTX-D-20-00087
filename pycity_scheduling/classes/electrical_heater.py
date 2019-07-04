@@ -30,9 +30,8 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
             `lower_activation_limit = 1`: Two-point controlled
         """
         # Flow temperature of 55 C
-        super(ElectricalHeater, self).__init__(environment.timer, environment,
-                                               P_Th_nom*1000, eta, 55,
-                                               lower_activation_limit)
+        super(ElectricalHeater, self).__init__(environment, P_Th_nom*1000, eta,
+                                               55, lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
 

@@ -41,8 +41,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             If `lt_pattern` does not match `load_time`.
         """
         shape = environment.timer.timestepsTotal
-        super(DeferrableLoad, self).__init__(environment.timer, environment, 0,
-                                             np.zeros(shape))
+        super(DeferrableLoad, self).__init__(environment, 0, np.zeros(shape))
 
         self._long_ID = "DL_" + self._ID_string
 

@@ -43,10 +43,9 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             - G5 : Bakery
             - G6 : Weekend operation
         """
-        super(CurtailableLoad, self).__init__(
-            environment.timer, environment, method, demand * 1000,
-            annualDemand, profileType, singleFamilyHouse
-        )
+        super(CurtailableLoad, self).__init__(environment, method, demand*1000,
+                                              annualDemand, profileType,
+                                              singleFamilyHouse)
         self._long_ID = "CUL_" + self._ID_string
 
         self.max_curt = max_curtailment

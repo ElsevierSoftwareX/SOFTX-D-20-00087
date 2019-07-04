@@ -72,10 +72,9 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
            http://www.die-stromsparinitiative.de/fileadmin/bilder/Stromspiegel/
            Brosch%C3%BCre/Stromspiegel2014web_final.pdf
         """
-        super(FixedLoad, self).__init__(environment.timer, environment,
-                                        method, demand*1000, annualDemand,
-                                        profileType, singleFamilyHouse,
-                                        total_nb_occupants,
+        super(FixedLoad, self).__init__(environment, method, demand*1000,
+                                        annualDemand, profileType,
+                                        singleFamilyHouse, total_nb_occupants,
                                         randomizeAppliances,
                                         lightConfiguration, occupancy)
         self._long_ID = "FL_" + self._ID_string

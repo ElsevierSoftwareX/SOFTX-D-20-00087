@@ -21,8 +21,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             netto floor area in [m^2]
         occupancy : Occupancy, optional
         """
-        super(Apartment, self).__init__(environment.timer,
-                                        environment, net_floor_area, occupancy)
+        super(Apartment, self).__init__(environment, net_floor_area, occupancy)
         self._long_ID = "APM_" + self._ID_string
 
         self.Th_Demand_list = []

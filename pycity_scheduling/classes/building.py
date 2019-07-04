@@ -59,7 +59,7 @@ class Building(ElectricalEntity, bd.Building):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        super(Building, self).__init__(environment.timer, environment)
+        super(Building, self).__init__(environment)
 
         self._long_ID = "BD_" + self._ID_string
         if name is None:

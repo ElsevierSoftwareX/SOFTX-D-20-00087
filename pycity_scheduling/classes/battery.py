@@ -36,7 +36,7 @@ class Battery(ElectricalEntity, bat.Battery):
         """
         capacity = E_El_max * 3600 * 1000
         soc_abs = soc_init * capacity  # absolute SOC
-        super(Battery, self).__init__(environment.timer, environment, soc_abs,
+        super(Battery, self).__init__(environment, soc_abs,
                                       capacity, 0, eta, eta)
         self._long_ID = "BAT_" + self._ID_string
 

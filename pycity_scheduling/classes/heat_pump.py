@@ -51,9 +51,8 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
                 "Unknown type for `cop`: {}. Must be `numpy.ndarray`, `int` "
                 "or `float`".format(type(cop))
             )
-        super(HeatPump, self).__init__(environment.timer, environment,
-                                       [], 55, [], [], cop, 55,
-                                       lower_activation_limit)
+        super(HeatPump, self).__init__(environment, [], 55, [], [],
+                                       cop, 55, lower_activation_limit)
         self._long_ID = "HP_" + self._ID_string
         self.COP = cop
         self.P_Th_Nom = P_Th_nom

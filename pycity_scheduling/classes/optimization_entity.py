@@ -10,7 +10,7 @@ class OptimizationEntity(object):
 
     static_entity_id = 0
 
-    def __init__(self, timer, *args, **kwargs):
+    def __init__(self, environment, *args, **kwargs):
         """Set up OptimizationEntity.
 
         Parameters
@@ -24,7 +24,15 @@ class OptimizationEntity(object):
         self._long_ID = ""
         self._kind = ""
 
-        self.timer = timer
+        self.timer = environment.timer
+
+        from .electrical_entity import ElectricalEntity
+        from .thermal_entity import ThermalEntity
+        if self.__class__ not in (ElectricalEntity, ThermalEntity,
+                                  OptimizationEntity):
+            # This allows ElectricalEntity and ThermalEntity to be instantiated
+            # on their own
+            args = (environment, *args)
         super(OptimizationEntity, self).__init__(*args, **kwargs)
 
     def __str__(self):

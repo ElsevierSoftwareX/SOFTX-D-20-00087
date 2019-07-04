@@ -31,10 +31,8 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         """
         # Room temperature of 20 C and flow temperature of 55 C
         capacity = E_Th_max / self.cWater / 35 * 3.6e6
-        super(ThermalEnergyStorage, self).__init__(
-            environment.timer, environment, 55,
-            capacity, 55, 20, loss_factor
-        )
+        super(ThermalEnergyStorage, self).__init__(environment, 55, capacity,
+                                                   55, 20, loss_factor)
         self._long_ID = "TES_" + self._ID_string
 
         self.E_Th_Max = E_Th_max

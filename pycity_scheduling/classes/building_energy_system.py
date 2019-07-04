@@ -11,8 +11,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
     """
 
     def __init__(self, environment):
-        super(BuildingEnergySystem, self).__init__(environment.timer,
-                                                   environment)
+        super(BuildingEnergySystem, self).__init__(environment)
         self._long_ID = "BES_" + self._ID_string
 
     def populate_model(self, model, mode=""):

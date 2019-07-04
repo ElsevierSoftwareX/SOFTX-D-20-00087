@@ -30,9 +30,8 @@ class Boiler(ThermalEntity, bl.Boiler):
             `lower_activation_limit = 1`: Two-point controlled
         """
         # Flow temperature of 55 C
-        super(Boiler, self).__init__(environment.timer, environment,
-                                     1000*P_Th_nom, eta, 55,
-                                     lower_activation_limit)
+        super(Boiler, self).__init__(environment, 1000*P_Th_nom, eta,
+                                     55, lower_activation_limit)
         self._long_ID = "BL_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
 

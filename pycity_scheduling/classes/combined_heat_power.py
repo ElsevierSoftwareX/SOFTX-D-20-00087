@@ -38,9 +38,9 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         else:
             p_nominal = P_El_nom * 1000
         # Flow temperature of 55 C
-        super(CombinedHeatPower, self).__init__(environment.timer, environment,
-                                                p_nominal, q_nominal, eta,
-                                                55, lower_activation_limit)
+        super(CombinedHeatPower, self).__init__(environment, p_nominal,
+                                                q_nominal, eta, 55,
+                                                lower_activation_limit)
         self._long_ID = "CHP_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
 

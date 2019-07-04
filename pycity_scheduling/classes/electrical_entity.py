@@ -12,8 +12,8 @@ class ElectricalEntity(OptimizationEntity):
     This class provides functionalities common to all electrical entities.
     """
 
-    def __init__(self, timer, *args, **kwargs):
-        super(ElectricalEntity, self).__init__(timer, *args, **kwargs)
+    def __init__(self, environment, *args, **kwargs):
+        super(ElectricalEntity, self).__init__(environment, *args, **kwargs)
 
         self.P_El_vars = []
         self.P_El_Schedule = np.zeros(self.simu_horizon)

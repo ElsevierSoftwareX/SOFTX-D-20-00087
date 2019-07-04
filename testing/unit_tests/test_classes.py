@@ -330,7 +330,7 @@ class TestFixedLoad(unittest.TestCase):
 class TestElectricalEntity(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8, 4)
-        self.ee = ElectricalEntity(e.timer)
+        self.ee = ElectricalEntity(e)
         self.ee.environment = e
 
     def test_update_schedule(self):
@@ -595,7 +595,7 @@ class TestThermalEnergyStorage(unittest.TestCase):
 class TestThermalEntity(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8, 4)
-        self.th = ThermalEntity(e.timer)
+        self.th = ThermalEntity(e)
         self.th.environment = e
 
     def test_update_schedule(self):
