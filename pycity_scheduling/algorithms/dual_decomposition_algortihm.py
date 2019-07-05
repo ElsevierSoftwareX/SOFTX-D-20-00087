@@ -8,7 +8,8 @@ from pycity_scheduling.util import populate_models
 
 
 def dual_decomposition(city_district, models=None, eps_primal=0.01,
-                       rho=0.01, max_iterations=10000, debug=True):
+                       rho=0.01, max_iterations=10000, robustness=None,
+                       debug=True):
     """Implementation of the Dual Decomposition Algorithm.
 
     Parameters
@@ -22,6 +23,10 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
         Stepsize for the dual decomposition algorithm.
     max_iterations : int, optional
         Maximum number of ADMM iterations.
+    robustness : tuple, optional
+        Tuple of two floats. First entry defines how many time steps are
+        protected from deviations. Second entry defines the magnitude of
+        deviations which are considered.
     debug : bool, optional
         Specify wether detailed debug information shall be printed.
     """
@@ -40,7 +45,7 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
         models = populate_models(city_district, 'dual-decomposition')
 
     for node_id, node in nodes.items():
-        node['entity'].update_model(models[node_id])
+        node['entity'].update_model(models[node_id], robustness=robustness)
 
     city_district.update_model(models[0])
 

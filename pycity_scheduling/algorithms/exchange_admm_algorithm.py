@@ -8,7 +8,8 @@ from pycity_scheduling.util import populate_models
 
 
 def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
-                  eps_dual=1.0, rho=2.0, max_iterations=1000, debug=True):
+                  eps_dual=1.0, rho=2.0, robustness=None, max_iterations=1000,
+                  debug=True):
     """Perform Exchange ADMM on a city district.
 
     Do the scheduling of electrical energy in a city district using the
@@ -31,6 +32,10 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
         Stepsize for the ADMM algorithm.
     max_iterations : int, optional
         Maximum number of ADMM iterations.
+    robustness : tuple, optional
+        Tuple of two floats. First entry defines how many time steps are
+        protected from deviations. Second entry defines the magnitude of
+        deviations which are considered.
     debug : bool, optional
         Specify wether detailed debug information shall be printed.
 
@@ -83,7 +88,7 @@ def exchange_admm(city_district, models=None, beta=1.0, eps_primal=0.1,
     for node_id, node in nodes.items():
         old_P_El_Schedule[node_id] = np.zeros(op_horizon)
         current_P_El_Schedule[node_id] = np.zeros(op_horizon)
-        node['entity'].update_model(models[node_id])
+        node['entity'].update_model(models[node_id], robustness=robustness)
 
     city_district.update_model(models[0])
 
