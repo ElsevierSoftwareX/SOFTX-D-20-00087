@@ -4,7 +4,8 @@ from pycity_scheduling.exception import NonoptimalError
 from pycity_scheduling.util import populate_models
 
 
-def stand_alone_optimization(city_district, models=None, debug=True):
+def stand_alone_optimization(city_district, models=None, robustness=None,
+                             debug=True):
     """Implementation of the reference optimization algorithm.
 
     Schedule all entities in `city_district` on their own.
@@ -14,6 +15,8 @@ def stand_alone_optimization(city_district, models=None, debug=True):
     city_district : CityDistrict
     models : dict, optional
         Holds a single `gurobi.Model` for the whole district.
+    robustness : tuple, optional
+        Not used here. Parameter exists for consistency among algorithms.
     debug : bool, optional
         Specify wether detailed debug information shall be printed.
     """

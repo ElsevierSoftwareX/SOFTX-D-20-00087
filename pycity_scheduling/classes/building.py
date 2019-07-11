@@ -1,7 +1,7 @@
 import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.Building as bd
-from pycity_scheduling import util
+from pycity_scheduling import util, classes
 
 from .electrical_entity import ElectricalEntity
 from .thermal_entity import ThermalEntity
@@ -74,6 +74,7 @@ class Building(ElectricalEntity, bd.Building):
         self.building_type = building_type
         self.storage_end_equality = storage_end_equality
 
+        self.robust_constrs = []
         self.deviation_model = None
 
     def populate_model(self, model, mode=""):
@@ -115,6 +116,90 @@ class Building(ElectricalEntity, bd.Building):
                 self.P_El_vars[t] == P_El_var_sum,
                 "{0:s}_P_El_at_t={1}".format(self._long_ID, t)
             )
+
+    def update_model(self, model, mode="", robustness=None):
+        for entity in self.get_lower_entities():
+            entity.update_model(model, mode)
+
+        try:
+            model.remove(self.robust_constrs)
+        except gurobi.GurobiError:
+            pass
+        del self.robust_constrs[:]
+        model.update()
+
+        if robustness is not None and self.bes.hasTes:
+            self._set_robust_constraints(model, robustness)
+
+    def _set_robust_constraints(self, model, robustness):
+        timestep = self.timer.currentTimestep
+        E_Th_vars = self.bes.tes.E_Th_vars
+        E_Th_Max = self.bes.tes.E_Th_Max
+        end_value = self.bes.tes.SOC_Ini * E_Th_Max
+        uncertain_P_Th = np.zeros(self.op_horizon)
+        P_Th_Demand_sum = np.zeros(self.op_horizon)
+
+        # aggregate demand from all thermal demands
+        t1 = timestep
+        t2 = timestep + self.op_horizon
+        for apartment in self.apartments:
+            for entity in apartment.Th_Demand_list:
+                if isinstance(entity, classes.SpaceHeating):
+                    P_Th_Demand_sum += entity.P_Th_Schedule[t1:t2]
+
+        P_Th_Max_Supply = sum(
+            e.P_Th_Nom for e in classes.filter_entities(self, 'heating_devices')
+        )
+
+        # Get parameter for robustness conservativeness
+        lambda_i, lambda_d = divmod(robustness[0], 1)
+        lambda_i = int(lambda_i)
+        if lambda_i >= self.op_horizon:
+            lambda_i = self.op_horizon - 1
+            lambda_d = 1
+
+        for t in self.op_time_vec:
+            uncertain_P_Th[t] = min(P_Th_Demand_sum[t] * robustness[1],
+                                    P_Th_Max_Supply)
+            tmp = sorted(uncertain_P_Th, reverse=True)
+            uncertain_E_Th = self.time_slot * (sum(tmp[:lambda_i])
+                                               + tmp[lambda_i]*lambda_d)
+
+            # If environment is too uncertain, keep storage on half load
+            if uncertain_E_Th >= E_Th_Max / 2:
+                self.robust_constrs.append(
+                    model.addConstr(
+                        E_Th_vars[t] == E_Th_Max / 2,
+                        "{0:s}_E_Th_robust_at_t={1}".format(self._long_ID, t)
+                    )
+                )
+            # standard case in
+            elif t < self.op_horizon - 1:
+                self.robust_constrs.append(
+                    model.addConstr(
+                        E_Th_vars[t] + uncertain_E_Th <= E_Th_Max,
+                        "{0:s}_E_Th_robust_at_t={1}".format(self._long_ID, t)
+                    )
+                )
+                self.robust_constrs.append(
+                    model.addConstr(
+                        E_Th_vars[t] - uncertain_E_Th >= 0.0,
+                        "{0:s}_E_Th_robust_at_t={1}".format(self._long_ID, t)
+                    )
+                )
+            # set storage to uncertain_E_Th or set SOC_End to SOC_Ini to
+            # prevent depletion of storage
+            else:
+                if self.bes.tes.SOC_Ini <= 0.5:
+                    end_value = max(end_value, uncertain_E_Th)
+                else:
+                    end_value = min(end_value, E_Th_Max - uncertain_E_Th)
+                self.robust_constrs.append(
+                    model.addConstr(
+                        E_Th_vars[t] == end_value,
+                        "{0:s}_E_Th_robust_at_t={1}".format(self._long_ID, t)
+                    )
+                )
 
     def get_objective(self, coeff=1):
         """Objective function of the building.
@@ -159,10 +244,6 @@ class Building(ElectricalEntity, bd.Building):
                 "or 'none'".format(self.objective)
             )
         return obj
-
-    def update_model(self, model, mode=""):
-        for entity in self.get_lower_entities():
-            entity.update_model(model, mode)
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""

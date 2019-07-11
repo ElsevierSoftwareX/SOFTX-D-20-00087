@@ -3,7 +3,7 @@ from pycity_scheduling.util import populate_models
 
 
 def run_simulation(city_district, algorithm='exchange-admm', models=None,
-                   mode='full', debug=True):
+                   mode='full', robustness=None, debug=True):
     """Run a simulation for the complete horizon.
 
     Parameters
@@ -16,6 +16,10 @@ def run_simulation(city_district, algorithm='exchange-admm', models=None,
     mode : str, optional
         If 'full' use all possibilities to minimize adjustments.
         Else do not try to compensate adjustments.
+    robustness : tuple, optional
+        Tuple of two floats. First entry defines how many time steps are
+        protected from deviations. Second entry defines the magnitude of
+        deviations which are considered.
     debug : bool, optional
         Specify wether detailed debug information shall be printed.
     """
@@ -29,7 +33,8 @@ def run_simulation(city_district, algorithm='exchange-admm', models=None,
     city_district.reset()
 
     while ti.currentTimestep + ti.timestepsUsedHorizon <= ti.simu_horizon:
-        optim_algorithm(city_district, models, debug)
+        optim_algorithm(city_district, models,
+                        robustness=robustness, debug=debug)
         t1 = ti.currentTimestep
         t2 = ti.currentTimestep + ti.mpc_step_width
         for entity in city_district.get_lower_entities():
