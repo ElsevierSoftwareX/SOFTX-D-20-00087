@@ -19,9 +19,9 @@ district.addEntity(bd, (0, 0))
 central_optimization(district)
 # Results without RO are now in the _Ref schedules
 bd.save_ref_schedule()
-# Protect 8 time steps and assume a deviation of 50% in each time step
+# Protect 6 time steps and assume a deviation of 50% in each time step
 # Such a high deviation is unrealistic but makes for a good example.
-central_optimization(district, robustness=(8, 0.5))
+central_optimization(district, robustness=(6, 0.5))
 
 
 np.set_printoptions(formatter={'float': '{: >8.3f}'.format})
