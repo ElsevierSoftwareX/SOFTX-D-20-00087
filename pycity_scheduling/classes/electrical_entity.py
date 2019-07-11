@@ -319,7 +319,8 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Peak reduction ratio.
         """
-        p = util.get_schedule(self, actual)
+        schedule = 'act' if actual else None
+        p = util.get_schedule(self, schedule)
         ref = self.P_El_Ref_Schedule
         if timestep:
             ref = ref[:timestep]
