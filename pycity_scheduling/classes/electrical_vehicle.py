@@ -58,7 +58,21 @@ class ElectricalVehicle(Battery):
         self.P_El_Drive_vars = []
         self.E_El_SOC_constrs = []
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
+        """Add variables and constraints to Gurobi model.
+
+        Call parent's `populate_model` method. Replace coupling
+        constraints from Battery class with coupling constraints
+        of EV. Simulate power consumption while driving.
+
+        Parameters
+        ----------
+        model : gurobi.Model
+        mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control decisions
+        """
         super(ElectricalVehicle, self).populate_model(model, mode)
 
         # Simulate power consumption while driving

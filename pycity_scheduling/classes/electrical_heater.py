@@ -21,7 +21,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
             Nominal thermal power output in [kW].
         eta : float, optional
             Efficiency of the electrical heater.
-        lower_activation_limit : float, optional
+        lower_activation_limit : float, optional (only adhered to in integer mode)
             Must be in [0, 1]. Lower activation limit of the electrical heater
             as a percentage of the rated power. When the electrical heater is
             running its power nust be zero or between the lower activation
@@ -34,8 +34,9 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
                                                55, lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
+        self.P_State_vars = []
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
 
         Call parent's `populate_model` method and set thermal variables upper
@@ -46,17 +47,50 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control decisions
         """
         ThermalEntity.populate_model(self, model, mode)
         ElectricalEntity.populate_model(self, model, mode)
 
-        for var in self.P_Th_vars:
-            var.lb = -self.P_Th_Nom
-            var.ub = 0
+        if mode == "convex" or "integer":
+            for var in self.P_Th_vars:
+                var.lb = -self.P_Th_Nom
+                var.ub = 0
 
-        for t in self.op_time_vec:
-            model.addConstr(
-                - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
+            for t in self.op_time_vec:
+                model.addConstr(
+                    - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
+                )
+            if mode == "integer" and self.lowerActivationLimit != 0.0:
+                # Add additional binary variables representing operating state
+                for t in self.op_time_vec:
+                    self.P_State_vars.append(
+                        model.addVar(
+                            vtype=gurobi.GRB.BINARY,
+                            name="%s_Mode_at_t=%i"
+                                 % (self._long_ID, t + 1)
+                        )
+                    )
+                model.update()
+
+                for t in self.op_time_vec:
+                    # Couple state to operating variable
+                    model.addConstr(
+                        self.P_Th_vars[t][t]
+                        >= -self.P_State_vars[t] * self.P_Th_Nom
+                    )
+                    model.addConstr(
+                        self.P_Th_vars[t][t]
+                        <= -self.P_State_vars[t] * self.P_Th_Nom * self.lowerActivationLimit
+                    )
+                    # Remove redundant limits of P_Th_vars
+                    self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
+                    self.P_Th_vars[t].ub = gurobi.GRB.INFINITY
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by electrical heater." % str(mode)
             )
 
     def get_objective(self, coeff=1):

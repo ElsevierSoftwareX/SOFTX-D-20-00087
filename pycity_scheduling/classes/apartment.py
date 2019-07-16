@@ -28,7 +28,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         self.El_Demand_list = []
         self.All_Demands_list = []
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.
 
         Call both parents' `populate_model` methods and set variables lower
@@ -40,32 +40,40 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
         ThermalEntity.populate_model(self, model, mode)
         ElectricalEntity.populate_model(self, model, mode)
 
-        P_Th_var_list = []
-        P_El_var_list = []
-        for entity in self.Th_Demand_list:
-            entity.populate_model(model, mode)
-            P_Th_var_list.extend(entity.P_Th_vars)
-        for entity in self.El_Demand_list:
-            entity.populate_model(model, mode)
-            P_El_var_list.extend(entity.P_El_vars)
+        if mode == "convex" or mode == "integer":
+            P_Th_var_list = []
+            P_El_var_list = []
+            for entity in self.Th_Demand_list:
+                entity.populate_model(model, mode)
+                P_Th_var_list.extend(entity.P_Th_vars)
+            for entity in self.El_Demand_list:
+                entity.populate_model(model, mode)
+                P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.op_time_vec:
-            self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
-            self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
-            model.addConstr(
-                self.P_Th_vars[t] == P_Th_var_sum,
-                "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
-            )
-            model.addConstr(
-                self.P_El_vars[t] == P_El_var_sum,
-                "{0:s}_P_El_at_t={1}".format(self._long_ID, t)
-            )
+            for t in self.op_time_vec:
+                self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
+                self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
+                P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+                P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
+                model.addConstr(
+                    self.P_Th_vars[t] == P_Th_var_sum,
+                    "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
+                )
+                model.addConstr(
+                    self.P_El_vars[t] == P_El_var_sum,
+                    "{0:s}_P_El_at_t={1}".format(self._long_ID, t)
+                )
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by apartment." % str(mode)
+                )
 
     def update_model(self, model, mode=""):
         for entity in self.All_Demands_list:

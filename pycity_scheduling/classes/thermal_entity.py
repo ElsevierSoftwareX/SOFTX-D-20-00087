@@ -20,7 +20,7 @@ class ThermalEntity(OptimizationEntity):
         self.P_Th_Ref_Schedule = np.zeros(self.simu_horizon)
         self.P_Th_Act_var = None
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
 
         Add variables for the thermal demand of the entity to the optimization
@@ -30,6 +30,9 @@ class ThermalEntity(OptimizationEntity):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
         self.P_Th_vars = []
         for t in self.op_time_vec:

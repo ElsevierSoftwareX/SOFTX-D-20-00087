@@ -52,7 +52,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         self.E_Th_Act_var = None
         self.E_Th_Act_coupl_constr = None
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model
 
         Call parent's `populate_model` method and set variables lower bounds
@@ -64,30 +64,39 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
         super(ThermalEnergyStorage, self).populate_model(model, mode)
-        for var in self.P_Th_vars:
-            var.lb = -gurobi.GRB.INFINITY
 
-        self.E_Th_vars = []
-        for t in self.op_time_vec:
-            self.E_Th_vars.append(
-                model.addVar(
-                    ub=self.E_Th_Max,
-                    name="%s_E_Th_at_t=%i" % (self._long_ID, t+1)
+        if mode == "convex" or "integer":
+            for var in self.P_Th_vars:
+                var.lb = -gurobi.GRB.INFINITY
+
+            self.E_Th_vars = []
+            for t in self.op_time_vec:
+                self.E_Th_vars.append(
+                    model.addVar(
+                        ub=self.E_Th_Max,
+                        name="%s_E_Th_at_t=%i" % (self._long_ID, t+1)
+                    )
                 )
+            model.update()
+            for t in range(1, self.op_horizon):
+                model.addConstr(
+                    self.E_Th_vars[t]
+                    == self.E_Th_vars[t-1] * (1 - self.Th_Loss_coeff)
+                       + self.P_Th_vars[t] * self.time_slot,
+                    "{0:s}_P_Th_t={1}".format(self._long_ID, t)
+                )
+            self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_Ini
+            if self.storage_end_equality:
+                self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_Ini
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by TES." % str(mode)
             )
-        model.update()
-        for t in range(1, self.op_horizon):
-            model.addConstr(
-                self.E_Th_vars[t]
-                == self.E_Th_vars[t-1] * (1 - self.Th_Loss_coeff)
-                   + self.P_Th_vars[t] * self.time_slot,
-                "{0:s}_P_Th_t={1}".format(self._long_ID, t)
-            )
-        self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_Ini
-        if self.storage_end_equality:
-            self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_Ini
 
     def update_model(self, model, mode=""):
         timestep = self.timestep

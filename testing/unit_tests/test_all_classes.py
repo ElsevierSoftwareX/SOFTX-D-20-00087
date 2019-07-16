@@ -32,6 +32,6 @@ class TestAllClasses(unittest.TestCase):
         ap.addMultipleEntities([fl, sh])
         ev = ElectricalVehicle(e, 10, 10, 1, [1]*48+[0]*48)
         ap.addEntity(ev)
-        cl = CurtailableLoad(e, 0.5, method=1, annualDemand=1000)
+        cl = CurtailableLoad(e, 0.1, 0.5)
         dl = DeferrableLoad(e, 10, 10, [1]*96)
         ap.addMultipleEntities([cl, dl])

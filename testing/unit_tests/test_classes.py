@@ -199,6 +199,129 @@ class TestBuilding(unittest.TestCase):
         self.assertEqual(1100, co2)
 
 
+class TestCurtailableLoad(unittest.TestCase):
+    combinations = [(4, 1), (3, 1), (2, 1), (1, 1), (2, 2), (3, 1),
+                    (0, 1), (0, 2), (0, 3), (0, 4)]
+    horizon = 5
+    def setUp(self):
+        self.e = get_env(5, 20)
+    def test_populate_model(self):
+        model = gp.Model('CLModel')
+        cl = CurtailableLoad(self.e, 2, 0.5)
+        cl.populate_model(model)
+        obj = gp.quicksum(cl.P_El_vars)
+        model.setObjective(obj)
+        model.optimize()
+        cl.update_schedule()
+        self.assertAlmostEqual(5, obj.getValue())
+        self.assertTrue(
+            5, sum(cl.P_El_Schedule[:5]))
+
+    def test_populate_model_on_off(self):
+        model = gp.Model('CLModel')
+        cl = CurtailableLoad(self.e, 2, 0.5, 2, 2)
+        cl.populate_model(model)
+        obj = gp.quicksum(cl.P_El_vars)
+        model.setObjective(obj)
+        model.optimize()
+        cl.update_schedule()
+        self.assertAlmostEqual(7, obj.getValue())
+        self.assertAlmostEqual(7, sum(cl.P_El_Schedule[:5]))
+
+    def test_populate_model_integer(self):
+        for low, full in self.combinations:
+            min_states = sum(np.tile([False]*low + [True]*full, 5)[:5])
+            for nom in [0.5, 1, 2]:
+                with self.subTest(msg="max_low={} min_full={} nom={}".format(low, full, nom)):
+                    model = gp.Model('CLModel')
+                    cl = CurtailableLoad(self.e, nom, 0.75, low, full)
+                    cl.populate_model(model, mode="integer")
+                    obj = gp.quicksum(cl.P_El_vars)
+                    model.setObjective(obj)
+                    model.optimize()
+                    cl.update_schedule()
+                    schedule_states = np.isclose(cl.P_El_Schedule[:5], [nom]*5)
+                    self.assertTrue(
+                        np.array_equal(schedule_states, cl.P_State_schedule[:5])
+                    )
+                    self.assertEqual(min_states, sum(schedule_states))
+                    self.assertAlmostEqual(min_states*nom+(5-min_states)*nom*0.75, obj.getValue())
+
+    def test_update_model(self):
+        for width in [1, 2, 4, 5]:
+            with self.subTest(msg="step width={}".format(width)):
+                model = gp.Model('CLModel')
+                cl = CurtailableLoad(self.e, 2, 0.5)
+                cl.populate_model(model)
+                obj = gp.quicksum(cl.P_El_vars)
+                model.setObjective(obj)
+                for t in range(0, 20-5+1, width):
+                    self.e.timer.currentTimestep = t
+                    cl.upate_model(model)
+                    model.optimize()
+                    cl.update_schedule()
+                    self.assertAlmostEqual(5, obj.getValue())
+                    self.assertAlmostEqual(5, sum(cl.P_El_Schedule[t:t+5]))
+
+    def test_update_model_on_off(self):
+        for low, full in self.combinations:
+            for width in [1, 2, 4, 5]:
+                with self.subTest(msg="max_low={} min_full={} step width={}".format(low, full, width)):
+                    model = gp.Model('CLModel')
+                    cl = CurtailableLoad(self.e, 2, 0.5, low, full)
+                    cl.populate_model(model)
+                    obj = gp.quicksum(cl.P_El_vars)
+                    model.setObjective(obj)
+                    for t in range(0, 20-5+1, width):
+                        self.e.timer.currentTimestep = t
+                        cl.upate_model(model)
+                        model.optimize()
+                        cl.update_schedule()
+
+                    endtimestep = self.e.timer.currentTimestep + cl.op_horizon
+                    for t in range(0, endtimestep):
+                        self.assertGreaterEqual(cl.P_El_Schedule[t], 1)
+                        self.assertLessEqual(cl.P_El_Schedule[t], 2)
+                    for t in range(0, endtimestep-(low+full)+1):
+                        self.assertGreaterEqual(sum(cl.P_El_Schedule[t:t+low+full]),
+                                                1*low + 2*full)
+
+    def test_update_model_integer(self):
+        for low, full in self.combinations:
+            states = np.tile([False] * low + [True] * full, 20)[:20]
+            for width in [1, 2, 4, 5]:
+                with self.subTest(msg="max_low={} min_full={} step width={}".format(low, full, width)):
+                    model = gp.Model('CLModel')
+                    cl = CurtailableLoad(self.e, 2, 0.5, low, full)
+                    cl.populate_model(model, mode="integer")
+                    obj = gp.quicksum(cl.P_El_vars)
+                    model.setObjective(obj)
+                    for t in range(0, 20-5+1, width):
+                        self.e.timer.currentTimestep = t
+                        cl.upate_model(model)
+                        obj = gp.quicksum(cl.P_El_vars)
+                        obj += cl.get_objective(coeff_flex=0.2)
+                        model.setObjective(obj)
+                        for i, var in enumerate(cl.P_State_vars):
+                            var.lb = states[t+i]
+                            var.ub = states[t+i]
+                        model.optimize()
+                        self.assertEqual(model.Status, 2)
+                        cl.update_schedule()
+                        schedule_states_el = np.isclose(cl.P_El_Schedule[t:t+5], [2] * 5)
+                        schedule_states_b = np.isclose(cl.P_State_schedule[t:t+5], [1] * 5)
+                        self.assertTrue(
+                            np.array_equal(schedule_states_el, schedule_states_b)
+                        )
+                        self.assertTrue(
+                            np.array_equal(states[t:t+5], schedule_states_b)
+                        )
+                        self.assertTrue(np.allclose(
+                            cl.P_El_Schedule[t:t+5],
+                            np.full(5, 2 * 0.5) + np.array(states[t:t+5]) * (2 * (1. - 0.5))
+                        ))
+
+
 class TestCityDistrict(unittest.TestCase):
     def setUp(self):
         e = get_env(4, 8)
@@ -290,45 +413,91 @@ class TestCombinedHeatPower(unittest.TestCase):
 
 class TestDeferrableLoad(unittest.TestCase):
     def setUp(self):
-        e = get_env(6, 9)
+        self.e = get_env(6, 9)
         self.lt = [0, 1, 1, 1, 0, 1, 1, 1, 0]
-        self.dl = DeferrableLoad(e, 19, 10, load_time=self.lt)
 
     def test_update_model(self):
+        dl = DeferrableLoad(self.e, 19, 10, load_time=self.lt)
         model = gp.Model('DLModel')
-        self.dl.populate_model(model)
+        dl.populate_model(model)
         obj = gp.QuadExpr()
         obj.addTerms(
             [1] * 6,
-            self.dl.P_El_vars,
-            self.dl.P_El_vars
+            dl.P_El_vars,
+            dl.P_El_vars
         )
         model.setObjective(obj)
-        self.dl.update_model(model)
+        dl.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10 * 4/3, gp.quicksum(self.dl.P_El_vars).getValue() * self.dl.time_slot, places=5)
+        self.assertAlmostEqual(10 * 4/3, gp.quicksum(dl.P_El_vars).getValue() * dl.time_slot, places=5)
 
-        self.dl.timer.mpc_update()
-        self.dl.update_model(model)
+        dl.timer.mpc_update()
+        dl.update_model(model)
         model.optimize()
 
         for t, c in enumerate(self.lt[1:7]):
             if c:
-                self.assertEqual(19, self.dl.P_El_vars[t].ub)
+                self.assertEqual(19, dl.P_El_vars[t].ub)
             else:
-                self.assertEqual(0, self.dl.P_El_vars[t].ub)
-        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[4].x, places=5)
-        self.assertAlmostEqual(13.333333, self.dl.P_El_vars[5].x, places=5)
+                self.assertEqual(0, dl.P_El_vars[t].ub)
+        self.assertAlmostEqual(13.333333, dl.P_El_vars[4].x, places=5)
+        self.assertAlmostEqual(13.333333, dl.P_El_vars[5].x, places=5)
 
-        self.dl.timer.mpc_update()
-        self.dl.timer.mpc_update()
-        self.dl.P_El_Schedule[1] = 15
-        self.dl.P_El_Schedule[2] = 15
-        self.dl.update_model(model)
+        dl.timer.mpc_update()
+        dl.timer.mpc_update()
+        dl.P_El_Schedule[1] = 15
+        dl.P_El_Schedule[2] = 15
+        dl.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10, self.dl.P_El_vars[0].x, places=5)
+        self.assertAlmostEqual(10, dl.P_El_vars[0].x, places=5)
+
+    def test_update_model_integer(self):
+        dl = DeferrableLoad(self.e, 19, 9.5 - 1e-6, load_time=self.lt)
+        model = gp.Model('DLModel')
+        dl.populate_model(model, mode="integer")
+        obj = gp.QuadExpr()
+        obj.addTerms(
+            [0] * 2 + [1] * 2 + [0] * 2,
+            dl.P_El_vars,
+            dl.P_El_vars
+        )
+        model.setObjective(obj)
+        dl.update_model(model, mode="integer")
+        model.optimize()
+        dl.update_schedule()
+
+        self.assertTrue(np.array_equal(
+            dl.P_El_Schedule[:6],
+            [0, 19, 19, 0, 0, 19]
+        ))
+        for _ in range(3):
+            dl.timer.mpc_update()
+            dl.update_model(model, mode="integer")
+            model.optimize()
+            dl.update_schedule()
+
+        self.assertTrue(np.array_equal(
+            dl.P_El_Schedule,
+            [0, 19, 19, 0, 0, 0, 19, 19, 0]
+        ))
+
+    def test_update_model_integer_small_horizon(self):
+        e = get_env(1, 9)
+        dl = DeferrableLoad(e, 19, 9.5, load_time=self.lt)
+        model = gp.Model('DLModel')
+        dl.populate_model(model, mode="integer")
+        for _ in range(8):
+            dl.update_model(model, mode="integer")
+            model.optimize()
+            dl.update_schedule()
+            dl.timer.mpc_update()
+
+        self.assertTrue(np.array_equal(
+            dl.P_El_Schedule,
+            [0, 19, 19, 0, 0, 19, 19, 0, 0]
+        ))
 
 
 class TestFixedLoad(unittest.TestCase):

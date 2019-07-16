@@ -30,11 +30,29 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         self.objective = objective
         self.valley_profile = valley_profile
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
+        """Add variables and constraints to Gurobi model.
+
+        Call parent's `populate_model` methods and set variables lower
+        bounds to `-gurobi.GRB.INFINITY`.
+
+        Parameters
+        ----------
+        model : gurobi.Model
+        mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
+        """
         super(CityDistrict, self).populate_model(model, mode)
 
-        for var in self.P_El_vars:
-            var.lb = -gurobi.GRB.INFINITY
+        if mode == "convex" or mode == "integer":
+            for var in self.P_El_vars:
+                var.lb = -gurobi.GRB.INFINITY
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by city district." % str(mode)
+            )
 
     def get_objective(self, coeff=1):
         obj = gurobi.QuadExpr()

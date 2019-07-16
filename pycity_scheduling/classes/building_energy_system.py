@@ -14,7 +14,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
         super(BuildingEnergySystem, self).__init__(environment)
         self._long_ID = "BES_" + self._ID_string
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.
 
         Call both parent's `populate_model` methods and set variables lower
@@ -26,31 +26,39 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
         ThermalEntity.populate_model(self, model, mode)
         ElectricalEntity.populate_model(self, model, mode)
 
-        P_Th_var_list = []
-        P_El_var_list = []
-        for entity in self.get_lower_entities():
-            entity.populate_model(model, mode)
-            if isinstance(entity, ThermalEntity):
-                P_Th_var_list.extend(entity.P_Th_vars)
-            if isinstance(entity, ElectricalEntity):
-                P_El_var_list.extend(entity.P_El_vars)
+        if mode == "convex" or mode == "integer":
+            P_Th_var_list = []
+            P_El_var_list = []
+            for entity in self.get_lower_entities():
+                entity.populate_model(model, mode)
+                if isinstance(entity, ThermalEntity):
+                    P_Th_var_list.extend(entity.P_Th_vars)
+                if isinstance(entity, ElectricalEntity):
+                    P_El_var_list.extend(entity.P_El_vars)
 
-        for t in self.op_time_vec:
-            self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
-            self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
-            model.addConstr(
-                self.P_Th_vars[t] == P_Th_var_sum,
-                "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
-            )
-            model.addConstr(
-                self.P_El_vars[t] == P_El_var_sum,
-                "{0:s}_P_El_t={1}".format(self._long_ID, t)
+            for t in self.op_time_vec:
+                self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
+                self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
+                P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
+                P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
+                model.addConstr(
+                    self.P_Th_vars[t] == P_Th_var_sum,
+                    "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
+                )
+                model.addConstr(
+                    self.P_El_vars[t] == P_El_var_sum,
+                    "{0:s}_P_El_t={1}".format(self._long_ID, t)
+                )
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by BES." % str(mode)
             )
 
     def update_model(self, model, mode=""):

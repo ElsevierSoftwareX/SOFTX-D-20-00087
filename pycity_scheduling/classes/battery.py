@@ -48,6 +48,7 @@ class Battery(ElectricalEntity, bat.Battery):
 
         self.P_El_Demand_vars = []
         self.P_El_Supply_vars = []
+        self.P_State_vars = []
         self.E_El_vars = []
         self.E_El_Init_constr = None
         self.E_El_coupl_constrs = []
@@ -59,7 +60,7 @@ class Battery(ElectricalEntity, bat.Battery):
         self.E_El_Act_var = None
         self.E_El_Act_coupl_constr = None
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.
 
         Call parent's `populate_model` method and set variables lower bounds to
@@ -72,56 +73,89 @@ class Battery(ElectricalEntity, bat.Battery):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control decisions
         """
         super(Battery, self).populate_model(model, mode)
-
-        # additional variables for battery
-        self.P_El_Demand_vars = []
-        self.P_El_Supply_vars = []
-        self.E_El_vars = []
-        for t in self.op_time_vec:
-            self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            self.P_El_Demand_vars.append(
-                model.addVar(
-                    ub=self.P_El_Max_Charge,
-                    name="%s_P_El_Demand_at_t=%i"
-                         % (self._long_ID, t + 1)
+        if mode == "convex" or mode == "integer":
+            # additional variables for battery
+            self.P_El_Demand_vars = []
+            self.P_El_Supply_vars = []
+            self.E_El_vars = []
+            for t in self.op_time_vec:
+                self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
+                self.P_El_Demand_vars.append(
+                    model.addVar(
+                        ub=self.P_El_Max_Charge,
+                        name="%s_P_El_Demand_at_t=%i"
+                             % (self._long_ID, t + 1)
+                    )
                 )
-            )
-            self.P_El_Supply_vars.append(
-                model.addVar(
-                    ub=self.P_El_Max_Discharge,
-                    name="%s_P_El_Supply_at_t=%i"
-                         % (self._long_ID, t + 1)
+                self.P_El_Supply_vars.append(
+                    model.addVar(
+                        ub=self.P_El_Max_Discharge,
+                        name="%s_P_El_Supply_at_t=%i"
+                             % (self._long_ID, t + 1)
+                    )
                 )
-            )
-            self.E_El_vars.append(
-                model.addVar(
-                    ub=self.E_El_Max,
-                    name="%s_E_El_at_t=%i" % (self._long_ID, t + 1)
+                self.E_El_vars.append(
+                    model.addVar(
+                        ub=self.E_El_Max,
+                        name="%s_E_El_at_t=%i" % (self._long_ID, t + 1)
+                    )
                 )
-            )
-        model.update()
+            model.update()
 
-        for t in self.op_time_vec:
-            # Need to be stored to enable removal by the Electric Vehicle
-            model.addConstr(
-                self.P_El_vars[t]
-                == self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
-            )
+            for t in self.op_time_vec:
+                # Need to be stored to enable removal by the Electric Vehicle
+                model.addConstr(
+                    self.P_El_vars[t]
+                    == self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
+                )
 
-        for t in range(1, self.op_horizon):
-            delta = (
-                (self.etaCharge * self.P_El_Demand_vars[t]
-                 - (1/self.etaDischarge) * self.P_El_Supply_vars[t])
-                * self.time_slot
+            for t in range(1, self.op_horizon):
+                delta = (
+                    (self.etaCharge * self.P_El_Demand_vars[t]
+                     - (1/self.etaDischarge) * self.P_El_Supply_vars[t])
+                    * self.time_slot
+                )
+                self.E_El_coupl_constrs.append(model.addConstr(
+                    self.E_El_vars[t] == self.E_El_vars[t-1] + delta
+                ))
+            self.E_El_vars[-1].lb = self.E_El_Max * self.SOC_Ini
+            if self.storage_end_equality:
+                self.E_El_vars[-1].ub = self.E_El_Max * self.SOC_Ini
+
+            if mode == "integer":
+                # Add additional binary variables representing dis-/charging state
+                for t in self.op_time_vec:
+                    self.P_State_vars.append(
+                        model.addVar(
+                            vtype=gurobi.GRB.BINARY,
+                            name="%s_P_Mode_at_t=%i"
+                                 % (self._long_ID, t + 1)
+                        )
+                    )
+                model.update()
+                for t in self.op_time_vec:
+                    # Couple state to discharging and charging variables
+                    model.addConstr(
+                        self.P_El_Demand_vars[t]
+                        <= self.P_State_vars[t] * self.P_El_Max_Charge
+                    )
+                    model.addConstr(
+                        self.P_El_Supply_vars[t]
+                        <= (1 - self.P_State_vars[t]) * self.P_El_Max_Discharge
+                    )
+                    # Remove redundant ub of P_El_Demand_vars and P_El_Supply_vars
+                    self.P_El_Demand_vars[t].ub = gurobi.GRB.INFINITY
+                    self.P_El_Supply_vars[t].ub = gurobi.GRB.INFINITY
+
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by battery." % str(mode)
             )
-            self.E_El_coupl_constrs.append(model.addConstr(
-                self.E_El_vars[t] == self.E_El_vars[t-1] + delta
-            ))
-        self.E_El_vars[-1].lb = self.E_El_Max * self.SOC_Ini
-        if self.storage_end_equality:
-            self.E_El_vars[-1].ub = self.E_El_Max * self.SOC_Ini
 
     def update_model(self, model, mode=""):
         # raises GurobiError if constraint is from a prior scheduling

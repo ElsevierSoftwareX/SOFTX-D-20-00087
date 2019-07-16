@@ -21,7 +21,7 @@ class ElectricalEntity(OptimizationEntity):
         self.P_El_Ref_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Act_var = None
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
 
         Add variables for the electrical demand / supply of the entity to the
@@ -31,15 +31,23 @@ class ElectricalEntity(OptimizationEntity):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
-        self.P_El_vars = []
-        for t in self.op_time_vec:
-            self.P_El_vars.append(
-                model.addVar(
-                    name="%s_P_El_at_t=%i" % (self._long_ID, t+1)
+        if mode == "convex" or mode == "integer":
+            self.P_El_vars = []
+            for t in self.op_time_vec:
+                self.P_El_vars.append(
+                    model.addVar(
+                        name="%s_P_El_at_t=%i" % (self._long_ID, t+1)
+                    )
                 )
-            )
-        model.update()
+            model.update()
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by electric entity." % str(mode)
+                )
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""

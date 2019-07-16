@@ -27,7 +27,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
             If int or float, a constant COP over the whole horizon is assumed.
             If omitted, an air-water heat pump is assumed and the COP is
             calculated with the ambient air temperature.
-        lower_activation_limit : float, optional
+        lower_activation_limit : float, optional (only adhered to in integer mode)
             Must be in [0, 1]. Lower activation limit of the heat pump as a
             percentage of the rated power. When the heat pump is running its
             power nust be zero or between the lower activation limit and its
@@ -60,7 +60,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         self.coupl_constrs = []
         self.Act_coupl_constr = None
 
-    def populate_model(self, model, mode=""):
+    def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
 
         Call parent's `populate_model` method and set thermal variables lower
@@ -71,18 +71,51 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         ----------
         model : gurobi.Model
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control decisions
         """
         ThermalEntity.populate_model(self, model, mode)
         ElectricalEntity.populate_model(self, model, mode)
 
-        for var in self.P_Th_vars:
-            var.lb = -self.P_Th_Nom
-            var.ub = 0
-        for t in self.op_time_vec:
-            self.coupl_constrs.append(model.addConstr(
-                self.P_El_vars[t] - self.P_Th_vars[t] == 0,
-                "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
-            ))
+        if mode == "convex" or "integer":
+            for var in self.P_Th_vars:
+                var.lb = -self.P_Th_Nom
+                var.ub = 0
+            for t in self.op_time_vec:
+                self.coupl_constrs.append(model.addConstr(
+                    self.P_El_vars[t] - self.P_Th_vars[t] == 0,
+                    "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
+                ))
+            if mode == "integer" and self.lowerActivationLimit != 0.0:
+                # Add additional binary variables representing operating state
+                for t in self.op_time_vec:
+                    self.P_State_vars.append(
+                        model.addVar(
+                            vtype=gurobi.GRB.BINARY,
+                            name="%s_Mode_at_t=%i"
+                                 % (self._long_ID, t + 1)
+                        )
+                    )
+                model.update()
+
+                for t in self.op_time_vec:
+                    # Couple state to operating variable
+                    model.addConstr(
+                        self.P_Th_vars[t][t]
+                        >= -self.P_State_vars[t] * self.P_Th_Nom
+                    )
+                    model.addConstr(
+                        self.P_Th_vars[t][t]
+                        <= -self.P_State_vars[t] * self.P_Th_Nom * self.lowerActivationLimit
+                    )
+                    # Remove redundant limits of P_Th_vars
+                    self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
+                    self.P_Th_vars[t].ub = gurobi.GRB.INFINITY
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by heat pump." % str(mode)
+            )
 
     def update_model(self, model, mode=""):
         for t in self.op_time_vec:
