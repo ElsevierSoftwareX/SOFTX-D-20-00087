@@ -307,7 +307,7 @@ class TestDeferrableLoad(unittest.TestCase):
         self.dl.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10, gp.quicksum(self.dl.P_El_vars), places=5)
+        self.assertAlmostEqual(10 * 4/3, gp.quicksum(self.dl.P_El_vars).getValue() * self.dl.time_slot, places=5)
 
         self.dl.timer.mpc_update()
         self.dl.update_model(model)
