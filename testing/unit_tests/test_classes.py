@@ -91,8 +91,8 @@ class TestBattery(unittest.TestCase):
         a = np.arange(3)
 
         self.bat.update_schedule()
-        self.assertTrue(np.array_equal(a, self.bat.P_El_Schedule))
-        self.assertTrue(np.array_equal(a * 2, self.bat.E_El_Schedule))
+        assert_equal_array(self.bat.P_El_Schedule, a)
+        assert_equal_array(self.bat.E_El_Schedule, a * 2)
 
     def test_populate_deviation_model(self):
         m = gp.Model()
@@ -241,9 +241,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     model.optimize()
                     cl.update_schedule()
                     schedule_states = np.isclose(cl.P_El_Schedule[:5], [nom]*5)
-                    self.assertTrue(
-                        np.array_equal(schedule_states, cl.P_State_schedule[:5])
-                    )
+                    assert_equal_array(cl.P_State_schedule[:5], schedule_states)
                     self.assertEqual(min_states, sum(schedule_states))
                     self.assertAlmostEqual(min_states*nom+(5-min_states)*nom*0.75, obj.getValue())
 
@@ -310,16 +308,12 @@ class TestCurtailableLoad(unittest.TestCase):
                         cl.update_schedule()
                         schedule_states_el = np.isclose(cl.P_El_Schedule[t:t+5], [2] * 5)
                         schedule_states_b = np.isclose(cl.P_State_schedule[t:t+5], [1] * 5)
-                        self.assertTrue(
-                            np.array_equal(schedule_states_el, schedule_states_b)
-                        )
-                        self.assertTrue(
-                            np.array_equal(states[t:t+5], schedule_states_b)
-                        )
-                        self.assertTrue(np.allclose(
+                        assert_equal_array(schedule_states_b, states[t:t + 5])
+                        assert_equal_array(schedule_states_el, schedule_states_b)
+                        assert_equal_array(
                             cl.P_El_Schedule[t:t+5],
                             np.full(5, 2 * 0.5) + np.array(states[t:t+5]) * (2 * (1. - 0.5))
-                        ))
+                        )
 
 
 class TestCityDistrict(unittest.TestCase):
@@ -468,20 +462,14 @@ class TestDeferrableLoad(unittest.TestCase):
         model.optimize()
         dl.update_schedule()
 
-        self.assertTrue(np.array_equal(
-            dl.P_El_Schedule[:6],
-            [0, 19, 19, 0, 0, 19]
-        ))
+        assert_equal_array(dl.P_El_Schedule[:6], [0, 19, 19, 0, 0, 19])
         for _ in range(3):
             dl.timer.mpc_update()
             dl.update_model(model, mode="integer")
             model.optimize()
             dl.update_schedule()
 
-        self.assertTrue(np.array_equal(
-            dl.P_El_Schedule,
-            [0, 19, 19, 0, 0, 0, 19, 19, 0]
-        ))
+        assert_equal_array(dl.P_El_Schedule, [0, 19, 19, 0, 0, 0, 19, 19, 0])
 
     def test_update_model_integer_small_horizon(self):
         e = get_env(1, 9)
@@ -494,10 +482,7 @@ class TestDeferrableLoad(unittest.TestCase):
             dl.update_schedule()
             dl.timer.mpc_update()
 
-        self.assertTrue(np.array_equal(
-            dl.P_El_Schedule,
-            [0, 19, 19, 0, 0, 19, 19, 0, 0]
-        ))
+        assert_equal_array(dl.P_El_Schedule, [0, 19, 19, 0, 0, 19, 19, 0, 0])
 
 
 class TestFixedLoad(unittest.TestCase):
@@ -535,10 +520,10 @@ class TestElectricalEntity(unittest.TestCase):
         a = np.arange(4)
 
         self.ee.update_schedule()
-        self.assertTrue(np.array_equal(a, self.ee.P_El_Schedule[:4]))
+        assert_equal_array(self.ee.P_El_Schedule[:4], a)
         self.ee.timer.mpc_update()
         self.ee.update_schedule()
-        self.assertTrue(np.array_equal(a, self.ee.P_El_Schedule[4:]))
+        assert_equal_array(self.ee.P_El_Schedule[4:], a)
 
     def test_calculate_costs(self):
         self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
@@ -742,8 +727,8 @@ class TestThermalEnergyStorage(unittest.TestCase):
         a = np.arange(3)
 
         self.tes.update_schedule()
-        self.assertTrue(np.array_equal(a, self.tes.P_Th_Schedule))
-        self.assertTrue(np.array_equal(a * 2, self.tes.E_Th_Schedule))
+        assert_equal_array(self.tes.P_Th_Schedule, a)
+        assert_equal_array(self.tes.E_Th_Schedule, a * 2)
 
     def test_populate_deviation_model(self):
         m = gp.Model()
@@ -800,10 +785,10 @@ class TestThermalEntity(unittest.TestCase):
         a = np.arange(4)
 
         self.th.update_schedule()
-        self.assertTrue(np.array_equal(a, self.th.P_Th_Schedule[:4]))
+        assert_equal_array(self.th.P_Th_Schedule[:4], a)
         self.th.timer.mpc_update()
         self.th.update_schedule()
-        self.assertTrue(np.array_equal(a, self.th.P_Th_Schedule[4:]))
+        assert_equal_array(self.th.P_Th_Schedule[4:], a)
 
 
 class TestSpaceHeating(unittest.TestCase):
@@ -881,3 +866,10 @@ def get_model(var_length, factor=1):
         b = i*factor
         var_list.append(m.addVar(lb=b, ub=b))
     return m, var_list
+
+
+def assert_equal_array(a: np.ndarray, expected):
+    if not np.array_equal(a, expected):
+        expected = np.array(expected)
+        msg = "Array {} does not equal expected array {}".format(np.array2string(a), np.array2string(expected))
+        raise AssertionError(msg)
