@@ -42,7 +42,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             assert min_full is not None
             assert min_full >= 1
             assert max_low >= 0
-            assert self.simu_horizon > min_full + max_low
+            assert self.op_horizon >= min_full + max_low
         self.max_low = max_low
         self.min_full = min_full
         self.P_El_Curt = self.P_El_Nom * self.max_curt
@@ -50,6 +50,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         self.P_State_schedule = np.empty(self.simu_horizon, bool)
         self.constr_previous_state = []
         self.constr_previous = []
+        self.constr_previous_start = None
 
     def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model
@@ -63,7 +64,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
-            - `integer`  : Uses integer variables for max_off and min_on constraints if necessary
+            - `integer`  : Uses integer variables for max_low and min_full constraints if necessary
         """
         super(CurtailableLoad, self).populate_model(model, mode)
 
@@ -124,6 +125,12 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 # add constraints to operate at a minimum of min_full timestaps at 100% when switching
                 # from the state 0 to the state 1
                 if self.min_full > 1:
+                    next_states = self.P_State_vars[1:self.min_full]
+                    self.constr_previous_start = model.addConstr(
+                        self.P_State_vars[0] * len(next_states)
+                        - gurobi.quicksum(next_states) <=
+                        gurobi.GRB.INFINITY  # self.P_State_vars[t-1] set via update_model
+                    )
                     for t in self.op_time_vec[:-2]:
                         next_states = self.P_State_vars[t + 2: t + self.min_full + 1]
                         assert 1 <= len(next_states) <= self.min_full - 1
@@ -132,7 +139,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                             gurobi.quicksum(next_states)
                         )
             else:
-                # generate relaxed constraints with max_off min_on values
+                # generate relaxed constraints with max_low min_full values
                 width = self.min_full + self.max_low
                 for t in self.op_time_vec[:-width + 1]:
                     next_vars = self.P_El_vars[t:t + width]
@@ -154,49 +161,54 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 "Mode %s is not implemented by CHP." % str(mode)
             )
 
+
     def upate_model(self, model, mode="convex"):
         super(CurtailableLoad, self).update_model(model, mode)
         timestep = self.timer.currentTimestep
 
         # if the timestep is zero a perfect initial constraint is assumed.
-        # this results in no constraints
+        # this results in no constraints in integer mode
         if timestep != 0:
             # if binary vars are used, constraints need to be updated.
             if len(self.constr_previous_state) > 0:
                 # reset all constraints which could have been previously been modified.
                 for constr in self.constr_previous_state:
                     constr.RHS = -gurobi.GRB.INFINITY
-
+                if self.constr_previous_start is not None:
+                    if self.P_State_schedule[timestep - 1]:
+                        self.constr_previous_start.RHS = gurobi.GRB.INFINITY #len(next_states)
+                    else:
+                        self.constr_previous_start.RHS = 0
                 # if the device was operating at 100% in the previous timestep
                 if self.P_State_schedule[timestep - 1]:
                     # count the last timesteps it was operating at 100%
-                    on_ts = 1
-                    while (timestep - on_ts - 1) >= 0 and self.P_State_schedule[timestep - on_ts - 1]:
-                        on_ts += 1
-                    if timestep - on_ts - 1 < 0:
+                    full_ts = 1
+                    while (timestep - full_ts - 1) >= 0 and self.P_State_schedule[timestep - full_ts - 1]:
+                        full_ts += 1
+                    if timestep - full_ts - 1 < 0:
                         # if the device was operating at 100% back until timestep 0,
                         # perfect initial state is assumed resulting in no constraints
                         pass
                     else:
                         # calculate the remaining timesteps the device needs to operate
                         # at 100%
-                        remaining_ons = self.min_full - on_ts
-                        if remaining_ons <= 0:
+                        remaining_fulls = self.min_full - full_ts
+                        if remaining_fulls <= 0:
                             # if device was operating longer than min_full at 100%,
                             # no constraints need to be created
                             pass
                         else:
                             # create constraints by modifying RHS
-                            self.constr_previous_state[remaining_ons - 1].RHS = remaining_ons
+                            self.constr_previous_state[remaining_fulls - 1].RHS = remaining_fulls
                 # if the device was not operating at 100% in the previous timestep
                 else:
                     # count the last timesteps it was operating under 100%
-                    off_ts = 1
-                    while (timestep - off_ts - 1) >= 0 and not self.P_State_schedule[timestep - off_ts - 1]:
-                        assert off_ts <= self.max_low
-                        off_ts += 1
+                    low_ts = 1
+                    while (timestep - low_ts - 1) >= 0 and not self.P_State_schedule[timestep - low_ts - 1]:
+                        assert low_ts <= self.max_low
+                        low_ts += 1
                     # calculate the timesteps in which the device has to operate at 100% in
-                    overlap = self.max_low - off_ts + 1
+                    overlap = self.max_low - low_ts + 1
                     # create constraints by modifying RHS
                     self.constr_previous_state[overlap - 1].RHS = 1
 
@@ -212,7 +224,6 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                     # create constraints by modifying RHS
                     self.constr_previous[width - (timestep - t) - 1].RHS = \
                          required - already_done
-
 
     def update_schedule(self):
         super(CurtailableLoad, self).update_schedule()

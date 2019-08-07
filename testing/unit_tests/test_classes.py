@@ -200,7 +200,8 @@ class TestBuilding(unittest.TestCase):
 
 
 class TestCurtailableLoad(unittest.TestCase):
-    combinations = [(4, 1), (3, 1), (2, 1), (1, 1), (2, 2), (3, 1),
+    combinations = [(4, 1), (3, 1), (2, 1), (1, 1),
+                    (1, 3), (1, 4), (2, 2), (2, 3),
                     (0, 1), (0, 2), (0, 3), (0, 4)]
     horizon = 5
     def setUp(self):
@@ -314,6 +315,30 @@ class TestCurtailableLoad(unittest.TestCase):
                             cl.P_El_Schedule[t:t+5],
                             np.full(5, 2 * 0.5) + np.array(states[t:t+5]) * (2 * (1. - 0.5))
                         )
+
+    def test_integer_first(self):
+        for low, full in self.combinations:
+            if low > 0:
+                with self.subTest(msg="max_low={} min_full={}".format(low, full)):
+                    model = gp.Model('CLModel')
+
+                    cl = CurtailableLoad(self.e, 2, 0.5, low, full)
+                    cl.populate_model(model, mode="integer")
+                    self.e.timer.currentTimestep = 1
+                    cl.P_State_schedule[0] = False
+                    cl.P_El_Schedule[0] = 1
+                    cl.upate_model(model, "integer")
+
+                    cl.P_State_vars[0].ub = 1
+                    cl.P_State_vars[0].lb = 1
+                    cl.P_State_vars[1].ub = 0
+                    cl.P_State_vars[1].lb = 0
+
+                    model.optimize()
+                    if full > 1:
+                        self.assertEqual(model.status, 3)
+                    else:
+                        self.assertEqual(model.status, 2)
 
 
 class TestCityDistrict(unittest.TestCase):
