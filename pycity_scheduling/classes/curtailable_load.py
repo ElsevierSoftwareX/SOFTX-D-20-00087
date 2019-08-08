@@ -42,7 +42,6 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             assert min_full is not None
             assert min_full >= 1
             assert max_low >= 0
-            assert self.op_horizon >= min_full + max_low
         self.max_low = max_low
         self.min_full = min_full
         self.P_El_Curt = self.P_El_Nom * self.max_curt
@@ -107,6 +106,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 # update_schedule only needs to modify RHS which should be faster than deleting and creating
                 # new constraints
                 max_overlap = max(self.max_low, self.min_full - 1)
+                max_overlap = min(max_overlap, self.op_horizon)  # cap overlap constraints at op_horizon
                 for t in range(1, max_overlap + 1):
                     self.constr_previous_state.append(model.addConstr(
                         gurobi.quicksum(self.P_State_vars[:t]) >= -gurobi.GRB.INFINITY
@@ -152,9 +152,10 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 # creat constraints which can be used by update_model to take previous P_El values into
                 # account. update_schedule only needs to modify RHS which should be faster than deleting
                 # and creating new constraints
-                for t in range(1, self.max_low + self.min_full):
+                max_overlap = min(self.max_low + self.min_full - 1, self.op_horizon)
+                for overlap in range(0, max_overlap):
                     self.constr_previous.append(model.addConstr(
-                        gurobi.quicksum(self.P_El_vars[:t]) >= -gurobi.GRB.INFINITY
+                        gurobi.quicksum(self.P_El_vars[:overlap + 1]) >= -gurobi.GRB.INFINITY
                     ))
         else:
             raise ValueError(
@@ -168,62 +169,76 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
 
         # if the timestep is zero a perfect initial constraint is assumed.
         # this results in no constraints in integer mode
-        if timestep != 0:
-            # if binary vars are used, constraints need to be updated.
-            if len(self.constr_previous_state) > 0:
-                # reset all constraints which could have been previously been modified.
-                for constr in self.constr_previous_state:
-                    constr.RHS = -gurobi.GRB.INFINITY
-                if self.constr_previous_start is not None:
-                    if self.P_State_schedule[timestep - 1]:
-                        self.constr_previous_start.RHS = gurobi.GRB.INFINITY #len(next_states)
-                    else:
-                        self.constr_previous_start.RHS = 0
-                # if the device was operating at 100% in the previous timestep
+        if timestep != 0 and len(self.constr_previous_state) > 0:
+            # reset all constraints which could have been previously been modified.
+            for constr in self.constr_previous_state:
+                constr.RHS = -gurobi.GRB.INFINITY
+            if self.constr_previous_start is not None:
                 if self.P_State_schedule[timestep - 1]:
-                    # count the last timesteps it was operating at 100%
-                    full_ts = 1
-                    while (timestep - full_ts - 1) >= 0 and self.P_State_schedule[timestep - full_ts - 1]:
-                        full_ts += 1
-                    if timestep - full_ts - 1 < 0:
-                        # if the device was operating at 100% back until timestep 0,
-                        # perfect initial state is assumed resulting in no constraints
-                        pass
-                    else:
-                        # calculate the remaining timesteps the device needs to operate
-                        # at 100%
-                        remaining_fulls = self.min_full - full_ts
-                        if remaining_fulls <= 0:
-                            # if device was operating longer than min_full at 100%,
-                            # no constraints need to be created
-                            pass
-                        else:
-                            # create constraints by modifying RHS
-                            self.constr_previous_state[remaining_fulls - 1].RHS = remaining_fulls
-                # if the device was not operating at 100% in the previous timestep
+                    self.constr_previous_start.RHS = gurobi.GRB.INFINITY #len(next_states)
                 else:
-                    # count the last timesteps it was operating under 100%
-                    low_ts = 1
-                    while (timestep - low_ts - 1) >= 0 and not self.P_State_schedule[timestep - low_ts - 1]:
-                        assert low_ts <= self.max_low
-                        low_ts += 1
-                    # calculate the timesteps in which the device has to operate at 100% in
-                    overlap = self.max_low - low_ts + 1
-                    # create constraints by modifying RHS
+                    self.constr_previous_start.RHS = 0
+            # if the device was operating at 100% in the previous timestep
+            if self.P_State_schedule[timestep - 1]:
+                # count the last timesteps it was operating at 100%
+                full_ts = 1
+                while (timestep - full_ts - 1) >= 0 and self.P_State_schedule[timestep - full_ts - 1]:
+                    full_ts += 1
+                if timestep - full_ts - 1 < 0:
+                    # if the device was operating at 100% back until timestep 0,
+                    # perfect initial state is assumed resulting in no constraints
+                    pass
+                else:
+                    # calculate the remaining timesteps the device needs to operate
+                    # at 100%
+                    remaining_fulls = self.min_full - full_ts
+                    if remaining_fulls <= 0:
+                        # if device was operating longer than min_full at 100%,
+                        # no constraints need to be created
+                        pass
+                    elif remaining_fulls > self.op_horizon:
+                        # if remaining timesteps to operate at 100% are more than
+                        # op_horizon, CL has to operate at 100% in entire op_horizon
+                        self.constr_previous_state[-1].RHS = self.op_horizon
+                    else:
+                        # create constraints by modifying RHS
+                        self.constr_previous_state[remaining_fulls - 1].RHS = remaining_fulls
+            # if the device was not operating at 100% in the previous timestep
+            else:
+                # count the last timesteps it was operating under 100%
+                low_ts = 1
+                while (timestep - low_ts - 1) >= 0 and not self.P_State_schedule[timestep - low_ts - 1]:
+                    assert low_ts <= self.max_low
+                    low_ts += 1
+                # calculate the timesteps in which the device has to operate at 100% in
+                overlap = self.max_low - low_ts + 1
+                # create constraints by modifying RHS
+                # if CL can remain under 100% for entire op_horizon, no constraint is created
+                if self.op_horizon >= overlap:
                     self.constr_previous_state[overlap - 1].RHS = 1
 
-            elif len(self.constr_previous) > 0:
-                # no resets are required, because previously modified RHSs will be modified
-                # again
-                width = self.min_full + self.max_low
-                for t in range(max(0, timestep - width + 1), timestep, 1):
-                    # calculate the required power between previous and current timesteps
-                    required = self.P_El_Nom * self.min_full + self.P_El_Curt * self.max_low
-                    # calculate already consumed power
-                    already_done = sum(self.P_El_Schedule[t:timestep])
-                    # create constraints by modifying RHS
-                    self.constr_previous[width - (timestep - t) - 1].RHS = \
-                         required - already_done
+
+        if len(self.constr_previous) > 0:
+            # no resets are required, because previously modified RHSs will be modified
+            # again
+            width = self.min_full + self.max_low
+            for overlap, constr in enumerate(self.constr_previous, start=1):
+                # calculate the minimum required power in one width window
+                required = [self.P_El_Curt] * self.max_low + [self.P_El_Nom] * self.min_full
+                # calculate already consumed power
+                start_t = timestep - (width - overlap)
+                if start_t < 0:
+                    # if window goes back after simu_horizon, P_El_Nom
+                    # is assumed for timesteps before simu_horizon
+                    required = required[:start_t]
+                    start_t = 0
+                already_done = self.P_El_Schedule[start_t:timestep]
+
+                assert len(already_done) + overlap == len(required)
+                required = sum(required)
+                already_done = sum(already_done)
+                # create constraints by modifying RHS
+                constr.RHS = required - already_done
 
     def update_schedule(self):
         super(CurtailableLoad, self).update_schedule()
@@ -309,9 +324,15 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
 
             flex_obj = gurobi.LinExpr()
             flex_obj += coeffs[0]
+            # get last width-1 variables in P_State_vars
+            # can be smaller than width-1 when a small op_horizon is chosen
+            vars = self.P_State_vars[-width+1:]
+            # get last coeffs matching vars length
+            coeffs = coeffs[-len(vars):]
+
             flex_obj.addTerms(
-                coeffs[1:],
-                self.P_State_vars[-width+1:]
+                coeffs,
+                vars
             )
             obj += coeff_flex * (self.P_El_Nom - self.P_El_Curt) * flex_obj
         return obj

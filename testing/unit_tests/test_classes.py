@@ -340,6 +340,75 @@ class TestCurtailableLoad(unittest.TestCase):
                     else:
                         self.assertEqual(model.status, 2)
 
+    def test_small_horizon(self):
+        for width in [1, 2, 4]:
+            for horizon in [1, 2, 4]:
+                if horizon >= width:
+                    with self.subTest(msg="width={} horizon={}".format(width, horizon)):
+                        e = get_env(horizon, 20)
+                        model = gp.Model('CLModel')
+                        cl = CurtailableLoad(e, 2, 0.5)
+                        cl.populate_model(model)
+                        for t in range(0, 21 - horizon, width):
+                            e.timer.currentTimestep = t
+                            cl.upate_model(model)
+                            obj = gp.quicksum(cl.P_El_vars)
+                            model.setObjective(obj)
+                            model.optimize()
+
+                            self.assertEqual(1, cl.P_El_vars[0].x)
+
+                            cl.update_schedule()
+
+                        assert_equal_array(cl.P_El_Schedule, [1] * 20)
+
+    def test_small_horizon_low_full(self):
+        for width in [1, 2, 4]:
+            for horizon in [1, 2, 4]:
+                if horizon >= width:
+                    for low, full in self.combinations:
+                        with self.subTest(msg="width={} horizon={} max_low={} min_full={}"
+                                              .format(width, horizon, low, full)):
+                            e = get_env(horizon, 20)
+                            model = gp.Model('CLModel')
+                            cl = CurtailableLoad(e, 2, 0.5, low, full)
+                            cl.populate_model(model)
+                            for t in range(0, 21 - horizon, width):
+                                e.timer.currentTimestep = t
+                                cl.upate_model(model)
+                                obj = gp.quicksum(cl.P_El_vars)
+                                model.setObjective(obj)
+                                model.optimize()
+                                cl.update_schedule()
+
+                            for t in range(0, 20 - (low + full) + 1):
+                                self.assertGreaterEqual(sum(cl.P_El_Schedule[t:t + low + full]),
+                                                        1 * low + 2 * full,
+                                                        np.array2string(cl.P_El_Schedule))
+
+
+    def test_small_horizon_low_full_integer(self):
+        for width in [1, 2, 4]:
+            for horizon in [1, 2, 4]:
+                if horizon >= width:
+                    for low, full in self.combinations:
+                        with self.subTest(msg="width={} horizon={} max_low={} min_full={}".format(width, horizon, low, full)):
+                            e = get_env(horizon, 20)
+                            states = np.tile([1] * low + [2] * full, 20)[:20]
+                            model = gp.Model('CLModel')
+                            cl = CurtailableLoad(e, 2, 0.5, low, full)
+                            cl.populate_model(model, mode="integer")
+                            for t in range(0, 21 - horizon, width):
+                                e.timer.currentTimestep = t
+                                cl.upate_model(model, mode="integer")
+                                obj = gp.quicksum(cl.P_El_vars)
+                                obj += cl.get_objective(coeff_flex=0.2)
+                                model.setObjective(obj)
+                                model.optimize()
+                                cl.update_schedule()
+
+                            assert_equal_array(cl.P_El_Schedule, states)
+
 
 class TestCityDistrict(unittest.TestCase):
     def setUp(self):
