@@ -297,7 +297,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     model.setObjective(obj)
                     for t in range(0, 20-5+1, width):
                         self.e.timer.currentTimestep = t
-                        cl.update_model(model)
+                        cl.update_model(model, mode="integer")
                         obj = gp.quicksum(cl.P_El_vars)
                         obj += cl.get_objective(coeff_flex=0.2)
                         model.setObjective(obj)
