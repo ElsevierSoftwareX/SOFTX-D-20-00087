@@ -24,10 +24,10 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         max_curtailment : float
             Maximal Curtailment of the load
         max_low : int, optional
-            Maximum amount of timesteps the curtailable load can stay under
+            Maximum number of timesteps the curtailable load can stay under
             nominal load
         min_full : int, optional
-            Minimum amount of timesteps the curtailable load has to stay at
+            Minimum number of timesteps the curtailable load has to stay at
             nominal operation level when switching to the nominal operation
             level
         """
