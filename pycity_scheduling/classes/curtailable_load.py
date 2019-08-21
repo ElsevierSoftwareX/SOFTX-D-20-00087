@@ -163,7 +163,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             )
 
 
-    def upate_model(self, model, mode="convex"):
+    def update_model(self, model, mode="convex"):
         super(CurtailableLoad, self).update_model(model, mode)
         timestep = self.timer.currentTimestep
 

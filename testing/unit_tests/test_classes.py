@@ -256,7 +256,7 @@ class TestCurtailableLoad(unittest.TestCase):
                 model.setObjective(obj)
                 for t in range(0, 20-5+1, width):
                     self.e.timer.currentTimestep = t
-                    cl.upate_model(model)
+                    cl.update_model(model)
                     model.optimize()
                     cl.update_schedule()
                     self.assertAlmostEqual(5, obj.getValue())
@@ -273,7 +273,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     model.setObjective(obj)
                     for t in range(0, 20-5+1, width):
                         self.e.timer.currentTimestep = t
-                        cl.upate_model(model)
+                        cl.update_model(model)
                         model.optimize()
                         cl.update_schedule()
 
@@ -297,7 +297,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     model.setObjective(obj)
                     for t in range(0, 20-5+1, width):
                         self.e.timer.currentTimestep = t
-                        cl.upate_model(model)
+                        cl.update_model(model)
                         obj = gp.quicksum(cl.P_El_vars)
                         obj += cl.get_objective(coeff_flex=0.2)
                         model.setObjective(obj)
@@ -327,7 +327,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     self.e.timer.currentTimestep = 1
                     cl.P_State_schedule[0] = False
                     cl.P_El_Schedule[0] = 1
-                    cl.upate_model(model, "integer")
+                    cl.update_model(model, "integer")
 
                     cl.P_State_vars[0].ub = 1
                     cl.P_State_vars[0].lb = 1
@@ -351,7 +351,7 @@ class TestCurtailableLoad(unittest.TestCase):
                         cl.populate_model(model)
                         for t in range(0, 21 - horizon, width):
                             e.timer.currentTimestep = t
-                            cl.upate_model(model)
+                            cl.update_model(model)
                             obj = gp.quicksum(cl.P_El_vars)
                             model.setObjective(obj)
                             model.optimize()
@@ -375,7 +375,7 @@ class TestCurtailableLoad(unittest.TestCase):
                             cl.populate_model(model)
                             for t in range(0, 21 - horizon, width):
                                 e.timer.currentTimestep = t
-                                cl.upate_model(model)
+                                cl.update_model(model)
                                 obj = gp.quicksum(cl.P_El_vars)
                                 model.setObjective(obj)
                                 model.optimize()
@@ -400,7 +400,7 @@ class TestCurtailableLoad(unittest.TestCase):
                             cl.populate_model(model, mode="integer")
                             for t in range(0, 21 - horizon, width):
                                 e.timer.currentTimestep = t
-                                cl.upate_model(model, mode="integer")
+                                cl.update_model(model, mode="integer")
                                 obj = gp.quicksum(cl.P_El_vars)
                                 obj += cl.get_objective(coeff_flex=0.2)
                                 model.setObjective(obj)
