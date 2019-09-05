@@ -12,9 +12,10 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
     Extension of pycity class ElectricalDemand for scheduling purposes.
     """
 
-    def __init__(self, environment, P_El_Nom, E_Min_Consumption,
+    def __init__(self, environment, P_El_Nom, E_Consumption,
                  load_time=None, lt_pattern=None):
         """Initialize DeferrableLoad.
+        The Load will always run once in the op_horizon
 
         Parameters
         ----------
@@ -22,8 +23,8 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             Common Environment instance.
         P_El_Nom : float
             Nominal elctric power in [kW].
-        E_Min_Consumption : float
-             Minimal power to be consumed over the time in [kWh].
+        E_Consumption : float
+             Power to be consumed over the op_horizon in [kWh].
         load_time : array of binaries
             Indicator when deferrable load can be turned on.
             `load_time[t] == 0`: device is off in t
@@ -47,14 +48,18 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
         self._long_ID = "DL_" + self._ID_string
 
         self.P_El_Nom = P_El_Nom
-        self.E_Min_Consumption = E_Min_Consumption
+        self.E_Consumption = E_Consumption
         self.load_time = util.compute_profile(self.timer, load_time,
                                               lt_pattern)
+        if len(load_time) != self.op_horizon:
+            warn(
+                ("The DeferrableLoad {} fill always run once in the op_horizon and not once in the lt_pattern\n" +
+                 "If a different behaviour is intended, creating multiple DeferrableLoads should be considered")
+                .format(self._long_ID)
+            )
 
         self.P_Start_vars = []
-        self.P_Start_constrs = []
         self.runtime = None
-        self.P_El_Sum_constrs = []
 
     def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model
@@ -78,16 +83,37 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
         """
         super(DeferrableLoad, self).populate_model(model, mode)
         if mode == "convex":
-            pass
+            if self.E_Consumption > self.op_horizon * self.time_slot * self.P_El_Nom:
+                warn(
+                    ("DeferrableLoad {} is not able to consume enough power in the op_horizon," +
+                     "which will render the model infeasible")
+                    .format(self._long_ID)
+                )
+
+            # consume E_Consumption the op_horizon
+            model.addConstr(
+                gurobi.quicksum(self.P_El_vars) * self.time_slot == self.E_Consumption
+            )
+
         elif mode == "integer":
-            self.runtime = self.E_Min_Consumption / (self.P_El_Nom * self.time_slot)
-            if not np.isclose(self.runtime, np.ceil(self.runtime)):
-                warn("Consumption of DLs is in integer mode always a multiple of "
-                     "P_El_Nom * dt, which is larger than E_Min_Consumption")
-            self.runtime = int(np.ceil(self.runtime))
+            self.runtime = self.E_Consumption / (self.P_El_Nom * self.time_slot)
+            rounded_runtime = int(round(self.runtime))
+            if not np.isclose(self.runtime, rounded_runtime):
+                warn("Consumption of DLs is in integer mode always a multiple of " +
+                     "P_El_Nom * dt, which is larger than E_Consumption")
+            self.runtime = rounded_runtime
+
+            if self.runtime > self.op_horizon:
+                warn(
+                    ("DeferrableLoad {} is not able to complete a run in the op_horizon, " +
+                     "which will render the model infeasible")
+                    .format(self._long_ID)
+                )
 
             # create binary variables representing if operation begins in timeslot t
-            for t in self.op_time_vec:
+            # Since the DL has to finish operation when the op_horizon ends, binary variables representing a too late
+            # start can be omitted.
+            for t in self.op_time_vec[: -self.runtime + 1]:
                 self.P_Start_vars.append(model.addVar(
                     vtype=gurobi.GRB.BINARY,
                     name="%s_Start_at_t=%i"
@@ -97,123 +123,47 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
             for t in self.op_time_vec:
                 # coupling the start variable to the electrical variables following
-                self.P_Start_constrs.append(model.addConstr(
+                model.addConstr(
                     self.P_El_vars[t] == self.P_El_Nom * gurobi.quicksum(
                         self.P_Start_vars[max(0, t+1-self.runtime):t+1]
                     )
-                ))
+                )
+
+            # run once in the op_horizon
+            model.addConstr(
+                gurobi.quicksum(self.P_Start_vars) == 1
+            )
         else:
             raise ValueError(
                 "Mode %s is not implemented by deferrable load." % str(mode)
             )
 
     def update_model(self, model, mode="convex"):
-        # raises GurobiError if constraints are from a prior scheduling
-        # optimization
         if mode == "convex":
-            try:
-                model.remove(self.P_El_Sum_constrs)
-            except gurobi.GurobiError:
-                pass
-            del self.P_El_Sum_constrs[:]
-
-            timestep = self.timestep
             load_time = self.load_time[self.op_slice]
-            completed_load = 0
-            if load_time[0]:
-                for val in self.P_El_Schedule[:timestep][::-1]:
-                    if val > 0:
-                        completed_load += val
-                    else:
-                        break
-                completed_load *= self.time_slot
-            lin_term = gurobi.LinExpr()
 
             for t in self.op_time_vec:
-                if load_time[t]:
+                if load_time[t] == 1:
                     self.P_El_vars[t].ub = self.P_El_Nom
-                    lin_term += self.P_El_vars[t]
                 else:
                     self.P_El_vars[t].ub = 0
-                    if lin_term.size() > 0:
-                        self.P_El_Sum_constrs.append(
-                            model.addConstr(
-                                lin_term * self.time_slot
-                                == self.E_Min_Consumption - completed_load
-                            )
-                        )
-                        completed_load = 0
-                        lin_term = gurobi.LinExpr()
 
-            if lin_term.size() > 0:
-                current_ts = timestep + self.op_horizon
-                first_ts = current_ts
-                while True:
-                    first_ts -= 1
-                    if not self.load_time[first_ts-1]:
-                        break
-                last_ts = timestep + self.op_horizon
-                while last_ts < self.simu_horizon:
-                    if not self.load_time[last_ts]:
-                        break
-                    last_ts += 1
-                portion = (current_ts - first_ts) / (last_ts - first_ts)
-                self.P_El_Sum_constrs.append(model.addConstr(
-                    lin_term * self.time_slot == portion * self.E_Min_Consumption
-                ))
         elif mode == "integer":
-            try:
-                model.remove(self.P_El_Sum_constrs)
-            except gurobi.GurobiError:
-                pass
-            del self.P_El_Sum_constrs[:]
+            if (self.load_time[self.timestep + self.op_horizon - 1] == 1 and
+                    self.load_time[self.timestep + self.op_horizon] == 1):
+                warn(
+                    ("DeferrableLoad {} will not consider a start which would result in power consumption" +
+                     "outside the op_horizon")
+                    .format(self._long_ID)
+                     )
 
-            timestep = self.timestep
-            load_time = self.load_time[self.timer.currentTimestep:
-                                       self.timer.currentTimestep + self.op_horizon + self.runtime - 1]
+            load_time = self.load_time[self.op_slice]
 
-            # count completed load in first block from previous timesteps
-            completed_ts = 0
-            for c in reversed(self.P_El_Schedule[:timestep]):
-                if np.isclose(c, 0):
-                    break
+            for t, start_var in enumerate(self.P_Start_vars):
+                if all(lt == 1 for lt in load_time[t:t+self.runtime]):
+                    start_var.ub = 1
                 else:
-                    completed_ts += 1
-
-            # check if device is already running in first block
-            first_completed = completed_ts > 0
-
-            if first_completed:
-                # set P_El values in accordance with start in previous timesteps
-                for t in self.op_time_vec:
-                    if 0 <= t < self.runtime - completed_ts:
-                        assert load_time[t]
-                        self.P_Start_constrs[t].RHS = self.P_El_Nom
-                    else:
-                        self.P_Start_constrs[t].RHS = 0
-
-            # calculate all ranges in which a start has to happen
-            # sets ub to 1 in these ranges and to 0 otherwise
-            to_run_ranges = []
-            completed = first_completed
-            for t in self.op_time_vec:
-                if completed and not load_time[t]:
-                    completed = False
-                    self.P_Start_vars[t].ub = 0
-                elif not completed and all(load_time[t:t+self.runtime]):
-                    self.P_Start_vars[t].ub = 1
-                    if len(to_run_ranges) > 0 and to_run_ranges[-1]["last"] == t-1:
-                        to_run_ranges[-1]["last"] = t
-                    else:
-                        to_run_ranges.append({"first": t, "last": t})
-                else:
-                    self.P_Start_vars[t].ub = 0
-
-            # add a constraint requiring a start in all ranges previously calculated
-            for block in to_run_ranges:
-                self.P_El_Sum_constrs.append(model.addConstr(
-                    1 == gurobi.quicksum(self.P_Start_vars[block["first"]:block["last"]+1])
-                ))
+                    start_var.ub = 0
 
         else:
             raise ValueError(
@@ -238,7 +188,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             Objective function.
         """
         max_loading_time = sum(self.time) * self.time_slot
-        optimal_P_El = self.E_Min_Consumption / max_loading_time
+        optimal_P_El = self.E_Consumption / max_loading_time
         obj = gurobi.QuadExpr()
         obj.addTerms(
             [coeff] * self.op_horizon,

@@ -181,7 +181,7 @@ def generate_tabula_buildings(environment,
                 p_el = random.uniform(1.125, 2.5)
                 time = random.choice(dl_time_ranges)
                 dl = DeferrableLoad(environment, P_El_Nom=p_el,
-                                    E_Min_Consumption=e_el, load_time=time,
+                                    E_Consumption=e_el, load_time=time,
                                     lt_pattern='daily')
                 ap.addEntity(dl)
 

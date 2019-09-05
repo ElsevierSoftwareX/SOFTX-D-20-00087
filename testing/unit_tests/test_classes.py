@@ -518,31 +518,37 @@ class TestDeferrableLoad(unittest.TestCase):
         dl.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10 * 4/3, gp.quicksum(dl.P_El_vars).getValue() * dl.time_slot, places=5)
+        self.assertAlmostEqual(10, gp.quicksum(dl.P_El_vars).getValue() * dl.time_slot, places=5)
 
         dl.timer.mpc_update()
         dl.update_model(model)
         model.optimize()
 
         for t, c in enumerate(self.lt[1:7]):
-            if c:
+            if c == 1:
                 self.assertEqual(19, dl.P_El_vars[t].ub)
             else:
                 self.assertEqual(0, dl.P_El_vars[t].ub)
-        self.assertAlmostEqual(13.333333, dl.P_El_vars[4].x, places=5)
-        self.assertAlmostEqual(13.333333, dl.P_El_vars[5].x, places=5)
+        dl.update_schedule()
+        assert_equal_array(dl.P_El_Schedule[:7], [0, 8, 8, 8, 0, 8, 8])
 
-        dl.timer.mpc_update()
-        dl.timer.mpc_update()
-        dl.P_El_Schedule[1] = 15
-        dl.P_El_Schedule[2] = 15
-        dl.update_model(model)
-        model.optimize()
+    def test_infeasible_consumption(self):
+        feasible = DeferrableLoad(self.e, 10, 10, load_time=self.lt)
+        m = gp.Model('DLFeasable')
+        feasible.populate_model(m)
+        feasible.update_model(m)
+        m.optimize()
+        self.assertEqual(m.status, 2)
 
-        self.assertAlmostEqual(10, dl.P_El_vars[0].x, places=5)
+        m = gp.Model('DLInfesable')
+        infeasible = DeferrableLoad(self.e, 10, 10.6, load_time=self.lt)
+        infeasible.populate_model(m)
+        infeasible.update_model(m)
+        m.optimize()
+        self.assertEqual(m.status, 3)
 
     def test_update_model_integer(self):
-        dl = DeferrableLoad(self.e, 19, 9.5 - 1e-6, load_time=self.lt)
+        dl = DeferrableLoad(self.e, 19, 9.5, load_time=self.lt)
         model = gp.Model('DLModel')
         dl.populate_model(model, mode="integer")
         obj = gp.QuadExpr()
@@ -556,7 +562,7 @@ class TestDeferrableLoad(unittest.TestCase):
         model.optimize()
         dl.update_schedule()
 
-        assert_equal_array(dl.P_El_Schedule[:6], [0, 19, 19, 0, 0, 19])
+        assert_equal_array(dl.P_El_Schedule[:6], [0, 19, 19, 0, 0, 0])
         for _ in range(3):
             dl.timer.mpc_update()
             dl.update_model(model, mode="integer")
@@ -565,18 +571,30 @@ class TestDeferrableLoad(unittest.TestCase):
 
         assert_equal_array(dl.P_El_Schedule, [0, 19, 19, 0, 0, 0, 19, 19, 0])
 
-    def test_update_model_integer_small_horizon(self):
+    def test_infeasible_integer(self):
         e = get_env(1, 9)
         dl = DeferrableLoad(e, 19, 9.5, load_time=self.lt)
         model = gp.Model('DLModel')
         dl.populate_model(model, mode="integer")
-        for _ in range(8):
-            dl.update_model(model, mode="integer")
-            model.optimize()
-            dl.update_schedule()
-            dl.timer.mpc_update()
+        dl.update_model(model, mode="integer")
+        model.optimize()
+        self.assertEqual(model.status, 3)
 
-        assert_equal_array(dl.P_El_Schedule, [0, 19, 19, 0, 0, 19, 19, 0, 0])
+        dl = DeferrableLoad(self.e, 19, 19, load_time=self.lt)
+        model = gp.Model('DLModel')
+        dl.populate_model(model, mode="integer")
+        dl.update_model(model, mode="integer")
+        model.optimize()
+        self.assertEqual(model.status, 3)
+
+        dl = DeferrableLoad(self.e, 19, 19*3/4, load_time=self.lt)
+        model = gp.Model('DLModel')
+        dl.populate_model(model, mode="integer")
+        dl.update_model(model, mode="integer")
+        model.optimize()
+        self.assertEqual(model.status, 2)
+        dl.update_schedule()
+        assert_equal_array(dl.P_El_Schedule[:6], [0, 19, 19, 19, 0, 0])
 
 
 class TestFixedLoad(unittest.TestCase):
