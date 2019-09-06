@@ -246,95 +246,27 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         self.P_State_schedule[timestep:timestep + self.op_horizon] \
             = [np.isclose(var.X, self.P_El_Nom) for var in self.P_El_vars]
 
-    def get_objective(self, coeff=None, coeff_flex=None):
+    def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
 
         Return the objective function of the curtailable load wheighted with
-        coeff. Quadratic term minimizing the deviation from the loadcurve.
+        coeff.
 
         Parameters
         ----------
         coeff : float, optional
             Coefficient for the objective function.
             Represents the price for 1kWh of electricity
-        coeff_flex : float, optional
-            Coefficient for the objective function.
-            Represents the expected price for shifting 1kWh after the op_horizon
         Returns
         -------
         gurobi.QuadExpr :
             Objective function.
         """
         obj = gurobi.LinExpr()
-        if coeff is not None:
-            obj.addTerms(
-                [coeff] * self.op_horizon,
-                self.P_El_vars
-            )
-        if len(self.P_State_vars) > 0 and coeff_flex is not None:
-            # giving flexibility a price is required in order to favor some outcomes over others
-            # for example the outcome which ends with
-            # ... 50% 50% 50% 100%
-            # should be favour over the outcome which ends with
-            # ... 50% 50% 100% 50%
-            # because the first outcome allow for more possible schedules to be generated in the
-            # next op_horizion
-
-            # in order to model the benefit a price to flexibility can be given
-
-            # calculate end possibilities when minimal electricity is used
-            end_possibilities = [0] * self.max_low + [1] * self.min_full
-            width = len(end_possibilities)
-            end_possibilities = np.fromiter((end_possibilities[(j+i) % width] for i in range(width)
-                                             for j in range(width)), dtype=int).reshape((width, width))
-            def count_possibilities(row):
-                # row are possible states in the previous op_horizion
-                # count possibilities in the first slot in the next op_horzton
-                # only works with optimal end_possibilites
-                if row[0] == 1:
-                    count = 0
-                    for i in range(0, self.min_full + 1):
-                        if row[i] == 1:
-                            count += 1
-                        else:
-                            count = self.min_full - count
-                            assert 0 <= count < self.min_full
-                            return count
-                else:
-                    count = 1
-                    for i in range(0, self.max_low + 1):
-                        if row[i] == 0:
-                            count += 1
-                        else:
-                            return count
-                raise ValueError
-
-            # give scores to the end possibilities between -1 and 0
-            score = np.fromiter((-count_possibilities(end_possibilities[i]) for i in range(width)), dtype=float)
-            score = score/max(abs(score))
-            # calculate constants which should be given to the previous states in order
-            # to model this benefit with last P_State_vars and constats
-            A = end_possibilities
-
-            # self.P_State_vars[-width:] doesnt need to be used and can be replaced with a
-            # constant to the flex_obj term
-            A[:, 0] = np.ones(width)
-
-            coeffs, _, _, _ = np.linalg.lstsq(A, score, rcond=-1)
-
-            flex_obj = gurobi.LinExpr()
-            flex_obj += coeffs[0]
-            # get last width-1 variables in P_State_vars
-            # can be smaller than width-1 when a small op_horizon is chosen
-            vars = self.P_State_vars[-width+1:]
-            # get last coeffs matching vars length
-            coeffs = coeffs[-len(vars):]
-
-            flex_obj.addTerms(
-                coeffs,
-                vars
-            )
-            obj += coeff_flex * (self.P_El_Nom - self.P_El_Curt) * flex_obj
+        obj.addTerms(
+            [coeff] * self.op_horizon,
+            self.P_El_vars
+        )
         return obj
 
     def update_deviation_model(self, model, timestep, mode=""):

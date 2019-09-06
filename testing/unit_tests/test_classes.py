@@ -298,12 +298,10 @@ class TestCurtailableLoad(unittest.TestCase):
                     for t in range(0, 20-5+1, width):
                         self.e.timer.currentTimestep = t
                         cl.update_model(model, mode="integer")
-                        obj = gp.quicksum(cl.P_El_vars)
-                        obj += cl.get_objective(coeff_flex=0.2)
-                        model.setObjective(obj)
-                        for i, var in enumerate(cl.P_State_vars):
-                            var.lb = states[t+i]
-                            var.ub = states[t+i]
+                        model.setObjectiveN(gp.quicksum(cl.P_El_vars), 0, 10)
+                        # move full steps towards the end
+                        model.setObjectiveN(gp.quicksum([-i * cl.P_El_vars[i] for i in range(5)]), 1, 5)
+                        model.setParam("MIPGap", 1e-6)
                         model.optimize()
                         self.assertEqual(model.Status, 2)
                         cl.update_schedule()
@@ -363,13 +361,14 @@ class TestCurtailableLoad(unittest.TestCase):
                         assert_equal_array(cl.P_El_Schedule, [1] * 20)
 
     def test_small_horizon_low_full(self):
-        for width in [1, 2, 4]:
-            for horizon in [1, 2, 4]:
+        for horizon in [1, 2, 4]:
+            e = get_env(horizon, 20)
+            for width in [1, 2, 4]:
                 if horizon >= width:
                     for low, full in self.combinations:
                         with self.subTest(msg="width={} horizon={} max_low={} min_full={}"
                                               .format(width, horizon, low, full)):
-                            e = get_env(horizon, 20)
+
                             model = gp.Model('CLModel')
                             cl = CurtailableLoad(e, 2, 0.5, low, full)
                             cl.populate_model(model)
@@ -378,6 +377,7 @@ class TestCurtailableLoad(unittest.TestCase):
                                 cl.update_model(model)
                                 obj = gp.quicksum(cl.P_El_vars)
                                 model.setObjective(obj)
+                                model.setParam("MIPGap", 1e-6)
                                 model.optimize()
                                 cl.update_schedule()
 
@@ -388,12 +388,12 @@ class TestCurtailableLoad(unittest.TestCase):
 
 
     def test_small_horizon_low_full_integer(self):
-        for width in [1, 2, 4]:
-            for horizon in [1, 2, 4]:
+        for horizon in [1, 2, 4]:
+            e = get_env(horizon, 20)
+            for width in [1, 2, 4]:
                 if horizon >= width:
                     for low, full in self.combinations:
                         with self.subTest(msg="width={} horizon={} max_low={} min_full={}".format(width, horizon, low, full)):
-                            e = get_env(horizon, 20)
                             states = np.tile([1] * low + [2] * full, 20)[:20]
                             model = gp.Model('CLModel')
                             cl = CurtailableLoad(e, 2, 0.5, low, full)
@@ -401,9 +401,10 @@ class TestCurtailableLoad(unittest.TestCase):
                             for t in range(0, 21 - horizon, width):
                                 e.timer.currentTimestep = t
                                 cl.update_model(model, mode="integer")
-                                obj = gp.quicksum(cl.P_El_vars)
-                                obj += cl.get_objective(coeff_flex=0.2)
-                                model.setObjective(obj)
+                                model.setObjectiveN(gp.quicksum(cl.P_El_vars), 0, 10)
+                                # move full steps towards the end
+                                model.setObjectiveN(gp.quicksum([-i*cl.P_El_vars[i] for i in range(horizon)]), 1, 5)
+                                model.setParam("MIPGap", 1e-6)
                                 model.optimize()
                                 cl.update_schedule()
 
@@ -981,7 +982,7 @@ def get_model(var_length, factor=1):
 
 
 def assert_equal_array(a: np.ndarray, expected):
-    if not np.array_equal(a, expected):
+    if not np.allclose(a, expected):
         expected = np.array(expected)
         msg = "Array {} does not equal expected array {}".format(np.array2string(a), np.array2string(expected))
         raise AssertionError(msg)
