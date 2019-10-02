@@ -30,8 +30,7 @@ class Boiler(ThermalEntity, bl.Boiler):
             `lower_activation_limit = 1`: Two-point controlled
         """
         # Flow temperature of 55 C
-        super(Boiler, self).__init__(environment, 1000*P_Th_nom, eta,
-                                     55, lower_activation_limit)
+        super().__init__(environment, 1000*P_Th_nom, eta, 55, lower_activation_limit)
         self._long_ID = "BL_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
         self.P_State_vars = []
@@ -50,7 +49,7 @@ class Boiler(ThermalEntity, bl.Boiler):
             - `convex`  : Use linear constraints
             - `integer`  : Use integer variables representing discrete control decisions
         """
-        super(Boiler, self).populate_model(model, mode)
+        super().populate_model(model, mode)
 
         if mode == "convex" or "integer":
             for var in self.P_Th_vars:

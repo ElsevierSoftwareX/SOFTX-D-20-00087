@@ -61,7 +61,7 @@ class Building(ElectricalEntity, bd.Building):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        super(Building, self).__init__(environment)
+        super().__init__(environment)
 
         self._long_ID = "BD_" + self._ID_string
         if name is None:
@@ -94,9 +94,9 @@ class Building(ElectricalEntity, bd.Building):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        super(Building, self).populate_model(model, mode)
+        super().populate_model(model, mode)
 
-        if mode == "convex" or mode == "integer":
+        if mode in ["convex", "integer"]:
             P_Th_var_list = []
             P_El_var_list = []
             if not self.hasBes:
@@ -255,7 +255,7 @@ class Building(ElectricalEntity, bd.Building):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        super(Building, self).update_schedule()
+        super().update_schedule()
         
         for entity in self.get_lower_entities():
             entity.update_schedule()
@@ -270,7 +270,7 @@ class Building(ElectricalEntity, bd.Building):
             If 'full' use all possibilities to minimize adjustments.
             Else do not try to compensate adjustments.
         """
-        super(Building, self).populate_deviation_model(model, mode)
+        super().populate_deviation_model(model, mode)
 
         P_Th_var_list = []
         P_El_var_list = []
@@ -302,7 +302,7 @@ class Building(ElectricalEntity, bd.Building):
 
     def update_actual_schedule(self, timestep):
         """Update the actual schedule with the deviation model solution."""
-        super(Building, self).update_actual_schedule(timestep)
+        super().update_actual_schedule(timestep)
 
         for entity in self.get_lower_entities():
             entity.update_actual_schedule(timestep)
@@ -353,7 +353,7 @@ class Building(ElectricalEntity, bd.Building):
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        super(Building, self).save_ref_schedule()
+        super().save_ref_schedule()
 
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
@@ -370,7 +370,7 @@ class Building(ElectricalEntity, bd.Building):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(Building, self).reset(schedule, actual, reference)
+        super().reset(schedule, actual, reference)
 
         for entity in self.get_lower_entities():
             entity.reset(schedule, actual, reference)

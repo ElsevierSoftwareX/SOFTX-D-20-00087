@@ -43,7 +43,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             If `lt_pattern` does not match `load_time`.
         """
         shape = environment.timer.timestepsTotal
-        super(DeferrableLoad, self).__init__(environment, 0, np.zeros(shape))
+        super().__init__(environment, 0, np.zeros(shape))
 
         self._long_ID = "DL_" + self._ID_string
 
@@ -81,7 +81,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                            returning to a no load state
 
         """
-        super(DeferrableLoad, self).populate_model(model, mode)
+        super().populate_model(model, mode)
         if mode == "convex":
             if self.E_Consumption > self.op_horizon * self.time_slot * self.P_El_Nom:
                 warn(

@@ -13,7 +13,7 @@ class ElectricalEntity(OptimizationEntity):
     """
 
     def __init__(self, environment, *args, **kwargs):
-        super(ElectricalEntity, self).__init__(environment, *args, **kwargs)
+        super().__init__(environment, *args, **kwargs)
 
         self.P_El_vars = []
         self.P_El_Schedule = np.zeros(self.simu_horizon)
@@ -35,7 +35,8 @@ class ElectricalEntity(OptimizationEntity):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        if mode == "convex" or mode == "integer":
+        super().populate_model(model, mode)
+        if mode in ["convex", "integer"]:
             self.P_El_vars = []
             for t in self.op_time_vec:
                 self.P_El_vars.append(
@@ -51,12 +52,14 @@ class ElectricalEntity(OptimizationEntity):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
+        super().update_schedule()
         op_slice = self.op_slice
         self.P_El_Schedule[op_slice] = [var.x for var in self.P_El_vars]
         self.P_El_Act_Schedule[op_slice] = self.P_El_Schedule[op_slice]
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
+        super().save_ref_schedule()
         np.copyto(
             self.P_El_Ref_Schedule,
             self.P_El_Schedule
@@ -64,12 +67,14 @@ class ElectricalEntity(OptimizationEntity):
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model."""
+        super().populate_deviation_model(model, mode)
         self.P_El_Act_var = model.addVar(
             name="%s_P_El_Actual" % self._long_ID
         )
 
     def update_actual_schedule(self, timestep):
         """Update the actual schedule with the deviation model solution."""
+        super().update_actual_schedule(timestep)
         self.P_El_Act_Schedule[timestep] = self.P_El_Act_var.x
 
     def reset(self, schedule=True, actual=True, reference=False):
@@ -84,6 +89,7 @@ class ElectricalEntity(OptimizationEntity):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
+        super().reset(schedule, actual, reference)
         if schedule:
             self.P_El_Schedule.fill(0)
         if actual:

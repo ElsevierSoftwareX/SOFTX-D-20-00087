@@ -36,11 +36,8 @@ class ElectricalVehicle(Battery):
             'daily' : Profile matches one day.
             'weekly' : Profile matches one week.
         """
-        super(ElectricalVehicle, self).__init__(environment, E_El_max,
-                                                P_El_max_charge,
-                                                P_El_max_charge,
-                                                soc_init, eta=1,
-                                                storage_end_equality=False)
+        super().__init__(environment, E_El_max, P_El_max_charge, P_El_max_charge, soc_init, eta=1,
+                         storage_end_equality=False)
         self._kind = "electricalvehicle"
         self._long_ID = "EV_" + self._ID_string
 
@@ -73,7 +70,7 @@ class ElectricalVehicle(Battery):
             - `convex`  : Use linear constraints
             - `integer`  : Use integer variables representing discrete control decisions
         """
-        super(ElectricalVehicle, self).populate_model(model, mode)
+        super().populate_model(model, mode)
 
         # Simulate power consumption while driving
         self.P_El_Drive_vars = []
@@ -194,8 +191,3 @@ class ElectricalVehicle(Battery):
             self.P_El_vars
         )
         return obj
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        super(ElectricalVehicle, self).update_deviation_model(model, timestep,
-                                                              '')

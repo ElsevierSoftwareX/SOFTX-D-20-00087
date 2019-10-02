@@ -36,8 +36,7 @@ class Battery(ElectricalEntity, bat.Battery):
         """
         capacity = E_El_max * 3600 * 1000
         soc_abs = soc_init * capacity  # absolute SOC
-        super(Battery, self).__init__(environment, soc_abs,
-                                      capacity, 0, eta, eta)
+        super().__init__(environment, soc_abs, capacity, 0, eta, eta)
         self._long_ID = "BAT_" + self._ID_string
 
         self.E_El_Max = E_El_max
@@ -77,8 +76,8 @@ class Battery(ElectricalEntity, bat.Battery):
             - `convex`  : Use linear constraints
             - `integer`  : Use integer variables representing discrete control decisions
         """
-        super(Battery, self).populate_model(model, mode)
-        if mode == "convex" or mode == "integer":
+        super().populate_model(model, mode)
+        if mode in ["convex", "integer"]:
             # additional variables for battery
             self.P_El_Demand_vars = []
             self.P_El_Supply_vars = []
@@ -204,7 +203,7 @@ class Battery(ElectricalEntity, bat.Battery):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        super(Battery, self).update_schedule()
+        super().update_schedule()
 
         op_slice = self.op_slice
         self.E_El_Schedule[op_slice] = [var.x for var in self.E_El_vars]
@@ -264,7 +263,7 @@ class Battery(ElectricalEntity, bat.Battery):
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        super(Battery, self).save_ref_schedule()
+        super().save_ref_schedule()
         np.copyto(
             self.E_El_Ref_Schedule,
             self.E_El_Schedule
@@ -282,7 +281,7 @@ class Battery(ElectricalEntity, bat.Battery):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(Battery, self).reset(schedule, reference)
+        super().reset(schedule, reference)
 
         if schedule:
             self.E_El_Schedule.fill(0)

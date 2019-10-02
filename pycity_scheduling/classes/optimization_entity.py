@@ -26,14 +26,12 @@ class OptimizationEntity(object):
 
         self.timer = environment.timer
 
-        from .electrical_entity import ElectricalEntity
-        from .thermal_entity import ThermalEntity
-        if self.__class__ not in (ElectricalEntity, ThermalEntity,
-                                  OptimizationEntity):
+        if hasattr(super(), "__module__"):
             # This allows ElectricalEntity and ThermalEntity to be instantiated
             # on their own
-            args = (environment, *args)
-        super(OptimizationEntity, self).__init__(*args, **kwargs)
+            super().__init__(environment, *args, **kwargs)
+        else:
+            super().__init__()
 
     def __str__(self):
         return self._long_ID
@@ -81,7 +79,7 @@ class OptimizationEntity(object):
         return slice(t1, t2)
 
     def populate_model(self, model, mode=""):
-        raise NotImplementedError
+        pass
 
     def update_model(self, model, mode=""):
         pass
@@ -93,14 +91,14 @@ class OptimizationEntity(object):
         schedule. The model must be optimal. The time / position of the
         solution in the schedule is determined by `self.timer.currentTimestep`.
         """
-        raise NotImplementedError
+        pass
 
     def get_objective(self, coeff=1):
         return None
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        raise NotImplementedError
+        pass
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.
@@ -117,7 +115,7 @@ class OptimizationEntity(object):
             If 'full' use all possibilities to minimize adjustments.
             Else do not try to compensate adjustments.
         """
-        raise NotImplementedError
+        pass
 
     def update_deviation_model(self, model, timestep, mode=""):
         """Update the deviation model for the current timestep.
@@ -142,7 +140,7 @@ class OptimizationEntity(object):
         timestep : int
             Current timestep of simulation.
         """
-        raise NotImplementedError
+        pass
 
     def reset(self, schedule=True, actual=True, reference=False):
         pass

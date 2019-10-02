@@ -45,9 +45,7 @@ class Photovoltaic(ElectricalEntity, pv.PV):
         force_renewables : bool, optional
             `True` if generation may not be reduced for optimization puposes.
         """
-        super(Photovoltaic, self).__init__(environment, area, eta,
-                                           temperature_nominal, alpha,
-                                           beta, gamma, tau_alpha)
+        super().__init__(environment, area, eta, temperature_nominal, alpha, beta, gamma, tau_alpha)
         self._long_ID = "PV_" + self._ID_string
 
         self.force_renewables = force_renewables

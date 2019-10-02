@@ -32,7 +32,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             level
         """
         shape = environment.timer.timestepsTotal
-        super(CurtailableLoad, self).__init__(environment, 0, np.zeros(shape))
+        super().__init__(environment, 0, np.zeros(shape))
         self._long_ID = "CUL_" + self._ID_string
 
         self.P_El_Nom = P_El_Nom
@@ -67,7 +67,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         """
         super(CurtailableLoad, self).populate_model(model, mode)
 
-        if mode == "convex" or mode == "integer":
+        if mode in ["convex", "integer"]:
             for t in self.op_time_vec:
                 self.P_El_vars[t].lb = self.P_El_Curt
                 self.P_El_vars[t].ub = self.P_El_Nom

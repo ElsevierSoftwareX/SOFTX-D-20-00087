@@ -12,7 +12,7 @@ class ThermalEntity(OptimizationEntity):
     """
 
     def __init__(self, environment, *args, **kwargs):
-        super(ThermalEntity, self).__init__(environment, *args, **kwargs)
+        super().__init__(environment, *args, **kwargs)
 
         self.P_Th_vars = []
         self.P_Th_Schedule = np.zeros(self.simu_horizon)
@@ -34,6 +34,7 @@ class ThermalEntity(OptimizationEntity):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
+        super().populate_model(model, mode)
         self.P_Th_vars = []
         for t in self.op_time_vec:
             self.P_Th_vars.append(
@@ -45,22 +46,26 @@ class ThermalEntity(OptimizationEntity):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
+        super().update_schedule()
         op_slice = self.op_slice
         self.P_Th_Schedule[op_slice] = [var.x for var in self.P_Th_vars]
         self.P_Th_Act_Schedule[op_slice] = self.P_Th_Schedule[op_slice]
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model."""
+        super().populate_deviation_model(model, mode)
         self.P_Th_Act_var = model.addVar(
             name="%s_P_Th_Actual" % self._long_ID
         )
 
     def update_actual_schedule(self, timestep):
         """Update the actual schedule with the deviation model solution."""
+        super().update_actual_schedule(timestep)
         self.P_Th_Act_Schedule[timestep] = self.P_Th_Act_var.x
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
+        super().save_ref_schedule()
         np.copyto(
             self.P_Th_Ref_Schedule,
             self.P_Th_Schedule
@@ -78,6 +83,7 @@ class ThermalEntity(OptimizationEntity):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
+        super().reset(schedule, actual, reference)
         if schedule:
             self.P_Th_Schedule.fill(0)
         if actual:

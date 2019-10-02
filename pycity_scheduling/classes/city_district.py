@@ -25,7 +25,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         valley_profile : np.ndarray, optional
             Profile to be filled with valley filling.
         """
-        super(CityDistrict, self).__init__(environment)
+        super().__init__(environment)
         self._long_ID = "CD_" + self._ID_string
         self.objective = objective
         self.valley_profile = valley_profile
@@ -44,9 +44,9 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        super(CityDistrict, self).populate_model(model, mode)
+        super().populate_model(model, mode)
 
-        if mode == "convex" or mode == "integer":
+        if mode in ["convex", "integer"]:
             for var in self.P_El_vars:
                 var.lb = -gurobi.GRB.INFINITY
         else:
@@ -91,7 +91,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        super(CityDistrict, self).save_ref_schedule()
+        super().save_ref_schedule()
 
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
@@ -108,7 +108,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(CityDistrict, self).reset(schedule, actual, reference)
+        super().reset(schedule, actual, reference)
         for entity in self.get_lower_entities():
             entity.reset(reference)
 

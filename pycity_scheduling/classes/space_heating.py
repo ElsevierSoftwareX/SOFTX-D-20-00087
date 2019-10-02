@@ -85,12 +85,8 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
            http://mediatum.ub.tum.de/doc/601557/601557.pdf
         """
 
-        super(SpaceHeating, self).__init__(environment, method, loadcurve*1000,
-                                           livingArea, specificDemand,
-                                           profile_type, zoneParameters,
-                                           T_m_init, ventilation, TCoolingSet,
-                                           THeatingSet, occupancy, appliances,
-                                           lighting)
+        super().__init__(environment, method, loadcurve*1000, livingArea, specificDemand, profile_type, zoneParameters,
+                         T_m_init, ventilation, TCoolingSet, THeatingSet, occupancy, appliances, lighting)
         self._long_ID = "SH_" + self._ID_string
 
         ts = self.timer.time_in_year(from_init=True)

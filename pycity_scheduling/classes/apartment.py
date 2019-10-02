@@ -21,7 +21,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             netto floor area in [m^2]
         occupancy : Occupancy, optional
         """
-        super(Apartment, self).__init__(environment, net_floor_area, occupancy)
+        super().__init__(environment, net_floor_area, occupancy)
         self._long_ID = "APM_" + self._ID_string
 
         self.Th_Demand_list = []
@@ -44,10 +44,9 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        ThermalEntity.populate_model(self, model, mode)
-        ElectricalEntity.populate_model(self, model, mode)
+        super().populate_model(model, mode)
 
-        if mode == "convex" or mode == "integer":
+        if mode in ["convex", "integer"]:
             P_Th_var_list = []
             P_El_var_list = []
             for entity in self.Th_Demand_list:
@@ -81,8 +80,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        ThermalEntity.update_schedule(self)
-        ElectricalEntity.update_schedule(self)
+        super().update_schedule()
 
         for entity in self.get_lower_entities():
             entity.update_schedule()
@@ -96,8 +94,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
             If 'full' use all possibilities to minimize adjustments.
             Else do not try to compensate adjustments.
         """
-        ThermalEntity.populate_deviation_model(self, model, mode)
-        ElectricalEntity.populate_deviation_model(self, model, mode)
+        super().populate_deviation_model(model, mode)
 
         P_Th_var_list = []
         P_El_var_list = []
@@ -121,16 +118,14 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
 
     def update_actual_schedule(self, timestep):
         """Update the actual schedule with the deviation model solution."""
-        ThermalEntity.update_actual_schedule(self, timestep)
-        ElectricalEntity.update_actual_schedule(self, timestep)
+        super().update_actual_schedule(self, timestep)
 
         for entity in self.get_lower_entities():
             entity.update_actual_schedule(timestep)
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        ThermalEntity.save_ref_schedule(self)
-        ElectricalEntity.save_ref_schedule(self)
+        super().save_ref_schedule()
 
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
@@ -147,8 +142,7 @@ class Apartment(ThermalEntity, ElectricalEntity, apm.Apartment):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        ThermalEntity.reset(self, schedule, actual, reference)
-        ElectricalEntity.reset(self, schedule, actual, reference)
+        super().reset(self, schedule, actual, reference)
 
         for entity in self.get_lower_entities():
             entity.reset(schedule, actual, reference)

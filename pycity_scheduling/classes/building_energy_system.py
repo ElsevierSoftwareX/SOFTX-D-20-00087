@@ -11,7 +11,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
     """
 
     def __init__(self, environment):
-        super(BuildingEnergySystem, self).__init__(environment)
+        super().__init__(environment)
         self._long_ID = "BES_" + self._ID_string
 
     def populate_model(self, model, mode="convex"):
@@ -30,10 +30,9 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        ThermalEntity.populate_model(self, model, mode)
-        ElectricalEntity.populate_model(self, model, mode)
+        super().populate_model(model, mode)
 
-        if mode == "convex" or mode == "integer":
+        if mode in ["convex", "integer"]:
             P_Th_var_list = []
             P_El_var_list = []
             for entity in self.get_lower_entities():
@@ -67,8 +66,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        ThermalEntity.update_schedule(self)
-        ElectricalEntity.update_schedule(self)
+        super().update_schedule()
 
         for entity in self.get_lower_entities():
             entity.update_schedule()
@@ -82,8 +80,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
             If 'full' use all possibilities to minimize adjustments.
             Else do not try to compensate adjustments.
         """
-        ThermalEntity.populate_deviation_model(self, model, mode)
-        ElectricalEntity.populate_deviation_model(self, model, mode)
+        super().populate_deviation_model(model, mode)
 
         P_Th_var_list = []
         P_El_var_list = []
@@ -113,16 +110,14 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
 
     def update_actual_schedule(self, timestep):
         """Update the actual schedule with the deviation model solution."""
-        ThermalEntity.update_actual_schedule(self, timestep)
-        ElectricalEntity.update_actual_schedule(self, timestep)
+        super().update_actual_schedule(self, timestep)
 
         for entity in self.get_lower_entities():
             entity.update_actual_schedule(timestep)
 
     def save_ref_schedule(self):
         """Save the current reference schedule."""
-        ThermalEntity.save_ref_schedule(self)
-        ElectricalEntity.save_ref_schedule(self)
+        super().save_ref_schedule()
 
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
@@ -139,8 +134,7 @@ class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        ThermalEntity.reset(self, schedule, actual, reference)
-        ElectricalEntity.reset(self, schedule, actual, reference)
+        super().reset(self, schedule, actual, reference)
 
         for entity in self.get_lower_entities():
             entity.reset(schedule, actual, reference)

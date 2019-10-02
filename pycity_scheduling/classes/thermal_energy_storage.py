@@ -31,8 +31,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         """
         # Room temperature of 20 C and flow temperature of 55 C
         capacity = E_Th_max / self.cWater / 35 * 3.6e6
-        super(ThermalEnergyStorage, self).__init__(environment, 55, capacity,
-                                                   55, 20, loss_factor)
+        super().__init__(environment, 55, capacity, 55, 20, loss_factor)
         self._long_ID = "TES_" + self._ID_string
 
         self.E_Th_Max = E_Th_max
@@ -68,7 +67,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        super(ThermalEnergyStorage, self).populate_model(model, mode)
+        super().populate_model(model, mode)
 
         if mode == "convex" or "integer":
             for var in self.P_Th_vars:
@@ -118,7 +117,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
 
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
-        super(ThermalEnergyStorage, self).update_schedule()
+        super().update_schedule()
 
         op_slice = self.op_slice
         self.E_Th_Schedule[op_slice] = [var.x for var in self.E_Th_vars]
@@ -126,7 +125,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        super(ThermalEnergyStorage, self).save_ref_schedule()
+        super().save_ref_schedule()
         np.copyto(
             self.E_Th_Ref_Schedule,
             self.E_Th_Schedule
@@ -183,7 +182,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         reference : bool, optional
             Specify if to reset reference schedule.
         """
-        super(ThermalEnergyStorage, self).reset(schedule, actual, reference)
+        super().reset(schedule, actual, reference)
 
         if schedule:
             self.E_Th_Schedule.fill(0)
