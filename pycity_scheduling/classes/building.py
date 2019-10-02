@@ -3,12 +3,11 @@ import gurobipy as gurobi
 import pycity_base.classes.Building as bd
 from pycity_scheduling import util, classes
 
-from .electrical_entity import ElectricalEntity
-from .thermal_entity import ThermalEntity
+from .entity_container import EntityContainer
 from pycity_scheduling.exception import NonoptimalError
 
 
-class Building(ElectricalEntity, bd.Building):
+class Building(EntityContainer, bd.Building):
     """
     Extension of pycity class Building for scheduling purposes.
 
@@ -94,40 +93,16 @@ class Building(ElectricalEntity, bd.Building):
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
-        super().populate_model(model, mode)
-
-        if mode in ["convex", "integer"]:
-            P_Th_var_list = []
-            P_El_var_list = []
-            if not self.hasBes:
-                raise AttributeError(
-                    "No BES in %s\nModeling aborted." % str(self)
-                )
-            for entity in self.get_lower_entities():
-                entity.populate_model(model, mode)
-                P_Th_var_list.extend(entity.P_Th_vars)
-                P_El_var_list.extend(entity.P_El_vars)
-
-            for t in self.op_time_vec:
-                self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-                P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
-                P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
-                model.addConstr(
-                    0 == P_Th_var_sum,
-                    "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
-                )
-                model.addConstr(
-                    self.P_El_vars[t] == P_El_var_sum,
-                    "{0:s}_P_El_at_t={1}".format(self._long_ID, t)
-                )
-        else:
-            raise ValueError(
-                "Mode %s is not implemented by building." % str(mode)
+        if not self.hasBes:
+            raise AttributeError(
+                "No BES in %s\nModeling aborted." % str(self)
             )
+        super().populate_model(model, mode)
+        for t in self.op_time_vec:
+            model.addConstr(0 == self.P_Th_vars[t])
 
     def update_model(self, model, mode="", robustness=None):
-        for entity in self.get_lower_entities():
-            entity.update_model(model, mode)
+        super().update_model(model, mode)
 
         try:
             model.remove(self.robust_constrs)
@@ -253,12 +228,6 @@ class Building(ElectricalEntity, bd.Building):
             )
         return obj
 
-    def update_schedule(self):
-        """Update the schedule with the scheduling model solution."""
-        super().update_schedule()
-        
-        for entity in self.get_lower_entities():
-            entity.update_schedule()
 
     def populate_deviation_model(self, model, mode=""):
         """Populate the deviation model.
@@ -270,42 +239,21 @@ class Building(ElectricalEntity, bd.Building):
             If 'full' use all possibilities to minimize adjustments.
             Else do not try to compensate adjustments.
         """
-        super().populate_deviation_model(model, mode)
 
-        P_Th_var_list = []
-        P_El_var_list = []
         if not self.hasBes:
             raise AttributeError(
                 "No BES in %s\nModeling aborted." % str(self)
             )
-        for entity in self.get_lower_entities():
-            entity.populate_deviation_model(model, mode)
-            if isinstance(entity, ThermalEntity):
-                P_Th_var_list.append(entity.P_Th_Act_var)
-            if isinstance(entity, ElectricalEntity):
-                P_El_var_list.append(entity.P_El_Act_var)
-
-        self.P_El_Act_var.lb = -gurobi.GRB.INFINITY
-        P_Th_var_sum = gurobi.quicksum(P_Th_var_list)
-        P_El_var_sum = gurobi.quicksum(P_El_var_list)
-        model.addConstr(0 == P_Th_var_sum)
-        model.addConstr(self.P_El_Act_var == P_El_var_sum)
+        super().populate_deviation_model(model, mode)
+        model.addConstr(0 == self.P_Th_Act_var)
 
     def update_deviation_model(self, model, timestep, mode=""):
         """Update deviation model for the current timestep."""
-        for entity in self.get_lower_entities():
-            entity.update_deviation_model(model, timestep, mode)
+        super().update_deviation_model(model, timestep, mode)
         p = self.P_El_Schedule[timestep]
         model.setObjective(
             self.P_El_Act_var * self.P_El_Act_var - 2 * p * self.P_El_Act_var
         )
-
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution."""
-        super().update_actual_schedule(timestep)
-
-        for entity in self.get_lower_entities():
-            entity.update_actual_schedule(timestep)
 
     def _init_deviation_model(self, mode=""):
         model = gurobi.Model(self._long_ID + "_deviation_model")
@@ -350,30 +298,6 @@ class Building(ElectricalEntity, bd.Building):
                     "Could not retrieve solution from deviation model."
                 )
             self.update_actual_schedule(t + timestep)
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super().save_ref_schedule()
-
-        for entity in self.get_lower_entities():
-            entity.save_ref_schedule()
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super().reset(schedule, actual, reference)
-
-        for entity in self.get_lower_entities():
-            entity.reset(schedule, actual, reference)
 
     def get_lower_entities(self):
         """
