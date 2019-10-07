@@ -91,29 +91,6 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
                 "Mode %s is not implemented by electrical heater." % str(mode)
             )
 
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the electrical heater wheighted with
-        coeff. Sum of self.P_El_vars.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.LinExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
-
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.
 

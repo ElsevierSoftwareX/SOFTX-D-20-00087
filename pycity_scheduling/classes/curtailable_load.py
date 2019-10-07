@@ -246,29 +246,6 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         self.P_State_schedule[timestep:timestep + self.op_horizon] \
             = [np.isclose(var.X, self.P_El_Nom) for var in self.P_El_vars]
 
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the curtailable load wheighted with
-        coeff.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-            Represents the price for 1kWh of electricity
-        Returns
-        -------
-        gurobi.QuadExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
-
     def update_deviation_model(self, model, timestep, mode=""):
         """Update deviation model for the current timestep."""
         if mode == 'full':

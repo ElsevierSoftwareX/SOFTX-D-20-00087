@@ -120,29 +120,6 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
             cop = self.COP[t+self.timestep]
             model.chgCoeff(self.coupl_constrs[t], self.P_El_vars[t], cop)
 
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the heatpump wheighted with coeff.
-        Sum of self.P_El_vars.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.LinExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
-
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.
 

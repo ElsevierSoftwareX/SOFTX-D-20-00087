@@ -50,6 +50,29 @@ class ElectricalEntity(OptimizationEntity):
                 "Mode %s is not implemented by electric entity." % str(mode)
                 )
 
+    def get_objective(self, coeff=1):
+        """Objective function for entity level scheduling.
+
+        Return the objective function of the EE wheighted with coeff.
+        Sum of `self.P_El_vars`.
+
+        Parameters
+        ----------
+        coeff : float, optional
+            Coefficient for the objective function.
+
+        Returns
+        -------
+        gurobi.LinExpr :
+            Objective function.
+        """
+        obj = gurobi.LinExpr()
+        obj.addTerms(
+            [coeff] * self.op_horizon,
+            self.P_El_vars
+        )
+        return obj
+
     def update_schedule(self):
         """Update the schedule with the scheduling model solution."""
         super().update_schedule()
