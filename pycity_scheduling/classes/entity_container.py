@@ -53,6 +53,7 @@ class EntityContainer(ThermalEntity, ElectricalEntity):
             )
 
     def update_model(self, model, mode=""):
+        super().update_model(model, mode)
         for entity in self.get_lower_entities():
             entity.update_model(model, mode)
 
@@ -97,6 +98,7 @@ class EntityContainer(ThermalEntity, ElectricalEntity):
 
     def update_deviation_model(self, model, timestep, mode=""):
         """Update deviation model for the current timestep."""
+        super().update_deviation_model()
         for entity in self.get_lower_entities():
             entity.update_deviation_model(model, timestep, mode)
 
