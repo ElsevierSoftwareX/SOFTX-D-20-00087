@@ -10,7 +10,7 @@ setup(
     install_requires=[
         'gurobipy>=5.7.2',
         'numpy>=1.13.3,<1.14.0',
-        'pycity_base==0.1',
+        'pycity_base>=0.2.1',
         'Shapely>=1.6.4'
     ],
     platforms='any',
