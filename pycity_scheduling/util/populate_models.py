@@ -1,7 +1,7 @@
 import gurobipy as gurobi
 
 
-def populate_models(city_district, algorithm, num_threads=4):
+def populate_models(city_district, algorithm, num_threads=0):
     """Populate models for scheduling.
 
     Creates Gurobi models for scheduling. One model for reference, local and
@@ -16,6 +16,10 @@ def populate_models(city_district, algorithm, num_threads=4):
         "stand-alone", "local", "central" or "dual-decompostition".
     num_threads : int, optional
         Number of threads for the gurobi optimization.
+        See also: https://www.gurobi.com/documentation/7.5/refman/threads.html#parameter:Threads
+        "Controls the number of threads to apply to parallel algorithms (concurrent LP, parallel barrier, parallel MIP,
+        etc.). The default value of 0 is an automatic setting. It will generally use all of the cores in the machine,
+        but it may choose to use fewer."
 
     Returns
     -------
