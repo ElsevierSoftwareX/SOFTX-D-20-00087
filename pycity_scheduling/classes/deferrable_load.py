@@ -53,7 +53,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                                               lt_pattern)
         if len(load_time) != self.op_horizon:
             warn(
-                ("The DeferrableLoad {} fill always run once in the op_horizon and not once in the lt_pattern\n" +
+                ("The DeferrableLoad {} will always run once in the op_horizon and not once in the lt_pattern\n" +
                  "If a different behaviour is intended, creating multiple DeferrableLoads should be considered")
                 .format(self._long_ID)
             )
