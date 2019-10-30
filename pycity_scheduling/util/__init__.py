@@ -136,12 +136,12 @@ def compute_profile(timer, profile, pattern=None):
         )
 
 
-def populate_models(city_district, algorithm):
-    """Create optimization models for scheduling.
+def populate_models(city_district, algorithm, num_threads=0):
+    """Create/Populate optimization models for scheduling.
 
-    Creates Gurobi model(s) for a scheduling. One model for reference, local or
+    Creates Gurobi model(s) for scheduling. One model for reference, local and
     central scheduling and multiple models (one for each node and one for the
-    aggregator) for Exchange ADMM or Dual Decomposition.
+    aggregator) for different optimization algorithms.
 
     Parameters
     ----------
@@ -151,6 +151,12 @@ def populate_models(city_district, algorithm):
         Define which algorithm the models are used for. Must be one of
         'exchange-admm', 'dual-decompostition', 'stand-alone', 'local' or
         'central'.
+    num_threads : int, optional
+        Number of threads for the gurobi optimization.
+        See also: https://www.gurobi.com/documentation/7.5/refman/threads.html#parameter:Threads
+        "Controls the number of threads to apply to parallel algorithms (concurrent LP, parallel barrier, parallel MIP,
+        etc.). The default value of 0 is an automatic setting. It will generally use all of the cores in the machine,
+        but it may choose to use fewer."
 
     Returns
     -------
@@ -168,6 +174,8 @@ def populate_models(city_district, algorithm):
     models = {}
     if algorithm in ['stand-alone', 'local', 'central']:
         m = gurobi.Model("Central Scheduling Model")
+        m.setParam("LogFile", "")
+        m.setParam("Threads", num_threads)
         P_El_var_list = []
         for node in nodes.values():
             entity = node['entity']
@@ -180,14 +188,16 @@ def populate_models(city_district, algorithm):
         models[0] = m
     elif algorithm in ['exchange-admm', 'dual-decomposition']:
         m = gurobi.Model("Aggregator Scheduling Model")
+        m.setParam("LogFile", "")
+        m.setParam("Threads", num_threads)
         city_district.populate_model(m)
         models[0] = m
         for node_id, node in nodes.items():
             m = gurobi.Model(str(node_id) + " Scheduling Model")
+            m.setParam("LogFile", "")
+            m.setParam("Threads", num_threads)
             node['entity'].populate_model(m)
             models[node_id] = m
-    else:
-        raise ValueError("Unknown algorithm: {}".format(algorithm))
     return models
 
 
