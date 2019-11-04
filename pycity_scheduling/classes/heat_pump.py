@@ -82,7 +82,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
                 var.ub = 0
             for t in self.op_time_vec:
                 self.coupl_constrs.append(model.addConstr(
-                    self.P_El_vars[t] - self.P_Th_vars[t] == 0,
+                    self.P_El_vars[t] + self.P_Th_vars[t] == 0,
                     "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
                 ))
             if mode == "integer" and self.lowerActivationLimit != 0.0:
