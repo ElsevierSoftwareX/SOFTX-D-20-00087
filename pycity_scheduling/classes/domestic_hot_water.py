@@ -5,7 +5,7 @@ from .thermal_entity import ThermalEntity
 
 class DomesticHotWater(ThermalEntity, dhw.DomesticHotWater):
     """
-    Extension of pycity class DomesticHotWater for scheduling purposes.
+    Extension of pyCity_base class DomesticHotWater for scheduling purposes.
     """
 
     def __init__(self, environment, tFlow, thermal=True, method=0,

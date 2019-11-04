@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
     """
-    Extension of pycity class WindEnergyConverter for scheduling purposes.
+    Extension of pyCity_base class WindEnergyConverter for scheduling purposes.
     """
 
     def __init__(self, environment, velocity, power,

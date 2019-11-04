@@ -8,7 +8,7 @@ from ..exception import PyCitySchedulingGurobiException
 
 class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     """
-    Extension of pycity class ThermalEnergyStorage for scheduling purposes.
+    Extension of pyCity_base class ThermalEnergyStorage for scheduling purposes.
     """
 
     def __init__(self, environment, E_Th_Max, SOC_Ini, SOC_End=None,

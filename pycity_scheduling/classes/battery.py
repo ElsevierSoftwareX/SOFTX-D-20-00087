@@ -8,7 +8,7 @@ from pycity_scheduling.exception import PyCitySchedulingGurobiException
 
 class Battery(ElectricalEntity, bat.Battery):
     """
-    Extension of pycity class Battery for scheduling purposes
+    Extension of pyCity_base class Battery for scheduling purposes.
     """
 
     def __init__(self, environment, E_El_Max, P_El_Max_Charge,

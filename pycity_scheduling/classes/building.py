@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class Building(ElectricalEntity, bd.Building):
     """
-    Extension of pycity class Building for scheduling purposes.
+    Extension of pyCity_base class Building for scheduling purposes.
 
     Notes
     -----

@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
     """
-    Extension of pycity class CHP for scheduling purposes.
+    Extension of pyCity_base class CHP for scheduling purposes.
     """
 
     def __init__(self, environment, P_Th_Nom, P_El_Nom=None, eta=1, tMax=85,

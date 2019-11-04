@@ -9,7 +9,7 @@ class ThermalEntity(OptimizationEntity):
     """
     Base class for all thermal entities derived from OptimizationEntity.
 
-    This class provides functionalities common to all thermal entities.
+    This class provides functionality common to all thermal entities.
     """
 
     def __init__(self, timer, *args, **kwargs):

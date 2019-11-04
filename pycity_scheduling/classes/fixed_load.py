@@ -5,7 +5,7 @@ from pycity_scheduling.classes.electrical_entity import ElectricalEntity
 
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
     """
-    Extension of pycity class ElectricalDemand for scheduling purposes.
+    Extension of pyCity_base class ElectricalDemand for scheduling purposes.
     """
 
     def __init__(self, environment, method=0, demand=0, annualDemand=0,

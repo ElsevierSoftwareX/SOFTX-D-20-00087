@@ -5,7 +5,7 @@ import pycity_base.classes.Timer as ti
 
 class Timer(ti.Timer):
     """
-    Extension of pycity class Timer for scheduling purposes
+    Extension of pyCity_base class Timer for scheduling purposes
 
     Notes
     -----

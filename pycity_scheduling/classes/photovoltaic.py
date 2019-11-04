@@ -6,7 +6,7 @@ from .electrical_entity import ElectricalEntity
 
 class Photovoltaic(ElectricalEntity, pv.PV):
     """
-    Extension of pycity class PV for scheduling purposes.
+    Extension of pyCity_base class PV for scheduling purposes.
     """
 
     def __init__(self, environment, area, eta, temperature_nominal=45,

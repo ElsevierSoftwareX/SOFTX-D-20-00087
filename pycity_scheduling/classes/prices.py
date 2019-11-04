@@ -7,7 +7,7 @@ import pycity_base.classes.Prices as pr
 
 class Prices(pr.Prices):
     """
-    Extension of pycity class Prices for scheduling purposes.
+    Extension of pyCity_base class Prices for scheduling purposes.
     """
 
     da_price_cache = None

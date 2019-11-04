@@ -5,7 +5,7 @@ from .thermal_entity import ThermalEntity
 
 class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     """
-    Extension of pycity class SpaceHeating for scheduling purposes.
+    Extension of pyCity_base class SpaceHeating for scheduling purposes.
     """
 
     def __init__(self, environment, method=0, loadcurve=1, livingArea=0,
@@ -95,7 +95,7 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     def update_model(self, model, mode=""):
         """Update model variables.
 
-        Set variable bounds to equal the given demand, as space heating does
+        Set variable bounds to equal the given demand, as pure space heating does
         not provide any flexibility.
 
         Parameters

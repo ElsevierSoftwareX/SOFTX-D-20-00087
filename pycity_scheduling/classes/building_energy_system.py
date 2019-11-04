@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class BuildingEnergySystem(ThermalEntity, ElectricalEntity, bes.BES):
     """
-    Extension of pycity class BES for scheduling purposes.
+    Extension of pyCity_base class BES for scheduling purposes.
     """
 
     def __init__(self, environment):
