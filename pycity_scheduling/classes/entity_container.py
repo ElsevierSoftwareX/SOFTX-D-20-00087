@@ -41,11 +41,11 @@ class EntityContainer(ThermalEntity, ElectricalEntity):
                 P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
                 model.addConstr(
                     self.P_Th_vars[t] == P_Th_var_sum,
-                    "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
+                    "{0:s}_P_Th_at_t={1}".format(self._long_ID, t + 1)
                 )
                 model.addConstr(
                     self.P_El_vars[t] == P_El_var_sum,
-                    "{0:s}_P_El_t={1}".format(self._long_ID, t)
+                    "{0:s}_P_El_t={1}".format(self._long_ID, t + 1)
                 )
         else:
             raise ValueError(
