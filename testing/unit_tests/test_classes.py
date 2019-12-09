@@ -161,6 +161,14 @@ class TestBoiler(unittest.TestCase):
         co2 = self.bl.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
+    def test_lower_activation(self):
+        e = get_env(4, 8)
+        bl = Boiler(e, 10, lower_activation_limit=0.5)
+        m = gp.Model('BLModel')
+        bl.populate_model(m, "integer")
+        bl.update_model(m, "integer")
+        m.optimize()
+
 
 class TestBuilding(unittest.TestCase):
     def setUp(self):
@@ -499,6 +507,14 @@ class TestCombinedHeatPower(unittest.TestCase):
         co2 = self.chp.calculate_co2(schedule='ref', co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
+    def test_lower_activation(self):
+        e = get_env(4, 8)
+        chp = CombinedHeatPower(e, 10, 10, 0.8, 0.5)
+        m = gp.Model('CHPModel')
+        chp.populate_model(m, "integer")
+        chp.update_model(m, "integer")
+        m.optimize()
+
 
 class TestDeferrableLoad(unittest.TestCase):
     def setUp(self):
@@ -664,6 +680,20 @@ class TestElectricalEntity(unittest.TestCase):
         self.assertEqual(0, self.ee.autarky())
 
 
+class TestElectricalHeater(unittest.TestCase):
+    def setUp(self):
+        e = get_env(4, 8)
+        self.eh = ElectricalHeater(e, 10, 10, 0.8)
+
+    def test_lower_activation(self):
+        e = get_env(4, 8)
+        eh = ElectricalHeater(e, 10, lower_activation_limit=0.5)
+        m = gp.Model('EHPModel')
+        eh.populate_model(m, "integer")
+        eh.update_model(m, "integer")
+        m.optimize()
+
+
 class TestElectricVehicle(unittest.TestCase):
     def setUp(self):
         e = get_env(6, 9)
@@ -784,6 +814,14 @@ class TestHeatPump(unittest.TestCase):
 
         c = self.hp.Act_coupl_constr
         self.assertEqual(11, m.getCoeff(c, self.hp.P_El_Act_var))
+
+    def test_lower_activation(self):
+        e = get_env(4, 8)
+        hp = HeatPump(e, 10, lower_activation_limit=0.5)
+        m = gp.Model('HPModel')
+        hp.populate_model(m, "integer")
+        hp.update_model(m, "integer")
+        m.optimize()
 
 
 class TestPhotovoltaic(unittest.TestCase):

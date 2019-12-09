@@ -76,11 +76,11 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
                 for t in self.op_time_vec:
                     # Couple state to operating variable
                     model.addConstr(
-                        self.P_Th_vars[t][t]
+                        self.P_Th_vars[t]
                         >= -self.P_State_vars[t] * self.P_Th_Nom
                     )
                     model.addConstr(
-                        self.P_Th_vars[t][t]
+                        self.P_Th_vars[t]
                         <= -self.P_State_vars[t] * self.P_Th_Nom * self.lowerActivationLimit
                     )
                     # Remove redundant limits of P_Th_vars
