@@ -223,7 +223,7 @@ class TestDeferrableLoad(unittest.TestCase):
         self.dl.update_model(model)
         model.optimize()
 
-        self.assertAlmostEqual(10, gp.quicksum(self.dl.P_El_vars), places=5)
+        self.assertAlmostEqual(13.333333*4, gp.quicksum(self.dl.P_El_vars).getValue(), places=5)
 
         self.dl.timer.mpc_update()
         self.dl.update_model(model)
@@ -327,8 +327,7 @@ class TestElectricVehicle(unittest.TestCase):
             else:
                 self.assertEqual(0, self.ev.P_El_Demand_vars[t].ub)
                 self.assertEqual(0, self.ev.P_El_Supply_vars[t].ub)
-                self.assertEqual(gp.GRB.INFINITY,
-                                 self.ev.P_El_Drive_vars[t].ub)
+                self.assertTrue(np.isinf(self.ev.P_El_Drive_vars[t].ub))
         self.assertAlmostEqual(10, self.ev.E_El_vars[1].x, places=5)
         self.assertAlmostEqual(2, self.ev.E_El_vars[2].x, places=5)
         self.assertLessEqual(1.6, self.ev.E_El_vars[-1].x)
