@@ -8,7 +8,7 @@ from .electrical_entity import ElectricalEntity
 
 class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
     """
-    Extension of pycity class Heatpump for scheduling purposes.
+    Extension of pyCity_base class Heatpump for scheduling purposes.
     """
 
     def __init__(self, environment, P_Th_nom, cop=None,

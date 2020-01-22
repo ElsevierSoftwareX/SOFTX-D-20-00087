@@ -6,7 +6,7 @@ from pycity_scheduling import util
 
 class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     """
-    Extension of pycity class SpaceHeating for scheduling purposes.
+    Extension of pyCity_base class SpaceHeating for scheduling purposes.
 
     As for all uncontrollable loads, the `P_Th_Schedule` contains the forecast
     of the load and `P_Th_Act_Schedule` contains the actual load.
@@ -97,7 +97,7 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     def update_model(self, model, mode=""):
         """Update model variables.
 
-        Set variable bounds to equal the given demand, as space heating does
+        Set variable bounds to equal the given demand, as pure space heating does
         not provide any flexibility.
 
         Parameters

@@ -7,7 +7,7 @@ from .thermal_entity import ThermalEntity
 
 class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
     """
-    Extension of pycity class ThermalEnergyStorage for scheduling purposes.
+    Extension of pyCity_base class ThermalEnergyStorage for scheduling purposes.
     """
 
     def __init__(self, environment, E_Th_max, soc_init=0.5, loss_factor=0,

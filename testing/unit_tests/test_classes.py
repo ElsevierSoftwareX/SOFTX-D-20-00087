@@ -745,8 +745,7 @@ class TestElectricVehicle(unittest.TestCase):
             else:
                 self.assertEqual(0, self.ev.P_El_Demand_vars[t].ub)
                 self.assertEqual(0, self.ev.P_El_Supply_vars[t].ub)
-                self.assertEqual(gp.GRB.INFINITY,
-                                 self.ev.P_El_Drive_vars[t].ub)
+                self.assertTrue(np.isinf(self.ev.P_El_Drive_vars[t].ub))
         self.assertAlmostEqual(10, self.ev.E_El_vars[1].x, places=5)
         self.assertAlmostEqual(2, self.ev.E_El_vars[2].x, places=5)
         self.assertLessEqual(1.6, self.ev.E_El_vars[-1].x)

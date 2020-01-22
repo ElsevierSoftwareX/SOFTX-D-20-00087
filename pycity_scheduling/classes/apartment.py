@@ -8,7 +8,7 @@ from .entity_container import EntityContainer
 
 class Apartment(EntityContainer, apm.Apartment):
     """
-    Extension of pycity class Apartment for scheduling purposes
+    Extension of pyCity_base class Apartment for scheduling purposes.
     """
 
     def __init__(self, environment, net_floor_area=None, occupancy=None):

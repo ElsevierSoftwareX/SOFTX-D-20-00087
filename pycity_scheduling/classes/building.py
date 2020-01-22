@@ -9,7 +9,7 @@ from pycity_scheduling.exception import NonoptimalError
 
 class Building(EntityContainer, bd.Building):
     """
-    Extension of pycity class Building for scheduling purposes.
+    Extension of pyCity_base class Building for scheduling purposes.
 
     Notes
     -----

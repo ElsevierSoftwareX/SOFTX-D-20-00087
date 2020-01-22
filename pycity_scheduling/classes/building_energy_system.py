@@ -6,7 +6,7 @@ from .entity_container import EntityContainer
 
 class BuildingEnergySystem(EntityContainer, bes.BES):
     """
-    Extension of pycity class BES for scheduling purposes.
+    Extension of pyCity_base class BES for scheduling purposes.
     """
 
     def __init__(self, environment):

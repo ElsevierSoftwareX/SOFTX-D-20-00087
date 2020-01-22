@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class Battery(ElectricalEntity, bat.Battery):
     """
-    Extension of pycity class Battery for scheduling purposes
+    Extension of pyCity_base class Battery for scheduling purposes.
     """
 
     def __init__(self, environment, E_El_max, P_El_max_charge,

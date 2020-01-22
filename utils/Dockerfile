@@ -1,12 +1,12 @@
 FROM python:3.6 AS base
 
-ENV GUROBI_HOME="/opt/gurobi752/linux64"
+ENV GUROBI_HOME="/opt/gurobi900/linux64"
 
 ENV PATH="${PATH}:$GUROBI_HOME/bin" \
     LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$GUROBI_HOME/lib"
 
-## add gurobi 7.5.2
-RUN curl https://packages.gurobi.com/7.5/gurobi7.5.2_linux64.tar.gz > /gurobi.tar.gz &&\
+## add gurobi 9.0.0
+RUN curl https://packages.gurobi.com/9.0/gurobi9.0.0_linux64.tar.gz > /gurobi.tar.gz &&\
     tar xfz gurobi.tar.gz -C /opt/ &&\
     chmod 777 -R $GUROBI_HOME &&\
     rm gurobi.tar.gz &&\

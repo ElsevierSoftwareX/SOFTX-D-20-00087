@@ -9,7 +9,7 @@ class ElectricalEntity(OptimizationEntity):
     """
     Base class for all electrical entities derived from OptimizationEntity.
 
-    This class provides functionalities common to all electrical entities.
+    This class provides functionality common to all electrical entities.
     """
 
     def __init__(self, environment, *args, **kwargs):

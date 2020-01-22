@@ -6,7 +6,7 @@ from pycity_scheduling import util
 
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
     """
-    Extension of pycity class ElectricalDemand for scheduling purposes.
+    Extension of pyCity_base class ElectricalDemand for scheduling purposes.
 
     As for all uncontrollable loads, the `P_El_Schedule` contains the forecast
     of the load and `P_El_Act_Schedule` contains the actual load.

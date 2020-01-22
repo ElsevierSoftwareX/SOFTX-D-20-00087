@@ -7,7 +7,7 @@ from .thermal_entity import ThermalEntity
 
 class Boiler(ThermalEntity, bl.Boiler):
     """
-    Extension of pycity class Boiler for scheduling purposes.
+    Extension of pyCity_base class Boiler for scheduling purposes.
     """
 
     def __init__(self, environment, P_Th_nom, eta=1, lower_activation_limit=0):

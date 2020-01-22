@@ -8,7 +8,7 @@ from .electrical_entity import ElectricalEntity
 
 class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
     """
-    Extension of pycity class ElectricalDemand for scheduling purposes.
+    Extension of pyCity_base class ElectricalDemand for scheduling purposes.
     """
 
     def __init__(self, environment, P_El_Nom, max_curtailment,

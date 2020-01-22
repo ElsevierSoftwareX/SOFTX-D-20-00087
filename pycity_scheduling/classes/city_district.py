@@ -6,8 +6,7 @@ from .electrical_entity import ElectricalEntity
 
 class CityDistrict(ElectricalEntity, cd.CityDistrict):
     """
-    Extension of pyCity class CityDistrict for scheduling purposes. Also works
-    as the aggregator.
+    Extension of pyCity_base class CityDistrict for scheduling purposes. Also represents the aggregator.
     """
 
     def __init__(self, environment, objective='price', valley_profile=None):

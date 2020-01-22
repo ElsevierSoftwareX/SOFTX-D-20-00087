@@ -4,7 +4,7 @@ class OptimizationEntity(object):
     """
     Base class for all optimization entities.
 
-    This class provides functionalities common to all entities which take part
+    This class provides functionality common to all entities which take part
     in the scheduling optimization.
     """
 

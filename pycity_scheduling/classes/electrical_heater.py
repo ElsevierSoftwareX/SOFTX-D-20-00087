@@ -7,7 +7,7 @@ from .electrical_entity import ElectricalEntity
 
 class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
     """
-    Extension of pycity class ElectricalHeater for scheduling purposes.
+    Extension of pyCity_base class ElectricalHeater for scheduling purposes.
     """
 
     def __init__(self, environment, P_Th_nom, eta=1, lower_activation_limit=0):
