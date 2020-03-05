@@ -47,6 +47,40 @@ def _calculate_dl_times(timer):
     ]
     return dl_time_ranges
 
+def _distribute(d, number):
+    """Generates amounts based on distribution and total number and minimizes rounding error
+
+    Parameters
+    ----------
+    d : dict
+        The distribution used for generating amounts.
+    Keys : str
+    Values : float
+        Number between 0 and 1. The sum over all values must be one.
+
+    Returns
+    ----------
+    dict :
+        dict with keys from original dict and amount as values
+    """
+    if any(not (0 <= v <= 1) for v in d.values()):
+        raise ValueError("Bad device probabilities")
+    amount_dict = {}
+    # calculate the difference between sum of amounts and number when rounding down
+    diff = number - sum(int(v * number) for v in d.values())
+    if diff < 0 or diff > len(d):
+        raise ValueError("Bad device probabilities")
+    # sort dict by int round error
+    sorted_distribution = sorted(d.items(), key=lambda item: (number * item[1]) % 1, reverse=True)
+    # calculate amount for keys in distribution (keys with largest rounding error first)
+    for i, (building, share) in enumerate(sorted_distribution):
+        amount = int(share * number)
+        if i < diff:
+            # add 1 of key for keys with large rounding error to account for diff
+            amount += 1
+        amount_dict[building] = amount
+    return amount_dict
+
 
 def generate_tabula_buildings(environment,
                               number,
@@ -108,31 +142,33 @@ def generate_tabula_buildings(environment,
         device_probabilities = {'FL': 1}
 
     building_dicts = []
-    for building, share in building_distribution.items():
-        building_dicts += [tbd[building]] * round(share * number)
-    if len(building_dicts) != number:
-        raise ValueError("Bad building distribution.")
+    for building, amount in _distribute(building_distribution, number).items():
+        building_dicts += [tbd[building]] * amount
+    assert len(building_dicts) == number
 
     heating_list = []
-    for heating, share in heating_distribution.items():
-        heating_list += [heating_devices[heating]] * round(share * number)
-    if len(heating_list) != number:
-        raise ValueError("Bad heating distribution.")
+    for heating, amount in _distribute(heating_distribution, number).items():
+        heating_list += [heating_devices[heating]] * amount
+    assert len(heating_list) == number
 
     if any(map(lambda x: not 0 <= x <= 1, device_probabilities.values())):
         raise ValueError("Bad device probabilities")
 
     number_ap = sum(building['apartments'] for building in building_dicts)
+
+    # apartment entities
     a = round(device_probabilities.get('FL', 0) * number_ap)
     fl_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('DL', 0) * number_ap)
     dl_list = [True] * a + [False] * (number_ap - a)
     a = round(device_probabilities.get('EV', 0) * number_ap)
     ev_list = [True] * a + [False] * (number_ap - a)
+
+    # building entities
     a = round(device_probabilities.get('PV', 0) * number)
-    pv_list = [True] * a + [False] * (number_ap - a)
+    pv_list = [True] * a + [False] * (number - a)
     a = round(device_probabilities.get('BAT', 0) * number)
-    bat_list = [True] * a + [False] * (number_ap - a)
+    bat_list = [True] * a + [False] * (number - a)
 
     ev_time_ranges = _calculate_ev_times(environment.timer)
     dl_time_ranges = _calculate_dl_times(environment.timer)
