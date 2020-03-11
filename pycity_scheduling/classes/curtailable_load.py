@@ -45,8 +45,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
         self.max_low = max_low
         self.min_full = min_full
         self.P_El_Curt = self.P_El_Nom * self.max_curt
-        self.P_State_vars = []
-        self.P_State_schedule = np.empty(self.simu_horizon, bool)
+        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_El_vars[t].x > 0.99*P_El_Nom)
         self.constr_previous_state = []
         self.constr_previous = []
         self.constr_previous_start = None
@@ -174,15 +173,15 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             for constr in self.constr_previous_state:
                 constr.RHS = -gurobi.GRB.INFINITY
             if self.constr_previous_start is not None:
-                if self.P_State_schedule[timestep - 1]:
+                if self.P_State_Schedule[timestep - 1]:
                     self.constr_previous_start.RHS = gurobi.GRB.INFINITY #len(next_states)
                 else:
                     self.constr_previous_start.RHS = 0
             # if the device was operating at 100% in the previous timestep
-            if self.P_State_schedule[timestep - 1]:
+            if self.P_State_Schedule[timestep - 1]:
                 # count the last timesteps it was operating at 100%
                 full_ts = 1
-                while (timestep - full_ts - 1) >= 0 and self.P_State_schedule[timestep - full_ts - 1]:
+                while (timestep - full_ts - 1) >= 0 and self.P_State_Schedule[timestep - full_ts - 1]:
                     full_ts += 1
                 if timestep - full_ts - 1 < 0:
                     # if the device was operating at 100% back until timestep 0,
@@ -207,7 +206,7 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
             else:
                 # count the last timesteps it was operating under 100%
                 low_ts = 1
-                while (timestep - low_ts - 1) >= 0 and not self.P_State_schedule[timestep - low_ts - 1]:
+                while (timestep - low_ts - 1) >= 0 and not self.P_State_Schedule[timestep - low_ts - 1]:
                     assert low_ts <= self.max_low
                     low_ts += 1
                 # calculate the timesteps in which the device has to operate at 100% in
@@ -239,12 +238,6 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 already_done = sum(already_done)
                 # create constraints by modifying RHS
                 constr.RHS = required - already_done
-
-    def update_schedule(self):
-        super(CurtailableLoad, self).update_schedule()
-        timestep = self.timer.currentTimestep
-        self.P_State_schedule[timestep:timestep + self.op_horizon] \
-            = [np.isclose(var.X, self.P_El_Nom) for var in self.P_El_vars]
 
     def update_deviation_model(self, model, timestep, mode=""):
         """Update deviation model for the current timestep."""

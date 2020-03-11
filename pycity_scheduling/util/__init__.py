@@ -249,7 +249,7 @@ def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
             .format(schedule_type)
         )
     schedule_name += 'Schedule'
-    sched = entity.__dict__.get(schedule_name)
+    sched = entity.__getattr__(schedule_name)
     if timestep:
         sched = sched[:timestep]
     return sched

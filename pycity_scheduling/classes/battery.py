@@ -45,15 +45,12 @@ class Battery(ElectricalEntity, bat.Battery):
         self.P_El_Max_Discharge = P_El_max_discharge or P_El_max_charge
         self.storage_end_equality = storage_end_equality
 
-        self.P_El_Demand_vars = []
-        self.P_El_Supply_vars = []
-        self.P_State_vars = []
-        self.E_El_vars = []
+        self.new_var("P_El_Demand")
+        self.new_var("P_El_Supply")
+        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_El_Demand_vars[t].X > self.P_El_Supply_vars[t].X)
+        self.new_var("E_El")
         self.E_El_Init_constr = None
         self.E_El_coupl_constrs = []
-        self.E_El_Schedule = np.zeros(self.simu_horizon)
-        self.E_El_Act_Schedule = np.zeros(self.simu_horizon)
-        self.E_El_Ref_Schedule = np.zeros(self.simu_horizon)
         self.P_El_Act_Demand_var = None
         self.P_El_Act_Supply_var = None
         self.E_El_Act_var = None
@@ -79,9 +76,6 @@ class Battery(ElectricalEntity, bat.Battery):
         super().populate_model(model, mode)
         if mode in ["convex", "integer"]:
             # additional variables for battery
-            self.P_El_Demand_vars = []
-            self.P_El_Supply_vars = []
-            self.E_El_vars = []
             for t in self.op_time_vec:
                 self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
                 self.P_El_Demand_vars.append(
@@ -206,7 +200,6 @@ class Battery(ElectricalEntity, bat.Battery):
         super().update_schedule()
 
         op_slice = self.op_slice
-        self.E_El_Schedule[op_slice] = [var.x for var in self.E_El_vars]
         self.E_El_Act_Schedule[op_slice] = self.E_El_Schedule[op_slice]
 
     def populate_deviation_model(self, model, mode=""):
@@ -260,32 +253,3 @@ class Battery(ElectricalEntity, bat.Battery):
         self.P_El_Act_Schedule[timestep] = (self.P_El_Act_Demand_var.x
                                             - self.P_El_Act_Supply_var.x)
         self.E_El_Act_Schedule[timestep] = self.E_El_Act_var.x
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super().save_ref_schedule()
-        np.copyto(
-            self.E_El_Ref_Schedule,
-            self.E_El_Schedule
-        )
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super().reset(schedule, reference)
-
-        if schedule:
-            self.E_El_Schedule.fill(0)
-        if actual:
-            self.E_El_Act_Schedule.fill(0)
-        if reference:
-            self.E_El_Ref_Schedule.fill(0)

@@ -109,9 +109,5 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         self.P_El_Act_var.lb = self.P_El_Act_Schedule[timestep]
         self.P_El_Act_var.ub = self.P_El_Act_Schedule[timestep]
 
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution."""
-        pass
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        pass
+    def reset(self, name=None):
+        pass#TODO

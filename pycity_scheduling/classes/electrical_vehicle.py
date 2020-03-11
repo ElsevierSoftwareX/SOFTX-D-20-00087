@@ -52,7 +52,7 @@ class ElectricalVehicle(Battery):
         self.charging_time = util.compute_profile(self.timer, charging_time,
                                                   ct_pattern)
 
-        self.P_El_Drive_vars = []
+        self.new_var("P_El_Drive")
         self.E_El_SOC_constrs = []
 
     def populate_model(self, model, mode="convex"):
@@ -73,7 +73,6 @@ class ElectricalVehicle(Battery):
         super().populate_model(model, mode)
 
         # Simulate power consumption while driving
-        self.P_El_Drive_vars = []
         for t in self.op_time_vec:
             self.P_El_Drive_vars.append(
                 model.addVar(

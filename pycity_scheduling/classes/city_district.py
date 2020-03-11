@@ -88,29 +88,6 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             )
         return obj
 
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super().save_ref_schedule()
-
-        for entity in self.get_lower_entities():
-            entity.save_ref_schedule()
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super().reset(schedule, actual, reference)
-        for entity in self.get_lower_entities():
-            entity.reset(reference)
-
     def calculate_costs(self, schedule=None, timestep=None, prices=None,
                         feedin_factor=None):
         """Calculate electricity costs for the CityDistrict.

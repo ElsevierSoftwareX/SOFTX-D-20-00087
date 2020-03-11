@@ -56,7 +56,7 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         self.COP = cop
         self.P_Th_Nom = P_Th_nom
 
-        self.P_State_vars = []
+        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_Th_vars[t].x > 0.01*P_Th_nom)
         self.coupl_constrs = []
         self.Act_coupl_constr = None
 

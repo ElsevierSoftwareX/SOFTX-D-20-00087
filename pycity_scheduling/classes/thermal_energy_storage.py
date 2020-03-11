@@ -43,12 +43,8 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             self.kLosses / self.capacity / self.cWater * self.time_slot * 3600
         )
 
-        self.E_Th_vars = []
+        self.new_var("E_Th")
         self.E_Th_Init_constr = None
-        self.E_Th_Schedule = np.zeros(self.simu_horizon)
-        self.E_Th_Act_Schedule = np.zeros(self.simu_horizon)
-        self.E_Th_Ref_Schedule = np.zeros(self.simu_horizon)
-        self.E_Th_Act_var = None
         self.E_Th_Act_coupl_constr = None
 
     def populate_model(self, model, mode="convex"):
@@ -73,7 +69,6 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
             for var in self.P_Th_vars:
                 var.lb = -gurobi.GRB.INFINITY
 
-            self.E_Th_vars = []
             for t in self.op_time_vec:
                 self.E_Th_vars.append(
                     model.addVar(
@@ -120,17 +115,7 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         super().update_schedule()
 
         op_slice = self.op_slice
-        self.E_Th_Schedule[op_slice] = [var.x for var in self.E_Th_vars]
         self.E_Th_Act_Schedule[op_slice] = self.E_Th_Schedule[op_slice]
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super().save_ref_schedule()
-        np.copyto(
-            self.E_Th_Ref_Schedule,
-            self.E_Th_Schedule
-        )
-
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.
 
@@ -169,24 +154,3 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         super().update_actual_schedule(timestep)
 
         self.E_Th_Act_Schedule[timestep] = self.E_Th_Act_var.x
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super().reset(schedule, actual, reference)
-
-        if schedule:
-            self.E_Th_Schedule.fill(0)
-        if actual:
-            self.E_Th_Act_Schedule.fill(0)
-        if reference:
-            self.E_Th_Ref_Schedule.fill(0)

@@ -86,9 +86,11 @@ class TestBattery(unittest.TestCase):
         m1.optimize()
         self.bat.P_El_vars = var_list
         m2, var_list = get_model(3, 2)
+        a = np.arange(3)
+        self.bat.P_El_Demand_vars = [m2.addVar(lb=3, ub=3) for i in range(3)]
+        self.bat.P_El_Supply_vars = [m2.addVar(lb=0, ub=0) for i in range(3)]
         m2.optimize()
         self.bat.E_El_vars = var_list
-        a = np.arange(3)
 
         self.bat.update_schedule()
         assert_equal_array(self.bat.P_El_Schedule, a)
@@ -250,7 +252,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     model.optimize()
                     cl.update_schedule()
                     schedule_states = np.isclose(cl.P_El_Schedule[:5], [nom]*5)
-                    assert_equal_array(cl.P_State_schedule[:5], schedule_states)
+                    assert_equal_array(cl.P_State_Schedule[:5], schedule_states)
                     self.assertEqual(min_states, sum(schedule_states))
                     self.assertAlmostEqual(min_states*nom+(5-min_states)*nom*0.75, obj.getValue())
 
@@ -314,7 +316,7 @@ class TestCurtailableLoad(unittest.TestCase):
                         self.assertEqual(model.Status, 2)
                         cl.update_schedule()
                         schedule_states_el = np.isclose(cl.P_El_Schedule[t:t+5], [2] * 5)
-                        schedule_states_b = np.isclose(cl.P_State_schedule[t:t+5], [1] * 5)
+                        schedule_states_b = np.isclose(cl.P_State_Schedule[t:t+5], [1] * 5)
                         assert_equal_array(schedule_states_b, states[t:t + 5])
                         assert_equal_array(schedule_states_el, schedule_states_b)
                         assert_equal_array(
@@ -331,7 +333,7 @@ class TestCurtailableLoad(unittest.TestCase):
                     cl = CurtailableLoad(self.e, 2, 0.5, low, full)
                     cl.populate_model(model, mode="integer")
                     self.e.timer.currentTimestep = 1
-                    cl.P_State_schedule[0] = False
+                    cl.P_State_Schedule[0] = False
                     cl.P_El_Schedule[0] = 1
                     cl.update_model(model, "integer")
 

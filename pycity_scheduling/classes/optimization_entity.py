@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class OptimizationEntity(object):
     """
@@ -25,6 +25,11 @@ class OptimizationEntity(object):
         self._kind = ""
 
         self.timer = environment.timer
+        self.schedules = {'default': {}, 'Ref': {}, 'Act': {}}
+
+        self.vars = {}
+        self.__var_funcs__ = {}
+        self.current_schedule = 'default'
 
         if hasattr(super(), "__module__"):
             # This allows ElectricalEntity and ThermalEntity to be instantiated
@@ -79,7 +84,9 @@ class OptimizationEntity(object):
         return slice(t1, t2)
 
     def populate_model(self, model, mode=""):
-        pass
+        # reset var list
+        for name in self.vars.keys():
+            self.vars[name] = []
 
     def update_model(self, model, mode=""):
         pass
@@ -91,14 +98,26 @@ class OptimizationEntity(object):
         schedule. The model must be optimal. The time / position of the
         solution in the schedule is determined by `self.timer.currentTimestep`.
         """
-        pass
+        op_slice = self.op_slice
+        for name, schedule in self.schedule.items():
+            if name in self.__var_funcs__:
+                func = self.__var_funcs__[name]
+                values = np.fromiter((func(t) for t in self.op_time_vec), dtype=schedule.dtype)
+            else:
+                values = [var.X for var in self.vars[name]]
+            if schedule.dtype == np.bool:
+                pad = False
+            else:
+                pad = True
+            schedule[op_slice] = np.pad(values, (0, len(schedule[op_slice]) - len(values)), mode='constant',
+                                        constant_values=pad)
 
     def get_objective(self, coeff=1):
         return None
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
-        pass
+        self.copy_schedule("Ref", "default")
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model.
@@ -132,18 +151,11 @@ class OptimizationEntity(object):
         """
         pass
 
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution.
-
-        Parameters
-        ----------
-        timestep : int
-            Current timestep of simulation.
-        """
-        pass
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        pass
+    def reset(self, name=None):
+        if name is None:
+            for name in self.schedules.keys():
+                self.new_schedule(name)
+        self.new_schedule(name)
 
     def calculate_costs(self, schedule=None, timestep=None, prices=None,
                         feedin_factor=None):
@@ -207,3 +219,71 @@ class OptimizationEntity(object):
         yield self
         for entity in self.get_lower_entities():
             yield from entity.get_all_entities()
+
+    def new_var(self, name, dtype=np.float64, func=None):
+        self.vars[name] = []
+        if func is not None:
+            self.__var_funcs__[name] = func
+        for schedule in self.schedules.values():
+            schedule[name] = np.full(self.timer.simu_horizon, 0, dtype=dtype)
+
+    def new_schedule(self, schedule):
+        self.schedules[schedule] = {name: np.full_like(entries, 0)for name, entries in self.current_schedule.keys()}
+
+    def copy_schedule(self, dst=None, src=None, name=None):
+        assert dst != src
+        if dst is None:
+            dst = self.current_schedule
+        elif src is None:
+            src = self.current_schedule
+        src_schedule = self.get_schedule(src)
+        if name is None:
+            self.schedules[dst] = {key: entries.copy() for key, entries in src_schedule.items()}
+        else:
+            if dst not in self.schedules:
+                self.new_schedule(dst)
+            self.schedules[dst][name] = src_schedule[name].copy()
+
+    def load_schedule(self, schedule):
+        self.current_schedule = schedule
+
+    @property
+    def schedule(self):
+        return self.schedules[self.current_schedule]
+
+    def __getattr__(self, item):
+        if type(item) == str:
+            items = item.split("_")
+            if len(items) >= 2:
+                if "Schedule" == items[-1]:
+                    if items[-2] in self.schedules and "_".join(items[:-2]) in self.schedule:
+                        schedule = self.schedules[items[-2]]
+                        varname = "_".join(items[:-2])
+                    else:
+                        schedule = self.schedule
+                        varname = "_".join(items[:-1])
+                    schedule = schedule.get(varname, None)
+                    if schedule is not None:
+                        return schedule
+                elif "vars" == items[-1]:
+                    varlist = self.vars.get(item[:-5], None)
+                    if varlist is not None:
+                        return varlist
+        raise AttributeError(item)
+
+    def __setattr__(self, attr, value):
+        if type(attr) == str:
+            attrs = attr.split("_")
+            if len(attrs) >= 2:
+                if "Schedule" == attrs[-1]:
+                    if attrs[-2] in self.schedules and "_".join(attrs[:-2]) in self.schedule:
+                        schedule = self.schedules[attrs[-2]]
+                        varname = "_".join(attrs[:-2])
+                    else:
+                        schedule = self.schedule
+                        varname = "_".join(attrs[:-1])
+                    schedule[varname] = value
+                    return
+                elif "vars" == attrs[-1]:
+                    self.vars[attr[:-5]] = value
+        super().__setattr__(attr, value)

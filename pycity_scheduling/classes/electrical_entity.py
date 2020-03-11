@@ -15,10 +15,7 @@ class ElectricalEntity(OptimizationEntity):
     def __init__(self, environment, *args, **kwargs):
         super().__init__(environment, *args, **kwargs)
 
-        self.P_El_vars = []
-        self.P_El_Schedule = np.zeros(self.simu_horizon)
-        self.P_El_Act_Schedule = np.zeros(self.simu_horizon)
-        self.P_El_Ref_Schedule = np.zeros(self.simu_horizon)
+        self.new_var("P_El")
         self.P_El_Act_var = None
 
     def populate_model(self, model, mode="convex"):
@@ -37,7 +34,6 @@ class ElectricalEntity(OptimizationEntity):
         """
         super().populate_model(model, mode)
         if mode in ["convex", "integer"]:
-            self.P_El_vars = []
             for t in self.op_time_vec:
                 self.P_El_vars.append(
                     model.addVar(
@@ -77,16 +73,7 @@ class ElectricalEntity(OptimizationEntity):
         """Update the schedule with the scheduling model solution."""
         super().update_schedule()
         op_slice = self.op_slice
-        self.P_El_Schedule[op_slice] = [var.x for var in self.P_El_vars]
         self.P_El_Act_Schedule[op_slice] = self.P_El_Schedule[op_slice]
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super().save_ref_schedule()
-        np.copyto(
-            self.P_El_Ref_Schedule,
-            self.P_El_Schedule
-        )
 
     def populate_deviation_model(self, model, mode=""):
         """Add variables for this entity to the deviation model."""
@@ -99,26 +86,6 @@ class ElectricalEntity(OptimizationEntity):
         """Update the actual schedule with the deviation model solution."""
         super().update_actual_schedule(timestep)
         self.P_El_Act_Schedule[timestep] = self.P_El_Act_var.x
-
-    def reset(self, schedule=True, actual=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super().reset(schedule, actual, reference)
-        if schedule:
-            self.P_El_Schedule.fill(0)
-        if actual:
-            self.P_El_Act_Schedule.fill(0)
-        if reference:
-            self.P_El_Ref_Schedule.fill(0)
 
     def calculate_costs(self, schedule=None, timestep=None, prices=None,
                         feedin_factor=None):

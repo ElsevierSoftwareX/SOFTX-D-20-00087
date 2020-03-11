@@ -58,7 +58,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 .format(self._long_ID)
             )
 
-        self.P_Start_vars = []
+        self.new_var("P_Start")
         self.runtime = None
 
     def populate_model(self, model, mode="convex"):

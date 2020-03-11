@@ -1,3 +1,4 @@
+import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.supply.CHP as chp
 
@@ -41,7 +42,7 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
         super().__init__(environment, p_nominal, q_nominal, eta, 55, lower_activation_limit)
         self._long_ID = "CHP_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
-        self.P_State_vars = []
+        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_Th_vars[t].x > 0.01*P_Th_nom)
 
     def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.

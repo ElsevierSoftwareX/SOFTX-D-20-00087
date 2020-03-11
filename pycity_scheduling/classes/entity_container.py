@@ -116,22 +116,19 @@ class EntityContainer(ThermalEntity, ElectricalEntity):
         for entity in self.get_lower_entities():
             entity.save_ref_schedule()
 
-    def reset(self, schedule=True, actual=True, reference=False):
+    def reset(self, schedule=None):
         """Reset entity for new simulation.
 
         Parameters
         ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        actual : bool, optional
-            Specify if to reset actual schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
+        schedule : str, optional
+            Name of schedule to reset.
+            If None resets all schedules.
         """
-        super().reset(self, schedule, actual, reference)
+        super().reset(self, schedule)
 
         for entity in self.get_lower_entities():
-            entity.reset(schedule, actual, reference)
+            entity.reset(schedule)
 
     def get_lower_entities(self):
         """

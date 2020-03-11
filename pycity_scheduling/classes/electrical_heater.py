@@ -1,3 +1,4 @@
+import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.supply.ElectricalHeater as eh
 
@@ -33,7 +34,7 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         super().__init__(environment, P_Th_nom*1000, eta, 55, lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
-        self.P_State_vars = []
+        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_Th_vars[t].x > 0.01*P_Th_nom)
 
     def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
