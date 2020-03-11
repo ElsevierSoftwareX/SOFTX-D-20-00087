@@ -110,6 +110,10 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
             self.P_Th_vars[t].lb = self.P_Th_Schedule[t+timestep]
             self.P_Th_vars[t].ub = self.P_Th_Schedule[t+timestep]
 
+    def new_schedule(self, schedule):
+        super().new_schedule(schedule)
+        self.copy_schedule(schedule, "default", "P_Th")
+
     def update_schedule(self, mode=""):
         pass
 

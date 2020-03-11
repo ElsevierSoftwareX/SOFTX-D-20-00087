@@ -87,6 +87,10 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
             self.P_El_vars[t].lb = self.P_El_Schedule[t+timestep]
             self.P_El_vars[t].ub = self.P_El_Schedule[t+timestep]
 
+    def new_schedule(self, schedule):
+        super().new_schedule(schedule)
+        self.copy_schedule(schedule, "default", "P_El")
+
     def update_schedule(self, mode=""):
         pass
 

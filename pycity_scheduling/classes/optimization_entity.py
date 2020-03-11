@@ -117,6 +117,8 @@ class OptimizationEntity(object):
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""
+        import warnings
+        warnings.warn("save_ref_schedule() is deprecated; use copy_schedule() instead", DeprecationWarning)
         self.copy_schedule("Ref", "default")
 
     def populate_deviation_model(self, model, mode=""):
@@ -229,6 +231,8 @@ class OptimizationEntity(object):
 
     def new_schedule(self, schedule):
         self.schedules[schedule] = {name: np.full_like(entries, 0)for name, entries in self.current_schedule.keys()}
+        for e in self.get_lower_entities():
+            e.new_schedule(schedule)
 
     def copy_schedule(self, dst=None, src=None, name=None):
         assert dst != src
@@ -236,16 +240,20 @@ class OptimizationEntity(object):
             dst = self.current_schedule
         elif src is None:
             src = self.current_schedule
-        src_schedule = self.get_schedule(src)
+        src_schedule = self.schedules[src]
         if name is None:
             self.schedules[dst] = {key: entries.copy() for key, entries in src_schedule.items()}
         else:
             if dst not in self.schedules:
                 self.new_schedule(dst)
             self.schedules[dst][name] = src_schedule[name].copy()
+        for e in self.get_lower_entities():
+            e.copy_schedule(dst, src, name)
 
     def load_schedule(self, schedule):
         self.current_schedule = schedule
+        for e in self.get_lower_entities():
+            e.load_schedule(schedule)
 
     @property
     def schedule(self):
