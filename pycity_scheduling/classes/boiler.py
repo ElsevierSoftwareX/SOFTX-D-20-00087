@@ -123,16 +123,11 @@ class Boiler(ThermalEntity, bl.Boiler):
             self.P_Th_Act_var.lb = self.P_Th_Schedule[timestep]
             self.P_Th_Act_var.ub = self.P_Th_Schedule[timestep]
 
-    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
-        """Calculate CO2 emissions of the Boiler.
+    def calculate_co2(self, timestep=None, co2_emissions=None):
+        """Calculate CO2 emissions of the Boiler with the current schedule.
 
         Parameters
         ----------
-        schedule : str, optional
-            Specify which schedule to use.
-            `None` : Normal schedule
-            'act', 'actual' : Actual schedule
-            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional
@@ -143,7 +138,9 @@ class Boiler(ThermalEntity, bl.Boiler):
         float :
             CO2 emissions in [g].
         """
-        p = util.get_schedule(self, schedule, timestep, thermal=True)
+        p = self.P_Th_Schedule
+        if timestep is not None:
+            p = p[:timestep]
         co2 = -(sum(p) * self.time_slot / self.eta
                 * constants.CO2_EMISSIONS_GAS)
         return co2

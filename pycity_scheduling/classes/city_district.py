@@ -88,17 +88,11 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             )
         return obj
 
-    def calculate_costs(self, schedule=None, timestep=None, prices=None,
-                        feedin_factor=None):
+    def calculate_costs(self, timestep=None, prices=None, feedin_factor=None):
         """Calculate electricity costs for the CityDistrict.
 
         Parameters
         ----------
-        schedule : str, optional
-            Specify which schedule to use.
-            `None` : Normal schedule
-            'act', 'actual' : Actual schedule
-            'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
@@ -115,8 +109,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             prices = self.environment.prices.da_prices
         if feedin_factor is None:
             feedin_factor = 1
-        costs = ElectricalEntity.calculate_costs(self, schedule, timestep,
-                                                 prices, feedin_factor)
+        costs = ElectricalEntity.calculate_costs(self, timestep, prices, feedin_factor)
         return costs
 
     def calculate_adj_costs(self, timestep=None, prices=None,

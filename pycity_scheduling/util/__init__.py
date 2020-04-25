@@ -235,6 +235,8 @@ def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
     KeyError :
         When specified schedule cannot be found.
     """
+    import warnings
+    warnings.warn("get_schedule() is deprecated; use entity.schedules instead", DeprecationWarning)
     schedule_name = 'E_' if energy else 'P_'
     schedule_name += 'Th_' if thermal else 'El_'
     if schedule_type is None:
