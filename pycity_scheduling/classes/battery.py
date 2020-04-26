@@ -51,10 +51,6 @@ class Battery(ElectricalEntity, bat.Battery):
         self.new_var("E_El")
         self.E_El_Init_constr = None
         self.E_El_coupl_constrs = []
-        self.P_El_Act_Demand_var = None
-        self.P_El_Act_Supply_var = None
-        self.E_El_Act_var = None
-        self.E_El_Act_coupl_constr = None
 
     def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.
@@ -161,7 +157,7 @@ class Battery(ElectricalEntity, bat.Battery):
         if timestep == 0:
             E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
-            E_El_Ini = self.E_El_Act_Schedule[timestep - 1]
+            E_El_Ini = self.E_El_Schedule[timestep - 1]
         delta = (
             (self.etaCharge * self.P_El_Demand_vars[0]
              - (1 / self.etaDischarge) * self.P_El_Supply_vars[0])
@@ -200,56 +196,3 @@ class Battery(ElectricalEntity, bat.Battery):
         super().update_schedule()
 
         op_slice = self.op_slice
-        self.E_El_Act_Schedule[op_slice] = self.E_El_Schedule[op_slice]
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model.
-
-        Adds a variable for the electric demand, supply and energy. If
-        `mode == 'full'` also adds a coupling constraint between them.
-        """
-        self.P_El_Act_Demand_var = model.addVar(
-            ub=self.P_El_Max_Charge,
-            name="%s_P_El_Actual_Demand" % self._long_ID
-        )
-        self.P_El_Act_Supply_var = model.addVar(
-            ub=self.P_El_Max_Discharge,
-            name="%s_P_El_Actual_Supply" % self._long_ID
-        )
-        self.E_El_Act_var = model.addVar(
-            ub=self.E_El_Max,
-            name="%s_E_El_Actual" % self._long_ID
-        )
-        if mode == 'full':
-            delta = (
-                (self.etaCharge * self.P_El_Act_Demand_var
-                 - (1 / self.etaDischarge) * self.P_El_Act_Supply_var)
-                * self.time_slot
-            )
-            self.E_El_Act_coupl_constr = model.addConstr(
-                self.E_El_Act_var - delta == 0
-            )
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update the deviation model for the current timestep."""
-        if mode == 'full':
-            if timestep == 0:
-                E_El_Ini = self.SOC_Ini * self.E_El_Max
-            else:
-                E_El_Ini = self.E_El_Act_Schedule[timestep-1]
-            self.E_El_Act_coupl_constr.RHS = E_El_Ini
-        else:
-            demand = max(self.P_El_Schedule[timestep], 0)
-            supply = -min(self.P_El_Schedule[timestep], 0)
-            self.P_El_Act_Demand_var.lb = demand
-            self.P_El_Act_Demand_var.ub = demand
-            self.P_El_Act_Supply_var.lb = supply
-            self.P_El_Act_Supply_var.ub = supply
-            self.E_El_Act_var.lb = self.E_El_Schedule[timestep]
-            self.E_El_Act_var.ub = self.E_El_Schedule[timestep]
-
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution."""
-        self.P_El_Act_Schedule[timestep] = (self.P_El_Act_Demand_var.x
-                                            - self.P_El_Act_Supply_var.x)
-        self.E_El_Act_Schedule[timestep] = self.E_El_Act_var.x

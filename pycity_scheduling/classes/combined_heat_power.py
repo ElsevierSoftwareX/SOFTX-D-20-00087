@@ -118,17 +118,3 @@ class CombinedHeatPower(ThermalEntity, ElectricalEntity, chp.CHP):
             raise ValueError(
                 "Mode %s is not implemented by CHP." % str(mode)
             )
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model.
-
-        Adds variables, sets the correct bounds to the thermal and electric
-        variables and adds a coupling constraint.
-        """
-        super().populate_deviation_model(model, mode)
-
-        self.P_Th_Act_var.lb = -self.P_Th_Nom
-        self.P_Th_Act_var.ub = 0
-        model.addConstr(
-            self.P_Th_Act_var * self.sigma == self.P_El_Act_var
-        )

@@ -87,10 +87,6 @@ class Boiler(ThermalEntity, bl.Boiler):
                 "Mode %s is not implemented by boiler." % str(mode)
             )
 
-
-
-
-
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
 
@@ -113,15 +109,6 @@ class Boiler(ThermalEntity, bl.Boiler):
             self.P_Th_vars
         )
         return obj
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        if mode == 'full':
-            self.P_Th_Act_var.lb = -self.P_Th_Nom
-            self.P_Th_Act_var.ub = 0
-        else:
-            self.P_Th_Act_var.lb = self.P_Th_Schedule[timestep]
-            self.P_Th_Act_var.ub = self.P_Th_Schedule[timestep]
 
     def calculate_co2(self, timestep=None, co2_emissions=None):
         """Calculate CO2 emissions of the Boiler with the current schedule.

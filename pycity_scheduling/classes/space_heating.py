@@ -9,7 +9,7 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     Extension of pyCity_base class SpaceHeating for scheduling purposes.
 
     As for all uncontrollable loads, the `P_Th_Schedule` contains the forecast
-    of the load and `P_Th_Act_Schedule` contains the actual load.
+    of the load.
     """
 
     def __init__(self, environment, method=0, loadcurve=1, livingArea=0,
@@ -92,7 +92,6 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
         ts = self.timer.time_in_year(from_init=True)
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
         self.P_Th_Schedule = p
-        self.P_Th_Act_Schedule = p
 
     def update_model(self, model, mode=""):
         """Update model variables.
@@ -117,24 +116,5 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     def update_schedule(self, mode=""):
         pass
 
-    def set_new_uncertainty(self, uncertainty):
-        """Set uncertainty for the actual schedule.
-
-        Parameters
-        ----------
-        uncertainty : numpy.ndarray or int or float
-            If array it is used as the uncertainty vector directly.
-            If int or float an uncertainty vector with this standard deviation
-            is computed and used.
-        """
-        if isinstance(uncertainty, (int, float)):
-            uncertainty = util.get_uncertainty(uncertainty, self.simu_horizon)
-        self.P_Th_Act_Schedule = self.P_Th_Schedule * uncertainty
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        self.P_Th_Act_var.lb = self.P_Th_Act_Schedule[timestep]
-        self.P_Th_Act_var.ub = self.P_Th_Act_Schedule[timestep]
-
     def reset(self, name=None):
-        pass #TODO
+        pass

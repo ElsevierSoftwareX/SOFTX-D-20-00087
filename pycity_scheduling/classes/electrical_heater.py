@@ -91,17 +91,3 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
             raise ValueError(
                 "Mode %s is not implemented by electrical heater." % str(mode)
             )
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model.
-
-        Adds variables, sets the correct bounds to the thermal variable and
-        adds a coupling constraint.
-        """
-        super().populate_deviation_model(model, mode)
-
-        self.P_Th_Act_var.lb = -self.P_Th_Nom
-        self.P_Th_Act_var.ub = 0
-        model.addConstr(
-            - self.P_Th_Act_var == self.eta * self.P_El_Act_var
-        )

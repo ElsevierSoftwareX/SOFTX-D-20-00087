@@ -92,32 +92,3 @@ class Photovoltaic(ElectricalEntity, pv.PV):
                 self.P_El_vars
             )
         return obj
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        self.P_El_Act_var.lb = -self.P_El_Supply[timestep]
-        if mode == 'full' and not self.force_renewables:
-            self.P_El_Act_var.ub = 0
-        else:
-            self.P_El_Act_var.ub = -self.P_El_Supply[timestep]
-
-    def simulate(self, mode='', debug=True):
-        """Simulation of pseudo real behaviour.
-
-        Simulate `self.timer.mpc_step_width` timesteps from current timestep
-        on.
-
-        Parameters
-        ----------
-        mode : str, optional
-            If 'full' use all possibilities to minimize adjustments.
-            Else do not try to compensate adjustments.
-        debug : bool, optional
-            Specify wether detailed debug information shall be printed.
-        """
-        op_slice = self.op_slice
-        if self.force_renewables:
-            p = self.P_El_Supply
-        else:
-            p = np.minimum(self.P_El_Supply, self.P_El_Schedule)
-        np.copyto(self.P_El_Act_Schedule[op_slice], p[op_slice])

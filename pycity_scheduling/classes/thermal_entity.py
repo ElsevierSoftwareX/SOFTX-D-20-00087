@@ -38,21 +38,3 @@ class ThermalEntity(OptimizationEntity):
                 )
             )
         model.update()
-
-    def update_schedule(self):
-        """Update the schedule with the scheduling model solution."""
-        super().update_schedule()
-        op_slice = self.op_slice
-        self.P_Th_Act_Schedule[op_slice] = self.P_Th_Schedule[op_slice]
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model."""
-        super().populate_deviation_model(model, mode)
-        self.P_Th_Act_var = model.addVar(
-            name="%s_P_Th_Actual" % self._long_ID
-        )
-
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution."""
-        super().update_actual_schedule(timestep)
-        self.P_Th_Act_Schedule[timestep] = self.P_Th_Act_var.x

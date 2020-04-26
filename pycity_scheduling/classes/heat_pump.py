@@ -120,25 +120,3 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
         for t in self.op_time_vec:
             cop = self.COP[t+self.timestep]
             model.chgCoeff(self.coupl_constrs[t], self.P_El_vars[t], cop)
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model.
-
-        Adds variables, sets the correct bounds to the thermal variable and
-        adds a coupling constraint.
-        """
-        super().populate_deviation_model(model, mode)
-
-        self.P_Th_Act_var.lb = -self.P_Th_Nom
-        self.P_Th_Act_var.ub = 0
-        self.Act_coupl_constr = model.addConstr(
-            self.P_El_Act_var + self.P_Th_Act_var == 0
-        )
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep.
-
-        Changes the coefficient of the coupling constraint to the current COP.
-        """
-        model.chgCoeff(self.Act_coupl_constr,
-                       self.P_El_Act_var, self.COP[timestep])

@@ -25,7 +25,7 @@ class OptimizationEntity(object):
         self._kind = ""
 
         self.timer = environment.timer
-        self.schedules = {'default': {}, 'Ref': {}, 'Act': {}}
+        self.schedules = {'default': {}, 'Ref': {}}
 
         self.vars = {}
         self.__var_funcs__ = {}
@@ -121,37 +121,6 @@ class OptimizationEntity(object):
         warnings.warn("save_ref_schedule() is deprecated; use copy_schedule() instead", DeprecationWarning)
         self.copy_schedule("Ref", "default")
 
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model.
-
-        Adds variables for electric and / or thermal power and - if
-        applicable - a variable for the electeric or thermal energy. Since only
-        one timestep is simulated only one variable per physical unit is added.
-
-        Parameters
-        ----------
-        model : gurobipy.Model
-            Deviation model for computing the actual schedule.
-        mode : str, optional
-            If 'full' use all possibilities to minimize adjustments.
-            Else do not try to compensate adjustments.
-        """
-        pass
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update the deviation model for the current timestep.
-
-        Parameters
-        ----------
-        model : gurobipy.Model
-            Deviation model for computing the actual schedule.
-        timestep : int
-            Current timestep of simulation.
-        mode : str, optional
-            If 'full' use all possibilities to minimize adjustments.
-            Else do not try to compensate adjustments.
-        """
-        pass
 
     def reset(self, name=None):
         if name is None:
@@ -168,7 +137,6 @@ class OptimizationEntity(object):
         schedule : str, optional
             Specify which schedule to use.
             `None` : Normal schedule
-            'act', 'actual' : Actual schedule
             'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
@@ -192,7 +160,6 @@ class OptimizationEntity(object):
         schedule : str, optional
             Specify which schedule to use.
             `None` : Normal schedule
-            'act', 'actual' : Actual schedule
             'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.

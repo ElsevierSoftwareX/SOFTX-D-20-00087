@@ -74,7 +74,6 @@ class Building(EntityContainer, bd.Building):
         self.storage_end_equality = storage_end_equality
 
         self.robust_constrs = []
-        self.deviation_model = None
 
     def populate_model(self, model, mode="convex"):
         """Add variables and constraints to Gurobi model.
@@ -227,77 +226,6 @@ class Building(EntityContainer, bd.Building):
                 "or 'none'".format(self.objective)
             )
         return obj
-
-
-    def populate_deviation_model(self, model, mode=""):
-        """Populate the deviation model.
-
-        Parameters
-        ----------
-        model : gurobi.Model
-        mode : str, optional
-            If 'full' use all possibilities to minimize adjustments.
-            Else do not try to compensate adjustments.
-        """
-
-        if not self.hasBes:
-            raise AttributeError(
-                "No BES in %s\nModeling aborted." % str(self)
-            )
-        super().populate_deviation_model(model, mode)
-        model.addConstr(0 == self.P_Th_Act_var)
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        super().update_deviation_model(model, timestep, mode)
-        p = self.P_El_Schedule[timestep]
-        model.setObjective(
-            self.P_El_Act_var * self.P_El_Act_var - 2 * p * self.P_El_Act_var
-        )
-
-    def _init_deviation_model(self, mode=""):
-        model = gurobi.Model(self._long_ID + "_deviation_model")
-        model.setParam("OutputFlag", False)
-        model.setParam("LogFile", "")
-        self.populate_deviation_model(model, mode)
-        self.deviation_model = model
-
-    def simulate(self, mode='', debug=True):
-        """Simulation of pseudo real behaviour.
-
-        Simulate `self.timer.mpc_step_width` timesteps from current timestep
-        on.
-
-        Parameters
-        ----------
-        mode : str, optional
-            If 'full' use all possibilities to minimize adjustments.
-            Else do not try to compensate adjustments.
-        debug : bool, optional
-            Specify wether detailed debug information shall be printed.
-        """
-        if self.deviation_model is None:
-            self._init_deviation_model(mode)
-
-        timestep = self.timestep
-        for t in range(self.timer.mpc_step_width):
-            self.update_deviation_model(self.deviation_model,
-                                        t + timestep, mode)
-            # minimize deviation from schedule
-            obj = gurobi.QuadExpr(
-                (self.P_El_Act_var - self.P_El_Schedule[t + timestep])
-                *
-                (self.P_El_Act_var - self.P_El_Schedule[t + timestep])
-            )
-            self.deviation_model.setObjective(obj)
-            self.deviation_model.optimize()
-            if self.deviation_model.status != 2:
-                if debug:
-                    util.analyze_model(self.deviation_model)
-                raise NonoptimalError(
-                    "Could not retrieve solution from deviation model."
-                )
-            self.update_actual_schedule(t + timestep)
 
     def get_lower_entities(self):
         """

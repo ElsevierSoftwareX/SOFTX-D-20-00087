@@ -16,7 +16,6 @@ class ElectricalEntity(OptimizationEntity):
         super().__init__(environment, *args, **kwargs)
 
         self.new_var("P_El")
-        self.P_El_Act_var = None
 
     def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
@@ -68,24 +67,6 @@ class ElectricalEntity(OptimizationEntity):
             self.P_El_vars
         )
         return obj
-
-    def update_schedule(self):
-        """Update the schedule with the scheduling model solution."""
-        super().update_schedule()
-        op_slice = self.op_slice
-        self.P_El_Act_Schedule[op_slice] = self.P_El_Schedule[op_slice]
-
-    def populate_deviation_model(self, model, mode=""):
-        """Add variables for this entity to the deviation model."""
-        super().populate_deviation_model(model, mode)
-        self.P_El_Act_var = model.addVar(
-            name="%s_P_El_Actual" % self._long_ID
-        )
-
-    def update_actual_schedule(self, timestep):
-        """Update the actual schedule with the deviation model solution."""
-        super().update_actual_schedule(timestep)
-        self.P_El_Act_Schedule[timestep] = self.P_El_Act_var.x
 
     def calculate_costs(self, timestep=None, prices=None,
                         feedin_factor=None):
@@ -199,11 +180,16 @@ class ElectricalEntity(OptimizationEntity):
 
         return co2
 
-    def calculate_adj_power(self, timestep=None, total_adjustments=True):
+#TODO
+    def calculate_adj_power(self, schedule, timestep=None, total_adjustments=True):
         """Compute adjustment power.
 
         Parameters
         ----------
+        schedule : str, optional
+           Specify to adjust to.
+           `None` : Normal schedule
+           'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate power curve up to this timestep only.
         total_adjustments : bool, optional
@@ -215,19 +201,23 @@ class ElectricalEntity(OptimizationEntity):
         array of float :
             Adjustment power in [kW].
         """
-        adjustments = self.P_El_Act_Schedule - self.P_El_Schedule
+        adjustments = self.schedules[schedule]["P_El"] - self.P_El_Schedule
         if timestep:
             adjustments = adjustments[:timestep]
         if total_adjustments:
             return abs(adjustments)
         else:
             return np.maximum(adjustments, 0)
-
-    def calculate_adj_energy(self, timestep=None, total_adjustments=True):
+#TODO
+    def calculate_adj_energy(self, schedule, timestep=None, total_adjustments=True):
         """Compute the cumulated absolute energy of all adjustments.
 
         Parameters
         ----------
+        schedule : str, optional
+           Specify to adjust to.
+           `None` : Normal schedule
+           'ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate energy only to this timestep.
         total_adjustments : bool, optional
@@ -239,7 +229,7 @@ class ElectricalEntity(OptimizationEntity):
         float :
             Adjustments in [kWh].
         """
-        p = self.calculate_adj_power(timestep, total_adjustments)
+        p = self.calculate_adj_power(schedule, timestep, total_adjustments)
         adjustments = self.time_slot * sum(p)
         return adjustments
 
@@ -267,7 +257,7 @@ class ElectricalEntity(OptimizationEntity):
                  / abs(P_El_Max_ref - P_El_Min_ref))
         return g
 
-    def peak_to_average_ratio(self, schedule=None, timestep=None):
+    def peak_to_average_ratio(self, timestep=None):
         """Compute the ratio of peak demand to average demand.
 
         The ratio of the absolute peak demand of the specified schedule
@@ -317,7 +307,7 @@ class ElectricalEntity(OptimizationEntity):
         if timestep is None:
             timestep = len(self.P_Th_Schedule)
         p = self.P_El_Schedule[:timestep]
-        ref = self.P_El_Ref_Schedule[:timestep]
+        ref = self.schedules[schedule]["P_El"][:timestep]
         dr_peak = max(max(p), -min(p))
         ref_peak = max(max(ref), -min(ref))
         r = (dr_peak - ref_peak) / ref_peak

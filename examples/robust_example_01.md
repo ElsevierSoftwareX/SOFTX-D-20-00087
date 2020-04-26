@@ -10,6 +10,4 @@ completely satisfy its demand during the times of low prices, when no RO is
 used. With RO however, the building has to shift some demand into the times of
 high prices.
 
-**Note:** In contrast to the deviation example we compare two schedules from
- different schedulings with each other instead of a schedule and an actual
- schedule.
+**Note:** We compare two schedules from different schedulings with each other.

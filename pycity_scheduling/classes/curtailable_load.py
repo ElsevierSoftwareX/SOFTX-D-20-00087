@@ -238,12 +238,3 @@ class CurtailableLoad(ElectricalEntity, ed.ElectricalDemand):
                 already_done = sum(already_done)
                 # create constraints by modifying RHS
                 constr.RHS = required - already_done
-
-    def update_deviation_model(self, model, timestep, mode=""):
-        """Update deviation model for the current timestep."""
-        if mode == 'full':
-            self.P_El_Act_var.lb = self.P_El_Curt
-            self.P_El_Act_var.ub = self.P_El_Nom
-        else:
-            self.P_El_Act_var.lb = self.P_El_Schedule[timestep]
-            self.P_El_Act_var.ub = self.P_El_Schedule[timestep]
