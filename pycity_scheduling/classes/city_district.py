@@ -112,12 +112,16 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         costs = ElectricalEntity.calculate_costs(self, timestep, prices, feedin_factor)
         return costs
 
-    def calculate_adj_costs(self, timestep=None, prices=None,
+    def calculate_adj_costs(self, schedule, timestep=None, prices=None,
                             total_adjustments=True):
         """Calculate costs for adjustments.
 
         Parameters
         ----------
+        schedule : str, optional
+           Schedule to adjust to.
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
@@ -133,7 +137,7 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
         """
         if prices is None:
             prices = self.environment.prices.da_prices
-        costs = self.calculate_adj_costs(timestep, prices, total_adjustments)
+        costs = super().calculate_adj_costs(schedule, timestep, prices, total_adjustments)
         return costs
 
     def get_lower_entities(self):

@@ -439,6 +439,18 @@ class TestCityDistrict(unittest.TestCase):
         self.cd.load_schedule("Ref")
         self.assertEqual(1, self.cd.self_consumption())
 
+    def test_calculate_adj_costs(self):
+        self.cd.P_El_Schedule = np.array([4] * 2 + [-4] * 2 + [-10] * 2 + [-2] * 2)
+        self.cd.P_El_Ref_Schedule = np.array([2] * 2 + [-6] * 2 + [-9] * 2 + [-1] * 2)
+        prices = np.array([10] * 4 + [20] * 4)
+        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices)
+        self.assertEqual(2*5+2*5+1*10+1*10, costs_adj)
+        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices, total_adjustments=False)
+        self.assertEqual(20, costs_adj)
+        self.cd.copy_schedule("Ref")
+        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices)
+        self.assertEqual(0, costs_adj)
+
     def test_autarky(self):
         pv = Photovoltaic(self.cd.environment, 0, 0)
         self.cd.addEntity(pv, Point(0, 0))
@@ -615,6 +627,85 @@ class TestElectricalEntity(unittest.TestCase):
         self.ee.load_schedule("Ref")
         costs = self.ee.calculate_costs(prices=prices)
         self.assertEqual(40, costs)
+
+    def test_calculate_adj_costs(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        prices = np.array([10] * 4 + [20] * 4)
+        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices)
+        self.assertEqual(6*10 + 16*20, costs_adj)
+        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices, total_adjustments=False)
+        self.assertEqual(16 * 20, costs_adj)
+        self.ee.copy_schedule("Ref")
+        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices)
+        self.assertEqual(0, costs_adj)
+
+    def test_calculate_adj_power(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        adj_power = self.ee.calculate_adj_power("Ref")
+        assert_equal_array(adj_power, [6] * 4 + [16] * 4)
+        adj_power = self.ee.calculate_adj_power("Ref", total_adjustments=False)
+        assert_equal_array(adj_power, [0] * 4 + [16] * 4)
+        adj_power = self.ee.calculate_adj_power("default")
+        assert_equal_array(adj_power, [0] * 8)
+        self.ee.load_schedule("Ref")
+        adj_power = self.ee.calculate_adj_power("Ref")
+        assert_equal_array(adj_power, [0] * 8)
+        self.ee.copy_schedule("default")
+        adj_power = self.ee.calculate_adj_power("default")
+        assert_equal_array(adj_power, [0] * 8)
+
+    def test_calculate_adj_energy(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        adj_energy = self.ee.calculate_adj_energy("Ref")
+        self.assertEqual(6 + 16, adj_energy)
+        adj_energy = self.ee.calculate_adj_energy("Ref", total_adjustments=False)
+        self.assertEqual(16, adj_energy)
+        adj_energy = self.ee.calculate_adj_energy("default")
+        self.assertEqual(0, adj_energy)
+        self.ee.copy_schedule(src="Ref")
+        adj_energy = self.ee.calculate_adj_energy("Ref")
+        self.assertEqual(0, adj_energy)
+        adj_energy = self.ee.calculate_adj_energy("Ref", total_adjustments=False)
+        self.assertEqual(0, adj_energy)
+        self.ee.load_schedule("Ref")
+        adj_energy = self.ee.calculate_adj_energy("Ref")
+        self.assertEqual(0, adj_energy)
+        adj_energy = self.ee.calculate_adj_energy("default")
+        self.assertEqual(0, adj_energy)
+
+    def test_metric_delta_g(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        g = self.ee.metric_delta_g("Ref")
+        self.assertEqual(1-30/8, g)
+        g = self.ee.metric_delta_g("default")
+        self.assertEqual(0, g)
+
+    def test_peak_to_average_ratio(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        ratio = self.ee.peak_to_average_ratio()
+        self.assertEqual(20/5, ratio)
+        self.ee.load_schedule("Ref")
+        ratio = self.ee.peak_to_average_ratio()
+        self.assertEqual(np.inf, ratio)
+
+    def test_peak_reduction_ratio(self):
+        self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
+        ratio = self.ee.peak_reduction_ratio("Ref")
+        self.assertEqual((20-4)/4, ratio)
+        self.ee.P_El_Ref_Schedule = np.array([4] * 8)
+        ratio = self.ee.peak_reduction_ratio("Ref")
+        self.assertEqual((20-4)/4, ratio)
+        ratio = self.ee.peak_reduction_ratio("default")
+        self.assertEqual(0, ratio)
+        self.ee.load_schedule("Ref")
+        ratio = self.ee.peak_reduction_ratio("Ref")
+        self.assertEqual(0, ratio)
 
     def test_self_consumption(self):
         # properly tested in CityDistrict

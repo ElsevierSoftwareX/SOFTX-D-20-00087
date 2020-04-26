@@ -190,9 +190,3 @@ class Battery(ElectricalEntity, bat.Battery):
             self.P_El_vars
         )
         return obj
-
-    def update_schedule(self):
-        """Update the schedule with the scheduling model solution."""
-        super().update_schedule()
-
-        op_slice = self.op_slice

@@ -32,10 +32,13 @@ print('Building P_El:')
 print(bd.P_El_Ref_Schedule)
 print(bd.P_El_Schedule)
 print('Optimized costs:   {: >8.3f}'.format(bd.calculate_costs()))
+bd.load_schedule("Ref")
 print('Stand-alone costs: {: >8.3f}'
-      .format(bd.calculate_costs(schedule='ref')))
+      .format(bd.calculate_costs()))
+bd.load_schedule("default")
 print('Optimized PAR:     {: >8.3f}'.format(bd.peak_to_average_ratio()))
+bd.load_schedule("Ref")
 print('Stand-alone PAR:   {: >8.3f}'
-      .format(bd.peak_to_average_ratio(schedule='ref')))
+      .format(bd.peak_to_average_ratio()))
+bd.load_schedule("default")
 print('PRR:               {: >8.3f}'.format(bd.peak_reduction_ratio()))
-

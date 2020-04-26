@@ -211,8 +211,9 @@ def get_schedule(entity, schedule_type=None, timestep=None, energy=False,
         Entity to retrieve the schedule from.
     schedule_type : str, optional
         Specify which schedule to use.
-        `None` : Normal schedule
-        'ref', 'reference' : Reference schedule
+        `None` : Current schedule
+        'default' : Normal schedule
+        'Ref', 'reference' : Reference schedule
     timestep : int, optional
         If specified, trim schedule to this timestep.
     energy : bool, optional

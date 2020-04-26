@@ -94,4 +94,4 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         pass
 
     def reset(self, name=None):
-        pass#TODO
+        pass

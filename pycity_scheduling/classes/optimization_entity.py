@@ -136,8 +136,9 @@ class OptimizationEntity(object):
         ----------
         schedule : str, optional
             Specify which schedule to use.
-            `None` : Normal schedule
-            'ref', 'reference' : Reference schedule
+            `None` : Current schedule
+            'default' : Normal schedule
+            'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
@@ -159,8 +160,9 @@ class OptimizationEntity(object):
         ----------
         schedule : str, optional
             Specify which schedule to use.
-            `None` : Normal schedule
-            'ref', 'reference' : Reference schedule
+            `None` : Current schedule
+            'default' : Normal schedule
+            'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         co2_emissions : array_like, optional

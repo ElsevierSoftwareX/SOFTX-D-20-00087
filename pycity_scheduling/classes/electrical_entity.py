@@ -98,12 +98,16 @@ class ElectricalEntity(OptimizationEntity):
         costs += self.time_slot * np.dot(prices[p<0], p[p<0]) * feedin_factor
         return costs
 
-    def calculate_adj_costs(self, timestep=None, prices=None,
+    def calculate_adj_costs(self, schedule, timestep=None, prices=None,
                             total_adjustments=True):
         """Calculate costs for adjustments.
 
         Parameters
         ----------
+        schedule : str, optional
+           Schedule to adjust to.
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate costs only to this timestep.
         prices : array_like, optional
@@ -121,7 +125,7 @@ class ElectricalEntity(OptimizationEntity):
             prices = self.environment.prices.tou_prices
         if timestep:
             prices = prices[:timestep]
-        adj_power = self.calculate_adj_power(timestep, total_adjustments)
+        adj_power = self.calculate_adj_power(schedule, timestep, total_adjustments)
         costs = self.time_slot * np.dot(adj_power, prices)
         return costs
 
@@ -180,16 +184,15 @@ class ElectricalEntity(OptimizationEntity):
 
         return co2
 
-#TODO
     def calculate_adj_power(self, schedule, timestep=None, total_adjustments=True):
         """Compute adjustment power.
 
         Parameters
         ----------
         schedule : str, optional
-           Specify to adjust to.
-           `None` : Normal schedule
-           'ref', 'reference' : Reference schedule
+           Schedule to adjust to.
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate power curve up to this timestep only.
         total_adjustments : bool, optional
@@ -208,16 +211,16 @@ class ElectricalEntity(OptimizationEntity):
             return abs(adjustments)
         else:
             return np.maximum(adjustments, 0)
-#TODO
+
     def calculate_adj_energy(self, schedule, timestep=None, total_adjustments=True):
         """Compute the cumulated absolute energy of all adjustments.
 
         Parameters
         ----------
         schedule : str, optional
-           Specify to adjust to.
-           `None` : Normal schedule
-           'ref', 'reference' : Reference schedule
+           Schedule to adjust to.
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate energy only to this timestep.
         total_adjustments : bool, optional
@@ -233,14 +236,18 @@ class ElectricalEntity(OptimizationEntity):
         adjustments = self.time_slot * sum(p)
         return adjustments
 
-    def metric_delta_g(self):
-        """Compute the factor "Delta g".
+    def metric_delta_g(self, schedule):
+        """Compute the factor "Delta g" with the current schedule and the referenced schedule.
 
         Compute the factor :math:`\Delta` g based on the optimized schedules,
         assuming that `city_district` holds the schedule of a DSM optimization.
 
         Returns
         -------
+        schedule : str
+           Referenced Schedule
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         float :
             Factor "Delta g".
 
@@ -251,8 +258,8 @@ class ElectricalEntity(OptimizationEntity):
         """
         P_El_Min_dsm = min(self.P_El_Schedule)
         P_El_Max_dsm = max(self.P_El_Schedule)
-        P_El_Min_ref = min(self.P_El_Ref_Schedule)
-        P_El_Max_ref = max(self.P_El_Ref_Schedule)
+        P_El_Min_ref = min(self.schedules[schedule]["P_El"])
+        P_El_Max_ref = max(self.schedules[schedule]["P_El"])
         g = 1 - (abs(P_El_Max_dsm - P_El_Min_dsm)
                  / abs(P_El_Max_ref - P_El_Min_ref))
         return g
@@ -290,12 +297,14 @@ class ElectricalEntity(OptimizationEntity):
         The reduction of the absolute peak demand of the current schedule
         compared to the peak demand in the referenced schedule.
         If `r` < 1 the specified schedule has lower peaks, otherwise the
-        reference schedule has lower peaks. Normally a lower value is better.
+        referenced schedule has lower peaks. Normally a lower value is better.
 
         Parameters
         ----------
         schedule : str
             Name of Schedule to compare to
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
         timestep : int, optional
             If specified, calculate ratio only to this timestep.
 
@@ -305,7 +314,7 @@ class ElectricalEntity(OptimizationEntity):
             Peak reduction ratio.
         """
         if timestep is None:
-            timestep = len(self.P_Th_Schedule)
+            timestep = len(self.P_El_Schedule)
         p = self.P_El_Schedule[:timestep]
         ref = self.schedules[schedule]["P_El"][:timestep]
         dr_peak = max(max(p), -min(p))
