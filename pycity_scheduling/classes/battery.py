@@ -39,6 +39,7 @@ class Battery(ElectricalEntity, bat.Battery):
         super().__init__(environment, soc_abs, capacity, 0, eta, eta)
         self._long_ID = "BAT_" + self._ID_string
 
+        self.objective = 'peak-shaving'
         self.E_El_Max = E_El_max
         self.SOC_Ini = soc_init  # relative SOC
         self.P_El_Max_Charge = P_El_max_charge
@@ -166,27 +167,3 @@ class Battery(ElectricalEntity, bat.Battery):
         self.E_El_Init_constr = model.addConstr(
             self.E_El_vars[0] == E_El_Ini + delta
         )
-
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the battery wheighted with coeff.
-        Standard quadratic term.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.QuadExpr :
-            Objective function.
-        """
-        obj = gurobi.QuadExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars,
-            self.P_El_vars
-        )
-        return obj

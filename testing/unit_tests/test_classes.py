@@ -100,6 +100,21 @@ class TestBattery(unittest.TestCase):
         self.bat.P_El_Schedule = np.array([10]*3)
         self.assertEqual(0, self.bat.calculate_co2())
 
+    def test_get_objective(self):
+        model = gp.Model('BatModel')
+        self.bat.populate_model(model)
+        obj = self.bat.get_objective(2)
+        self.assertEqual(3, obj.size())
+        self.assertEqual(0, obj.getLinExpr().size())
+        self.assertEqual(0, obj.getLinExpr().getConstant())
+        coeffs = np.zeros(3)
+        for i in range(3):
+            var = obj.getVar1(i)
+            self.assertIs(var, obj.getVar2(i))
+            t = [t for t in range(3) if self.bat.P_El_vars[t] is var][0]
+            coeffs[t] += obj.getCoeff(i)
+        assert_equal_array(coeffs, np.full(3, 2))
+
 
 class TestBoiler(unittest.TestCase):
     def setUp(self):
@@ -164,6 +179,58 @@ class TestBuilding(unittest.TestCase):
         self.bd.load_schedule("Ref")
         co2 = self.bd.calculate_co2(co2_emissions=co2_em)
         self.assertEqual(1100, co2)
+
+    def test_get_objective(self):
+        model = gp.Model('BuildingModel')
+        env = self.bd.environment
+        env.prices.tou_prices[:4] = [1, 2, 3, 4]
+        env.prices.co2_prices[:4] = [5, 4, 3, 2]
+        bes = BuildingEnergySystem(env)
+        self.bd.addEntity(bes)
+        self.bd.populate_model(model)
+        obj = self.bd.get_objective(2)
+        self.assertEqual(4, obj.size())
+        self.assertEqual(0, obj.getConstant())
+        coeffs = np.zeros(4)
+        for i in range(4):
+            var = obj.getVar(i)
+            t = [t for t in range(4) if self.bd.P_El_vars[t] is var][0]
+            coeffs[t] += obj.getCoeff(i)
+        assert_equal_array(coeffs, env.prices.tou_prices[:4] * 2 / sum(range(5)) * 4)
+        bd2 = Building(env, 'co2')
+        bd2.addEntity(bes)
+        bd2.populate_model(model)
+        obj = bd2.get_objective(2)
+        self.assertEqual(4, obj.size())
+        self.assertEqual(0, obj.getConstant())
+        coeffs = np.zeros(4)
+        for i in range(4):
+            var = obj.getVar(i)
+            t = [t for t in range(4) if bd2.P_El_vars[t] is var][0]
+            coeffs[t] += obj.getCoeff(i)
+        assert_equal_array(coeffs, env.prices.co2_prices[:4] * 2 / sum(range(2, 6, 1)) * 4)
+        bd3 = Building(env, 'peak-shaving')
+        bd3.addEntity(bes)
+        bd3.populate_model(model)
+        obj = bd3.get_objective(2)
+        self.assertEqual(4, obj.size())
+        self.assertEqual(0, obj.getLinExpr().size())
+        self.assertEqual(0, obj.getLinExpr().getConstant())
+        coeffs = np.zeros(4)
+        for i in range(4):
+            var = obj.getVar1(i)
+            self.assertIs(var, obj.getVar2(i))
+            t = [t for t in range(4) if bd3.P_El_vars[t] is var][0]
+            coeffs[t] += obj.getCoeff(i)
+        assert_equal_array(coeffs, np.full(4, 2))
+        bd4 = Building(env, None)
+        obj = bd4.get_objective(2)
+        self.assertEqual(0, obj.size())
+        self.assertEqual(0, obj.getConstant())
+        bd4.addEntity(bes)
+        bd4 = Building(env, "invalid")
+        self.assertRaisesRegex(ValueError, ".*Building.*", bd4.get_objective)
+
 
 
 class TestCurtailableLoad(unittest.TestCase):
@@ -388,6 +455,7 @@ class TestCityDistrict(unittest.TestCase):
         self.cd.P_El_vars = var_list
         m.optimize()
 
+        self.assertEqual(self.cd.objective, "price")
         self.cd.environment.prices.da_prices = np.array([1]*2 + [4]*6)
         self.assertAlmostEqual(8.4, self.cd.get_objective().getValue())
         self.cd.objective = 'peak-shaving'
@@ -395,6 +463,10 @@ class TestCityDistrict(unittest.TestCase):
         self.cd.objective = 'valley-filling'
         self.cd.valley_profile = np.array([-1]*8)
         self.assertAlmostEqual(2, self.cd.get_objective().getValue())
+        self.cd.objective = None
+        self.assertAlmostEqual(0, self.cd.get_objective().getValue())
+        self.cd.objective = "invalid"
+        self.assertRaisesRegex(ValueError, ".*CityDistrict.*", self.cd.get_objective)
 
     def test_calculate_costs(self):
         self.cd.P_El_Schedule = np.array([10]*4 + [-20]*4)

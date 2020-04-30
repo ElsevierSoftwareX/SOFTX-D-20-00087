@@ -1,5 +1,5 @@
 import numpy as np
-from typing import Callable, Any
+from typing import Callable, Any, Union
 import gurobipy as gurobi
 
 class OptimizationEntity(object):
@@ -26,6 +26,7 @@ class OptimizationEntity(object):
         self._long_ID = ""
         self._kind = ""
 
+        self.objective = None
         self.timer = environment.timer
         self.schedules = {'default': {}, 'Ref': {}}
 
@@ -115,7 +116,27 @@ class OptimizationEntity(object):
                                         constant_values=pad)
 
     def get_objective(self, coeff=1):
-        return None
+        """Objective function for entity level scheduling.
+
+        Return the objective function of the entity weighted with
+        coeff.
+
+        Parameters
+        ----------
+        coeff : float, optional
+            Coefficient for the objective function.
+
+        Returns
+        -------
+        Union[gurobi.QuadExpr, gurobi.LinExpr] :
+            Objective function.
+        """
+        if self.objective is None:
+            return gurobi.LinExpr()
+        else:
+            raise ValueError(
+                "Objective {} is not implemented by entity {}.".format(self.objective, self.__class__.__name__)
+            )
 
     def save_ref_schedule(self):
         """Save the schedule of the current reference scheduling."""

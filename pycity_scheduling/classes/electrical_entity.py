@@ -46,27 +46,30 @@ class ElectricalEntity(OptimizationEntity):
                 )
 
     def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the EE wheighted with coeff.
-        Sum of `self.P_El_vars`.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.LinExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
+        if self.objective == 'peak-shaving':
+            obj = gurobi.QuadExpr()
+            obj.addTerms(
+                [coeff] * self.op_horizon,
+                self.P_El_vars,
+                self.P_El_vars
+            )
+            return obj
+        if self.objective in ['price', 'co2']:
+            obj = gurobi.LinExpr()
+            if self.objective == 'price':
+                prices = self.environment.prices.tou_prices
+            else:
+                prices = self.environment.prices.co2_prices
+            prices = prices[self.op_slice]
+            s = sum(abs(prices))
+            if s > 0:
+                prices = prices * self.op_horizon / s
+                obj.addTerms(
+                    coeff * prices,
+                    self.P_El_vars
+                )
+            return obj
+        return super().get_objective(coeff)
 
     def calculate_costs(self, timestep=None, prices=None,
                         feedin_factor=None):

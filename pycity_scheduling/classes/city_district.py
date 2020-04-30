@@ -54,14 +54,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             )
 
     def get_objective(self, coeff=1):
-        obj = gurobi.QuadExpr()
-        if self.objective == 'peak-shaving':
-            obj.addTerms(
-                [1] * self.op_horizon,
-                self.P_El_vars,
-                self.P_El_vars
-            )
-        elif self.objective == 'valley-filling':
+        if self.objective == 'valley-filling':
+            obj = gurobi.QuadExpr()
             obj.addTerms(
                 [1] * self.op_horizon,
                 self.P_El_vars,
@@ -72,7 +66,9 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                 2 * valley,
                 self.P_El_vars
             )
+            return obj
         elif self.objective == 'price':
+            obj = gurobi.LinExpr()
             prices = self.environment.prices.da_prices[self.op_slice]
             s = sum(abs(prices))
             if s > 0:
@@ -81,12 +77,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                     coeff * prices,
                     self.P_El_vars
                 )
-        elif self.objective != 'none':
-            raise ValueError(
-                "Unknown objective {}. Must be 'peak-shaving', "
-                "'valley-filling', 'price' or 'none'".format(self.objective)
-            )
-        return obj
+            return obj
+        return super().get_objective(coeff)
 
     def calculate_costs(self, timestep=None, prices=None, feedin_factor=None):
         """Calculate electricity costs for the CityDistrict.
