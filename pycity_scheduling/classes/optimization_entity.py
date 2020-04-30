@@ -1,4 +1,6 @@
 import numpy as np
+from typing import Callable, Any
+import gurobipy as gurobi
 
 class OptimizationEntity(object):
     """
@@ -123,6 +125,16 @@ class OptimizationEntity(object):
 
 
     def reset(self, name=None):
+        """Reset all values of specified schedule.
+
+        Parameters
+        ----------
+        schedule : str, optional
+            Specify which schedule to reset.
+            `None` : Resets all schedules
+            'default' : Resets normal schedule
+            'Ref', 'reference' : Resets reference schedule
+        """
         if name is None:
             for name in self.schedules.keys():
                 self.new_schedule(name)
@@ -192,6 +204,18 @@ class OptimizationEntity(object):
             yield from entity.get_all_entities()
 
     def new_var(self, name, dtype=np.float64, func=None):
+        """Create a new entry and empty schedule for variable with specified name.
+
+        Parameters
+        ----------
+        name : str
+            Name to access new variable with.
+        dtype : np.dtype, optional
+            Data type which should be used for new schedule.
+        func : Callable[[int], Any], optional
+            Function to generate schedule with.
+            If `None`, schedule is generated with values of variables.
+        """
         self.vars[name] = []
         if func is not None:
             self.__var_funcs__[name] = func
@@ -199,11 +223,32 @@ class OptimizationEntity(object):
             schedule[name] = np.full(self.timer.simu_horizon, 0, dtype=dtype)
 
     def new_schedule(self, schedule):
+        """Create a new schedule with default values.
+
+        Parameters
+        ----------
+        schedule : str
+            Name of new schedule.
+        """
         self.schedules[schedule] = {name: np.full_like(entries, 0)for name, entries in self.current_schedule.keys()}
         for e in self.get_lower_entities():
             e.new_schedule(schedule)
 
     def copy_schedule(self, dst=None, src=None, name=None):
+        """Copy values of one schedule in another schedule.
+
+        Parameters
+        ----------
+        dst : str
+            Name of schedule to insert values into.
+            If `None`, use current schedule.
+        src : str
+            Name of schedule to copy values from.
+            If `None`, use current schedule.
+        name : str
+            Name of variable to copy sub schedule of.
+            If `None`, copy all variables between schedules.
+        """
         assert dst != src
         if dst is None:
             dst = self.current_schedule
@@ -220,6 +265,13 @@ class OptimizationEntity(object):
             e.copy_schedule(dst, src, name)
 
     def load_schedule(self, schedule):
+        """Copy values of one schedule in another schedule.
+
+        Parameters
+        ----------
+        schedule : str
+        Name of schedule to set as current schedule.
+        """
         self.current_schedule = schedule
         for e in self.get_lower_entities():
             e.load_schedule(schedule)
