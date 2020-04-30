@@ -20,6 +20,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             - 'price' : Optimize for the prices given by `prices.da_prices`.
             - 'peak-shaving' : Try to flatten the scheudle as much as
                                possible.
+            - 'max-consumption' : Try to reduce the maximum of the absolute values
+                                  of the schedule as much as possible.
             - 'none' : No objective.
         valley_profile : np.ndarray, optional
             Profile to be filled with valley filling.

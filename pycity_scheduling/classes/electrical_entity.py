@@ -16,6 +16,7 @@ class ElectricalEntity(OptimizationEntity):
         super().__init__(environment, *args, **kwargs)
 
         self.new_var("P_El")
+        self.max_consumption_var = None
 
     def populate_model(self, model, mode="convex"):
         """Add variables to Gurobi model.
@@ -39,7 +40,19 @@ class ElectricalEntity(OptimizationEntity):
                         name="%s_P_El_at_t=%i" % (self._long_ID, t+1)
                     )
                 )
-            model.update()
+            self.max_consumption_var = None
+            if self.objective == "max-consumption":
+                self.max_consumption_var = model.addVar(
+                            name="%s_P_El_max" % self._long_ID
+                        )
+                for t in self.op_time_vec:
+                    model.addConstr(
+                        self.max_consumption_var >= self.P_El_vars[t]
+                    )
+                    model.addConstr(
+                        self.max_consumption_var >= -self.P_El_vars[t]
+                    )
+                model.update()
         else:
             raise ValueError(
                 "Mode %s is not implemented by electric entity." % str(mode)
@@ -68,6 +81,12 @@ class ElectricalEntity(OptimizationEntity):
                     coeff * prices,
                     self.P_El_vars
                 )
+            return obj
+        if self.objective == "max-consumption":
+            if coeff < 0:
+                raise ValueError("Setting a coefficient below zero is not supported for the max-consumption objective")
+            obj = gurobi.LinExpr()
+            obj.add(self.max_consumption_var, coeff)
             return obj
         return super().get_objective(coeff)
 

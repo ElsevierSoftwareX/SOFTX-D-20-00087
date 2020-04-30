@@ -468,6 +468,15 @@ class TestCityDistrict(unittest.TestCase):
         self.cd.objective = "invalid"
         self.assertRaisesRegex(ValueError, ".*CityDistrict.*", self.cd.get_objective)
 
+        self.cd.objective = "max-consumption"
+        self.cd.populate_model(m)
+        for t in range(4):
+            self.cd.P_El_vars[t].start = t
+        self.cd.P_El_vars[0].ub = -1
+        m.optimize()
+        self.assertAlmostEqual(1, self.cd.get_objective().getValue())
+
+
     def test_calculate_costs(self):
         self.cd.P_El_Schedule = np.array([10]*4 + [-20]*4)
         self.cd.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
