@@ -161,53 +161,6 @@ class OptimizationEntity(object):
                 self.new_schedule(name)
         self.new_schedule(name)
 
-    def calculate_costs(self, schedule=None, timestep=None, prices=None,
-                        feedin_factor=None):
-        """Calculate electricity costs for the OptimizationEntity.
-
-        Parameters
-        ----------
-        schedule : str, optional
-            Specify which schedule to use.
-            `None` : Current schedule
-            'default' : Normal schedule
-            'Ref', 'reference' : Reference schedule
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        prices : array_like, optional
-            Energy prices for simulation horizon.
-        feedin_factor : float, optional
-            Factor which is multiplied to the prices for feed-in revenue.
-
-        Returns
-        -------
-        float :
-            Electricity costs in [ct].
-        """
-        return 0
-
-    def calculate_co2(self, schedule=None, timestep=None, co2_emissions=None):
-        """Calculate CO2 emissions of the entity.
-
-        Parameters
-        ----------
-        schedule : str, optional
-            Specify which schedule to use.
-            `None` : Current schedule
-            'default' : Normal schedule
-            'Ref', 'reference' : Reference schedule
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        return 0
-
     def get_entities(self):
         top = False
         for entity in self.get_lower_entities():

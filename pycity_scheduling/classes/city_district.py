@@ -82,58 +82,6 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
             return obj
         return super().get_objective(coeff)
 
-    def calculate_costs(self, timestep=None, prices=None, feedin_factor=None):
-        """Calculate electricity costs for the CityDistrict.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        prices : array_like, optional
-            Energy prices for simulation horizon.
-        feedin_factor : float, optional
-            Factor which is multiplied to the prices for feed-in revenue.
-
-        Returns
-        -------
-        float :
-            Electricity costs in [ct].
-        """
-        if prices is None:
-            prices = self.environment.prices.da_prices
-        if feedin_factor is None:
-            feedin_factor = 1
-        costs = ElectricalEntity.calculate_costs(self, timestep, prices, feedin_factor)
-        return costs
-
-    def calculate_adj_costs(self, schedule, timestep=None, prices=None,
-                            total_adjustments=True):
-        """Calculate costs for adjustments.
-
-        Parameters
-        ----------
-        schedule : str, optional
-           Schedule to adjust to.
-           'default' : Normal schedule
-           'Ref', 'reference' : Reference schedule
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        prices : array_like, optional
-            Adjustment prices for simulation horizon.
-        total_adjustments : bool, optional
-            `True` if positive and negative deviations shall be considered.
-            `False` if only positive deviations shall be considered.
-
-        Returns
-        -------
-        float :
-            Adjustment costs in [ct].
-        """
-        if prices is None:
-            prices = self.environment.prices.da_prices
-        costs = super().calculate_adj_costs(schedule, timestep, prices, total_adjustments)
-        return costs
-
     def get_lower_entities(self):
         for node in self.nodes.values():
             yield node['entity']
