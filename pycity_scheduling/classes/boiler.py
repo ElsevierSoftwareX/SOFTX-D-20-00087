@@ -2,7 +2,6 @@ import numpy as np
 import gurobipy as gurobi
 import pycity_base.classes.supply.Boiler as bl
 
-from pycity_scheduling import constants, util
 from .thermal_entity import ThermalEntity
 
 
@@ -109,25 +108,3 @@ class Boiler(ThermalEntity, bl.Boiler):
             self.P_Th_vars
         )
         return obj
-
-    def calculate_co2(self, timestep=None, co2_emissions=None):
-        """Calculate CO2 emissions of the Boiler with the current schedule.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        p = self.P_Th_Schedule
-        if timestep is not None:
-            p = p[:timestep]
-        co2 = -(sum(p) * self.time_slot / self.eta
-                * constants.CO2_EMISSIONS_GAS)
-        return co2

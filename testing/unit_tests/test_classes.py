@@ -6,6 +6,7 @@ from shapely.geometry import Point
 import gurobipy as gp
 
 from pycity_scheduling.classes import *
+from pycity_scheduling.util.metric import *
 
 
 gp.setParam('outputflag', 0)
@@ -98,7 +99,7 @@ class TestBattery(unittest.TestCase):
 
     def test_calculate_co2(self):
         self.bat.P_El_Schedule = np.array([10]*3)
-        self.assertEqual(0, self.bat.calculate_co2())
+        self.assertEqual(0, calculate_co2(self.bat))
 
     def test_get_objective(self):
         model = gp.Model('BatModel')
@@ -126,12 +127,12 @@ class TestBoiler(unittest.TestCase):
         self.bl.P_Th_Ref_Schedule = - np.array([4] * 8)
         co2_em = np.array([1111]*8)
 
-        co2 = self.bl.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.bl, co2_emissions=co2_em)
         self.assertEqual(23750, co2)
-        co2 = self.bl.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.bl, timestep=4, co2_emissions=co2_em)
         self.assertEqual(11875, co2)
         self.bl.load_schedule("Ref")
-        co2 = self.bl.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.bl, co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
     def test_lower_activation(self):
@@ -172,12 +173,12 @@ class TestBuilding(unittest.TestCase):
         pv.P_El_Ref_Schedule = - np.array([4]*8)
         co2_em = np.array([100]*4 + [400]*4)
 
-        co2 = self.bd.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.bd, co2_emissions=co2_em)
         self.assertEqual(2750, co2)
-        co2 = self.bd.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.bd, timestep=4, co2_emissions=co2_em)
         self.assertEqual(1000, co2)
         self.bd.load_schedule("Ref")
-        co2 = self.bd.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.bd, co2_emissions=co2_em)
         self.assertEqual(1100, co2)
 
     def test_get_objective(self):
@@ -482,12 +483,12 @@ class TestCityDistrict(unittest.TestCase):
         self.cd.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
         prices = np.array([10]*4 + [20]*4)
 
-        costs = self.cd.calculate_costs(prices=prices, feedin_factor=0.5)
+        costs = calculate_costs(self.cd, prices=prices, feedin_factor=0.5)
         self.assertEqual(-100, costs)
-        costs = self.cd.calculate_costs(timestep=4, prices=prices)
+        costs = calculate_costs(self.cd, timestep=4, prices=prices)
         self.assertEqual(100, costs)
         self.cd.load_schedule("Ref")
-        costs = self.cd.calculate_costs(prices=prices)
+        costs = calculate_costs(self.cd, prices=prices)
         self.assertEqual(-40, costs)
 
     def test_calculate_co2(self):
@@ -499,12 +500,12 @@ class TestCityDistrict(unittest.TestCase):
         pv.P_El_Ref_Schedule = - np.array([4]*8)
         co2_em = np.array([100]*4 + [400]*4)
 
-        co2 = self.cd.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.cd, co2_emissions=co2_em)
         self.assertEqual(2750, co2)
-        co2 = self.cd.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.cd, timestep=4, co2_emissions=co2_em)
         self.assertEqual(1000, co2)
         self.cd.load_schedule("Ref")
-        co2 = self.cd.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.cd, co2_emissions=co2_em)
         self.assertEqual(1100, co2)
 
     def test_self_consumption(self):
@@ -515,21 +516,21 @@ class TestCityDistrict(unittest.TestCase):
         pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
         pv.P_El_Ref_Schedule = - np.array([0]*8)
 
-        self.assertEqual(0.25, self.cd.self_consumption())
-        self.assertEqual(0.5, self.cd.self_consumption(timestep=4))
+        self.assertEqual(0.25, self_consumption(self.cd))
+        self.assertEqual(0.5, self_consumption(self.cd, timestep=4))
         self.cd.load_schedule("Ref")
-        self.assertEqual(1, self.cd.self_consumption())
+        self.assertEqual(1, self_consumption(self.cd))
 
     def test_calculate_adj_costs(self):
         self.cd.P_El_Schedule = np.array([4] * 2 + [-4] * 2 + [-10] * 2 + [-2] * 2)
         self.cd.P_El_Ref_Schedule = np.array([2] * 2 + [-6] * 2 + [-9] * 2 + [-1] * 2)
         prices = np.array([10] * 4 + [20] * 4)
-        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices)
+        costs_adj = calculate_adj_costs(self.cd, "Ref", prices=prices)
         self.assertEqual(2*5+2*5+1*10+1*10, costs_adj)
-        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices, total_adjustments=False)
+        costs_adj = calculate_adj_costs(self.cd, "Ref", prices=prices, total_adjustments=False)
         self.assertEqual(20, costs_adj)
         self.cd.copy_schedule("Ref")
-        costs_adj = self.cd.calculate_adj_costs("Ref", prices=prices)
+        costs_adj = calculate_adj_costs(self.cd, "Ref", prices=prices)
         self.assertEqual(0, costs_adj)
 
     def test_autarky(self):
@@ -540,10 +541,10 @@ class TestCityDistrict(unittest.TestCase):
         pv.P_El_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
         pv.P_El_Ref_Schedule = - np.array([0]*2 + [8]*4 + [0]*2)
 
-        self.assertEqual(0.5, self.cd.autarky())
-        self.assertEqual(0, self.cd.autarky(timestep=2))
+        self.assertEqual(0.5, autarky(self.cd))
+        self.assertEqual(0, autarky(self.cd, timestep=2))
         self.cd.load_schedule("Ref")
-        self.assertEqual(1, self.cd.autarky())
+        self.assertEqual(1, autarky(self.cd))
 
 
 class TestCombinedHeatPower(unittest.TestCase):
@@ -556,12 +557,12 @@ class TestCombinedHeatPower(unittest.TestCase):
         self.chp.P_Th_Ref_Schedule = - np.array([4] * 8)
         co2_em = np.array([1111]*8)
 
-        co2 = self.chp.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.chp, co2_emissions=co2_em)
         self.assertEqual(23750, co2)
-        co2 = self.chp.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.chp, timestep=4, co2_emissions=co2_em)
         self.assertEqual(11875, co2)
         self.chp.load_schedule("Ref")
-        co2 = self.chp.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.chp, co2_emissions=co2_em)
         self.assertEqual(9500, co2)
 
     def test_lower_activation(self):
@@ -701,102 +702,102 @@ class TestElectricalEntity(unittest.TestCase):
         self.ee.P_El_Ref_Schedule = np.array([4]*4 + [-4]*4)
         prices = np.array([10]*4 + [20]*4)
 
-        costs = self.ee.calculate_costs(prices=prices, feedin_factor=0.5)
+        costs = calculate_costs(self.ee, prices=prices, feedin_factor=0.5)
         self.assertEqual(-100, costs)
-        costs = self.ee.calculate_costs(timestep=4, prices=prices)
+        costs = calculate_costs(self.ee, timestep=4, prices=prices)
         self.assertEqual(100, costs)
         self.ee.load_schedule("Ref")
-        costs = self.ee.calculate_costs(prices=prices)
+        costs = calculate_costs(self.ee, prices=prices)
         self.assertEqual(40, costs)
 
     def test_calculate_adj_costs(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
         prices = np.array([10] * 4 + [20] * 4)
-        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices)
+        costs_adj = calculate_adj_costs(self.ee, "Ref", prices=prices)
         self.assertEqual(6*10 + 16*20, costs_adj)
-        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices, total_adjustments=False)
+        costs_adj = calculate_adj_costs(self.ee, "Ref", prices=prices, total_adjustments=False)
         self.assertEqual(16 * 20, costs_adj)
         self.ee.copy_schedule("Ref")
-        costs_adj = self.ee.calculate_adj_costs("Ref", prices=prices)
+        costs_adj = calculate_adj_costs(self.ee, "Ref", prices=prices)
         self.assertEqual(0, costs_adj)
 
     def test_calculate_adj_power(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
-        adj_power = self.ee.calculate_adj_power("Ref")
+        adj_power = calculate_adj_power(self.ee, "Ref")
         assert_equal_array(adj_power, [6] * 4 + [16] * 4)
-        adj_power = self.ee.calculate_adj_power("Ref", total_adjustments=False)
+        adj_power = calculate_adj_power(self.ee, "Ref", total_adjustments=False)
         assert_equal_array(adj_power, [0] * 4 + [16] * 4)
-        adj_power = self.ee.calculate_adj_power("default")
+        adj_power = calculate_adj_power(self.ee, "default")
         assert_equal_array(adj_power, [0] * 8)
         self.ee.load_schedule("Ref")
-        adj_power = self.ee.calculate_adj_power("Ref")
+        adj_power = calculate_adj_power(self.ee, "Ref")
         assert_equal_array(adj_power, [0] * 8)
         self.ee.copy_schedule("default")
-        adj_power = self.ee.calculate_adj_power("default")
+        adj_power = calculate_adj_power(self.ee, "default")
         assert_equal_array(adj_power, [0] * 8)
 
     def test_calculate_adj_energy(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
-        adj_energy = self.ee.calculate_adj_energy("Ref")
+        adj_energy = calculate_adj_energy(self.ee, "Ref")
         self.assertEqual(6 + 16, adj_energy)
-        adj_energy = self.ee.calculate_adj_energy("Ref", total_adjustments=False)
+        adj_energy = calculate_adj_energy(self.ee, "Ref", total_adjustments=False)
         self.assertEqual(16, adj_energy)
-        adj_energy = self.ee.calculate_adj_energy("default")
+        adj_energy = calculate_adj_energy(self.ee, "default")
         self.assertEqual(0, adj_energy)
         self.ee.copy_schedule(src="Ref")
-        adj_energy = self.ee.calculate_adj_energy("Ref")
+        adj_energy = calculate_adj_energy(self.ee, "Ref")
         self.assertEqual(0, adj_energy)
-        adj_energy = self.ee.calculate_adj_energy("Ref", total_adjustments=False)
+        adj_energy = calculate_adj_energy(self.ee, "Ref", total_adjustments=False)
         self.assertEqual(0, adj_energy)
         self.ee.load_schedule("Ref")
-        adj_energy = self.ee.calculate_adj_energy("Ref")
+        adj_energy = calculate_adj_energy(self.ee, "Ref")
         self.assertEqual(0, adj_energy)
-        adj_energy = self.ee.calculate_adj_energy("default")
+        adj_energy = calculate_adj_energy(self.ee, "default")
         self.assertEqual(0, adj_energy)
 
     def test_metric_delta_g(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
-        g = self.ee.metric_delta_g("Ref")
+        g = metric_delta_g(self.ee, "Ref")
         self.assertEqual(1-30/8, g)
-        g = self.ee.metric_delta_g("default")
+        g = metric_delta_g(self.ee, "default")
         self.assertEqual(0, g)
 
     def test_peak_to_average_ratio(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
-        ratio = self.ee.peak_to_average_ratio()
+        ratio = peak_to_average_ratio(self.ee)
         self.assertEqual(20/5, ratio)
         self.ee.load_schedule("Ref")
-        ratio = self.ee.peak_to_average_ratio()
+        ratio = peak_to_average_ratio(self.ee)
         self.assertEqual(np.inf, ratio)
 
     def test_peak_reduction_ratio(self):
         self.ee.P_El_Schedule = np.array([10] * 4 + [-20] * 4)
         self.ee.P_El_Ref_Schedule = np.array([4] * 4 + [-4] * 4)
-        ratio = self.ee.peak_reduction_ratio("Ref")
+        ratio = peak_reduction_ratio(self.ee, "Ref")
         self.assertEqual((20-4)/4, ratio)
         self.ee.P_El_Ref_Schedule = np.array([4] * 8)
-        ratio = self.ee.peak_reduction_ratio("Ref")
+        ratio = peak_reduction_ratio(self.ee, "Ref")
         self.assertEqual((20-4)/4, ratio)
-        ratio = self.ee.peak_reduction_ratio("default")
+        ratio = peak_reduction_ratio(self.ee, "default")
         self.assertEqual(0, ratio)
         self.ee.load_schedule("Ref")
-        ratio = self.ee.peak_reduction_ratio("Ref")
+        ratio = peak_reduction_ratio(self.ee, "Ref")
         self.assertEqual(0, ratio)
 
     def test_self_consumption(self):
         # properly tested in CityDistrict
         self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
-        self.assertEqual(0, self.ee.self_consumption())
+        self.assertEqual(0, self_consumption(self.ee))
 
     def test_autarky(self):
         # properly tested in CityDistrict
         self.ee.P_El_Schedule = np.array([10]*4 + [-20]*4)
-        self.assertEqual(0, self.ee.autarky())
+        self.assertEqual(0, autarky(self.ee))
 
 
 class TestElectricalHeater(unittest.TestCase):
@@ -934,12 +935,12 @@ class TestPhotovoltaic(unittest.TestCase):
         self.pv.P_El_Ref_Schedule = - np.array([4]*8)
         co2_em = np.array([1111]*8)
 
-        co2 = self.pv.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.pv, co2_emissions=co2_em)
         self.assertEqual(1500, co2)
-        co2 = self.pv.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.pv, timestep=4, co2_emissions=co2_em)
         self.assertEqual(750, co2)
         self.pv.load_schedule("Ref")
-        co2 = self.pv.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.pv, co2_emissions=co2_em)
         self.assertEqual(600, co2)
 
 
@@ -1039,12 +1040,12 @@ class TestWindEnergyConverter(unittest.TestCase):
         self.wec.P_El_Ref_Schedule = - np.array([4] * 8)
         co2_em = np.array([1111]*8)
 
-        co2 = self.wec.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.wec, co2_emissions=co2_em)
         self.assertEqual(500, co2)
-        co2 = self.wec.calculate_co2(timestep=4, co2_emissions=co2_em)
+        co2 = calculate_co2(self.wec, timestep=4, co2_emissions=co2_em)
         self.assertEqual(250, co2)
         self.wec.load_schedule("Ref")
-        co2 = self.wec.calculate_co2(co2_emissions=co2_em)
+        co2 = calculate_co2(self.wec, co2_emissions=co2_em)
         self.assertEqual(200, co2)
 
 
