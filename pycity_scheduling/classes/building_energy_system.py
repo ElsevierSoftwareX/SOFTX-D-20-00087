@@ -1,4 +1,5 @@
-import gurobipy as gurobi
+import numpy as np
+import pyomo.environ as pyomo
 import pycity_base.classes.supply.BES as bes
 
 from .entity_container import EntityContainer
@@ -14,12 +15,6 @@ class BuildingEnergySystem(EntityContainer, bes.BES):
         self._long_ID = "BES_" + self._ID_string
 
     def get_lower_entities(self):
-        """
-
-        Yields
-        ------
-        All contained entities.
-        """
         if self.hasBoiler:
             yield self.boiler
         if self.hasChp:

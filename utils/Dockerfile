@@ -47,4 +47,4 @@ RUN pip3 install --no-cache-dir pylint
 
 FROM base
 COPY . /pyCity_scheduling
-RUN pip3 install --no-cache-dir /pyCity_scheduling
+RUN pip3 install --no-cache-dir /pyCity_scheduling[test]

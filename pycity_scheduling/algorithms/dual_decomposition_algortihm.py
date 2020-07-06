@@ -1,5 +1,7 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+from pyomo.solvers.plugins.solvers.persistent_solver import PersistentSolver
+from pyomo.opt import SolverStatus, TerminationCondition
 
 from pycity_scheduling.classes import (Building, Photovoltaic,
                                        WindEnergyConverter)
@@ -7,16 +9,21 @@ from pycity_scheduling.exception import (MaxIterationError, NonoptimalError)
 from pycity_scheduling.util import populate_models
 
 
-def dual_decomposition(city_district, models=None, eps_primal=0.01,
-                       rho=0.01, max_iterations=10000, robustness=None,
-                       debug=True):
+def dual_decomposition(city_district, optimizer="gurobi_persistent", mode="convex", models=None, eps_primal=0.01,
+                       rho=0.01, max_iterations=10000, robustness=None, debug=True):
     """Implementation of the Dual Decomposition Algorithm.
 
     Parameters
     ----------
     city_district : CityDistrict
+    optimizer : str
+        Solver to use for solving (sub)problems
+    mode : str, optional
+        Specifies which set of constraints to use
+        - `convex`  : Use linear constraints
+        - `integer`  : May use non-linear constraints
     models : dict, optional
-        Holds a `gurobi.Model` for each node and the aggregator.
+        Holds a `pyomo.ConcreteModel` for each node and the aggregator.
     eps_primal : float, optional
         Primal stopping criterion for the dual decomposition algorithm.
     rho : float, optional
@@ -36,18 +43,32 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
 
     iteration = 0
     lambdas = np.zeros(OP_HORIZON)
-    r_norms = [gurobi.GRB.INFINITY]
+    r_norms = [np.inf]
 
-    runtimes = {node_id: list() for node_id in nodes.keys()}
-    runtimes[0] = list()
 
     if models is None:
-        models = populate_models(city_district, 'dual-decomposition')
+        models = populate_models(city_district, mode, 'dual-decomposition', robustness)
+
+        # hack to suppress pyomo no constraint warning
+        models[0].simple_var = pyomo.Var(domain=pyomo.Reals, bounds=(None, None), initialize=0)
+        models[0].simple_constr = pyomo.Constraint(expr=models[0].simple_var == 1)
 
     for node_id, node in nodes.items():
-        node['entity'].update_model(models[node_id], robustness=robustness)
+        node['entity'].update_model(mode, robustness=robustness)
 
-    city_district.update_model(models[0])
+    city_district.update_model(mode)
+
+    # prepare solver if persistent
+    optimizers = {0: pyomo.SolverFactory(optimizer)}
+    persistent = isinstance(optimizers[0], PersistentSolver)
+    if persistent:
+        optimizers[0].set_instance(models[0])
+        for node_id, node in nodes.items():
+            optimizers[node_id] = pyomo.SolverFactory(optimizer)
+            optimizers[node_id].set_instance(models[node_id])
+    else:
+        for node_id in nodes.keys():
+            optimizers[node_id] = optimizers[0]
 
     # ----------------
     # Start scheduling
@@ -77,24 +98,25 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
 
             obj = entity.get_objective()
             # penalty term is expanded
-            obj.addTerms(
-                lambdas,
-                entity.P_El_vars
-            )
+            obj += pyomo.sum_product(lambdas, entity.model.P_El_vars)
+            obj = pyomo.Objective(expr=obj)
 
             model = models[node_id]
-            model.setObjective(obj)
-            model.optimize()
-            runtimes[node_id].append(model.Runtime)
-            try:
-                entity.update_schedule()
-            except Exception as e:
+            if hasattr(model, "o"):
+                model.del_component("o")
+            model.add_component("o", obj)
+
+            if persistent:
+                optimizers[node_id].set_objective(model.o)
+                result = optimizers[node_id].solve()
+            else:
+                result = optimizers[node_id].solve(model)
+            if result.solver.termination_condition != TerminationCondition.optimal or result.solver.status != SolverStatus.ok:
                 if debug:
                     import pycity_scheduling.util.debug as debug
-                    debug.analyze_model(model, e)
-                raise NonoptimalError(
-                    "Could not retrieve schedule from model."
-                )
+                    debug.analyze_model(model, optimizers[node_id], result)
+                raise NonoptimalError("Could not retrieve schedule from model.")
+            entity.update_schedule()
 
         # ----------------------
         # 2) optimize aggregator
@@ -105,21 +127,24 @@ def dual_decomposition(city_district, models=None, eps_primal=0.01,
         # penalty term is expanded and constant is omitted
         # invert sign of P_El_Schedule and P_El_vars (omitted for quadratic
         # term)
-        obj.addTerms(
-            -lambdas,
-            city_district.P_El_vars
-        )
+        obj += pyomo.sum_product(-lambdas, city_district.model.P_El_vars)
+        obj = pyomo.Objective(expr=obj)
 
-        model.setObjective(obj)
-        model.optimize()
-        runtimes[0].append(model.Runtime)
-        try:
-            city_district.update_schedule()
-        except Exception as e:
+        if hasattr(model, "o"):
+            model.del_component("o")
+        model.add_component("o", obj)
+
+        if persistent:
+            optimizers[0].set_objective(model.o)
+            result = optimizers[0].solve()
+        else:
+            result = optimizers[0].solve(model)
+        if result.solver.termination_condition != TerminationCondition.optimal or result.solver.status != SolverStatus.ok:
             if debug:
                 import pycity_scheduling.util.debug as debug
-                debug.analyze_model(model, e)
+                debug.analyze_model(model, optimizers[0], result)
             raise NonoptimalError("Could not retrieve schedule from model.")
+        city_district.update_schedule()
 
         # ----------------------
         # 3) Incentive Update

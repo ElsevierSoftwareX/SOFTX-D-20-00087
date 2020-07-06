@@ -1,3 +1,6 @@
+import numpy as np
+import pyomo.environ as pyomo
+
 import pycity_base.classes.demand.SpaceHeating as sh
 
 from .thermal_entity import ThermalEntity
@@ -93,21 +96,23 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
         self.P_Th_Schedule = p
 
-    def update_model(self, model, mode=""):
-        """Update model variables.
+    def update_model(self, mode=""):
+        """Add device block to pyomo ConcreteModel.
 
         Set variable bounds to equal the given demand, as pure space heating does
         not provide any flexibility.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
         """
+        m = self.model
         timestep = self.timestep
+
         for t in self.op_time_vec:
-            self.P_Th_vars[t].lb = self.P_Th_Schedule[t+timestep]
-            self.P_Th_vars[t].ub = self.P_Th_Schedule[t+timestep]
+            m.P_Th_vars.setlb(self.P_Th_Schedule[timestep + t])
+            m.P_Th_vars.setub(self.P_Th_Schedule[timestep + t])
 
     def new_schedule(self, schedule):
         super().new_schedule(schedule)

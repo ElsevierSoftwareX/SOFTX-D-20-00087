@@ -1,5 +1,5 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
 
 from .optimization_entity import OptimizationEntity
 
@@ -15,43 +15,37 @@ class ElectricalEntity(OptimizationEntity):
         super().__init__(environment, *args, **kwargs)
 
         self.new_var("P_El")
-        self.max_consumption_var = None
 
     def populate_model(self, model, mode="convex"):
-        """Add variables to Gurobi model.
+        """Add device block to pyomo ConcreteModel.
 
         Add variables for the electrical demand / supply of the entity to the
-        optimization model.
+        block.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
         super().populate_model(model, mode)
+        m = self.model
+
         if mode in ["convex", "integer"]:
-            for t in self.op_time_vec:
-                self.P_El_vars.append(
-                    model.addVar(
-                        name="%s_P_El_at_t=%i" % (self._long_ID, t+1)
-                    )
-                )
-            self.max_consumption_var = None
+            m.P_El_vars = pyomo.Var(m.t, domain=pyomo.Reals, bounds=(0, None), initialize=0)
+
             if self.objective == "max-consumption":
-                self.max_consumption_var = model.addVar(
-                            name="%s_P_El_max" % self._long_ID
-                        )
-                for t in self.op_time_vec:
-                    model.addConstr(
-                        self.max_consumption_var >= self.P_El_vars[t]
-                    )
-                    model.addConstr(
-                        self.max_consumption_var >= -self.P_El_vars[t]
-                    )
-                model.update()
+                m.max_consumption_var = pyomo.Var(domain=pyomo.NonNegativeReals)
+
+                def p_consumption_rule(model, t):
+                    return model.max_consumption_var >= m.P_El_vars[t]
+                m.P_cons_constr = pyomo.Constraint(m.t, rule=p_consumption_rule)
+
+                def p_generation_rule(model, t):
+                    return model.max_consumption_var >= -m.P_El_vars[t]
+                m.P_gen_constr = pyomo.Constraint(m.t, rule=p_generation_rule)
         else:
             raise ValueError(
                 "Mode %s is not implemented by electric entity." % str(mode)
@@ -59,15 +53,8 @@ class ElectricalEntity(OptimizationEntity):
 
     def get_objective(self, coeff=1):
         if self.objective == 'peak-shaving':
-            obj = gurobi.QuadExpr()
-            obj.addTerms(
-                [coeff] * self.op_horizon,
-                self.P_El_vars,
-                self.P_El_vars
-            )
-            return obj
+            return coeff * pyomo.sum_product(self.model.P_El_vars, self.model.P_El_vars)
         if self.objective in ['price', 'co2']:
-            obj = gurobi.LinExpr()
             if self.objective == 'price':
                 prices = self.environment.prices.tou_prices
             else:
@@ -76,15 +63,11 @@ class ElectricalEntity(OptimizationEntity):
             s = sum(abs(prices))
             if s > 0:
                 prices = prices * self.op_horizon / s
-                obj.addTerms(
-                    coeff * prices,
-                    self.P_El_vars
-                )
-            return obj
+                return coeff * pyomo.sum_product(prices, self.model.P_El_vars)
+            else:
+                return 0
         if self.objective == "max-consumption":
             if coeff < 0:
                 raise ValueError("Setting a coefficient below zero is not supported for the max-consumption objective")
-            obj = gurobi.LinExpr()
-            obj.add(self.max_consumption_var, coeff)
-            return obj
+            return coeff * self.model.max_consumption_var
         return super().get_objective(coeff)

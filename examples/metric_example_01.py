@@ -3,6 +3,7 @@ import numpy as np
 import pycity_scheduling.classes as classes
 import pycity_scheduling.algorithms as algs
 from pycity_scheduling.util import factory
+from pycity_scheduling.util.metric import calculate_costs, peak_to_average_ratio, peak_reduction_ratio
 
 env = factory.generate_standard_environment(step_size=900, op_horizon=6)
 # Make it attractive for the client to shift demand into first half of
@@ -31,14 +32,14 @@ print('Comparing stand-alone with optimized case:')
 print('Building P_El:')
 print(bd.P_El_Ref_Schedule)
 print(bd.P_El_Schedule)
-print('Optimized costs:   {: >8.3f}'.format(bd.calculate_costs()))
+print('Optimized costs:   {: >8.3f}'.format(calculate_costs(bd)))
 bd.load_schedule("Ref")
 print('Stand-alone costs: {: >8.3f}'
-      .format(bd.calculate_costs()))
+      .format(calculate_costs(bd)))
 bd.load_schedule("default")
-print('Optimized PAR:     {: >8.3f}'.format(bd.peak_to_average_ratio()))
+print('Optimized PAR:     {: >8.3f}'.format(peak_to_average_ratio(bd)))
 bd.load_schedule("Ref")
 print('Stand-alone PAR:   {: >8.3f}'
-      .format(bd.peak_to_average_ratio()))
+      .format(peak_to_average_ratio(bd)))
 bd.load_schedule("default")
-print('PRR:               {: >8.3f}'.format(bd.peak_reduction_ratio()))
+print('PRR:               {: >8.3f}'.format(peak_reduction_ratio(bd, "Ref")))
