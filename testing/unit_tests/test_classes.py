@@ -764,13 +764,13 @@ class TestDeferrableLoad(unittest.TestCase):
 
 
 class TestFixedLoad(unittest.TestCase):
-    def setUp(self):
+    def test_populate_model(self):
         e = get_env(2, 4)
         load = np.arange(1, 5)
         model = pyomo.ConcreteModel()
         self.fl = FixedLoad(e, method=0, demand=load)
         self.fl.populate_model(model)
-        self.fl.populate_model(model)
+        self.fl.update_model()
         model.o = pyomo.Objective(expr=pyomo.sum_product(self.fl.model.P_El_vars))
         solve_model(model)
         for t in range(2):

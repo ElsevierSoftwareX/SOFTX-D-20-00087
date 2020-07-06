@@ -88,8 +88,8 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         timestep = self.timestep
 
         for t in self.op_time_vec:
-            m.P_El_vars.setlb(self.P_El_Schedule[timestep + t])
-            m.P_El_vars.setub(self.P_El_Schedule[timestep + t])
+            m.P_El_vars[t].setlb(self.P_El_Schedule[timestep + t])
+            m.P_El_vars[t].setub(self.P_El_Schedule[timestep + t])
 
     def new_schedule(self, schedule):
         super().new_schedule(schedule)
