@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 
-def schedule_to_csv(input_list, file_name):
+def schedule_to_csv(input_list, file_name, schedule=None):
     """Write the optimized schedule of all entities to a csv file.
 
     MDI: but where do all the optimized entities come from?
@@ -19,31 +19,26 @@ def schedule_to_csv(input_list, file_name):
         List of entities.
     file_name : str
         Specify the file name.
+    schedule : str, optional
+           Schedule to save.
+           `None` : Current schedule
+           'default' : Normal schedule
+           'Ref', 'reference' : Reference schedule
     """
-    l = []
+    sub_schedules = []
+    headers = []
+
     for ent in input_list:
-        if isinstance(ent, Battery):
-            l.append(ent.P_El_Schedule)
-            l.append(ent.E_El_Schedule)
-        elif isinstance(ent, ElectricalEntity):
-            l.append(ent.P_El_Schedule)
-        elif isinstance(ent, ThermalEnergyStorage):
-            l.append(ent.P_Th_Schedule)
-            l.append(ent.E_Th_Schedule)
-        elif isinstance(ent, ThermalEntity):
-            l.append(ent.P_Th_Schedule)
-    v = np.array(l)
-    n = ""
-    for ent in input_list:
-        n += str(ent) + "\t"
-        if isinstance(ent, ThermalEnergyStorage):
-            n += str(ent) + " Stor\t"
-        if isinstance(ent, Battery):
-            n += str(ent) + " Stor\t"
+        if schedule is None:
+            schedule = ent.current_schedule
+        for name, sub_schedule in ent.schedules[schedule].items():
+            headers.append(str(ent) + "_" + name)
+            sub_schedules.append(sub_schedule)
+    v = np.array(sub_schedules)
     p = op.join(op.dirname(op.dirname(op.dirname(__file__))), "output",
                 "{0:s}.csv".format(file_name))
     np.savetxt(p, v.transpose(),
-               delimiter="\t", fmt="%8.6f", header=n, comments="")
+               delimiter="\t", fmt="%8.6f", header="\t".join(headers), comments="")
 
 
 def ref_schedule_to_csv(input_list, file_name):
@@ -56,27 +51,6 @@ def ref_schedule_to_csv(input_list, file_name):
     file_name : str
         Specify the file name.
     """
-    l = []
-    for ent in input_list:
-        if isinstance(ent, Battery):
-            l.append(ent.P_El_Ref_Schedule)
-            l.append(ent.E_El_Ref_Schedule)
-        elif isinstance(ent, ElectricalEntity):
-            l.append(ent.P_El_Ref_Schedule)
-        elif isinstance(ent, ThermalEnergyStorage):
-            l.append(ent.P_Th_Ref_Schedule)
-            l.append(ent.E_Th_Ref_Schedule)
-        elif isinstance(ent, ThermalEntity):
-            l.append(ent.P_Th_Ref_Schedule)
-    v = np.array(l)
-    n = ""
-    for ent in input_list:
-        n += str(ent) + "\t"
-        if isinstance(ent, ThermalEnergyStorage):
-            n += str(ent) + " Stor\t"
-        if isinstance(ent, Battery):
-            n += str(ent) + " Stor\t"
-    p = op.join(op.dirname(op.dirname(op.dirname(__file__))), "output",
-                "{0:s}.csv".format(file_name))
-    np.savetxt(p, v.transpose(),
-               delimiter="\t", fmt="%8.6f", header=n, comments="")
+    import warnings
+    warnings.warn("ref_schedule_to_csv() is deprecated; use schedule_to_csv() instead", DeprecationWarning)
+    schedule_to_csv(input_list, file_name, schedule="Ref")

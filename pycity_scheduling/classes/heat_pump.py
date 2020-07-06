@@ -1,9 +1,11 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+
 import pycity_base.classes.supply.HeatPump as hp
 
 from .thermal_entity import ThermalEntity
 from .electrical_entity import ElectricalEntity
+from ..util.generic_constraints import LowerActivationLimit
 
 
 class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
@@ -11,59 +13,55 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
     Extension of pyCity_base class Heatpump for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, hp_type="aw", tAmbient=None,
-                 tFlow=45, cop=None, tMax=55, lowerActivationLimit=0,
-                 heat=None, power=None):
+    def __init__(self, environment, P_Th_nom, cop=None,
+                 lower_activation_limit=0):
         """Initialize HeatPump.
 
         Parameters
         ----------
         environment : pycity_scheduling.classes.Environment
             Common to all other objects. Includes time and weather instances.
-        P_Th_Nom : float
-            Nominal thermal power of the heatpump in [kW].
-        hp_type : {"aw", "ww"}
-            Type of heatpump (air-water or water-water).
-        tAmbient : array_like, optional
-            Source temperatures in [°K].
-        tFlow : float, optional
-            Flow temperature in [°C].
-        cop : array_like, optional
-            Coefficient of performance for different ambient and flow
-            temperatures
-        tMax :
-
-        lowerActivationLimit:
-            Minimal percentage the heatpump operates with. If this value is
-            larger than zero, the heatpump never turns fully off.
-        heat
-        power
+        P_Th_nom : float
+            Nominal thermal power of the heat pump in [kW].
+        cop : numpy.ndarray or int or float, optional
+            If array, it must provide the coefficient of performance (COP) for
+            each time step in the simulation horizon.
+            If int or float, a constant COP over the whole horizon is assumed.
+            If omitted, an air-water heat pump is assumed and the COP is
+            calculated with the ambient air temperature.
+        lower_activation_limit : float, optional (only adhered to in integer mode)
+            Must be in [0, 1]. Lower activation limit of the heat pump as a
+            percentage of the rated power. When the heat pump is running its
+            power nust be zero or between the lower activation limit and its
+            rated power.
+            `lower_activation_limit = 0`: Linear behavior
+            `lower_activation_limit = 1`: Two-point controlled
         """
         simu_horizon = environment.timer.simu_horizon
-        if tAmbient is None:
-            if hp_type == "aw":
-                (tAmbient,) = environment.weather.getWeatherForecast(
-                    getTAmbient=True
-                )
-                ts = environment.timer.time_in_year()
-                tAmbient = tAmbient[ts:ts+simu_horizon]
-            else:
-                tAmbient = np.full(simu_horizon, 283)
         if cop is None:
-            relative_COP = (0.36 if hp_type == "aw" else 0.5)
-            cop = [relative_COP * (tFlow + 273) / (tFlow - tAmbient[t])
-                   for t in range(simu_horizon)]  # TODO: better implementation
-        super(HeatPump, self).__init__(environment.timer, environment,
-                                       tAmbient, tFlow, heat, power, cop, tMax,
-                                       lowerActivationLimit)
+            (tAmbient,) = environment.weather.getWeatherForecast(
+                getTAmbient=True
+            )
+            ts = environment.timer.time_in_year()
+            tAmbient = tAmbient[ts:ts + simu_horizon]
+            # Flow temperature of 55 C (328 K) and eta of 36%
+            cop = 0.36 * 328 / (55 - tAmbient)
+        elif isinstance(cop, (int, float)):
+            cop = np.full(simu_horizon, cop)
+        elif not isinstance(cop, np.ndarray):
+            raise TypeError(
+                "Unknown type for `cop`: {}. Must be `numpy.ndarray`, `int` "
+                "or `float`".format(type(cop))
+            )
+        super().__init__(environment, [], 55, [], [], cop, 55, lower_activation_limit)
         self._long_ID = "HP_" + self._ID_string
         self.COP = cop
-        self.P_Th_Nom = P_Th_Nom
+        self.P_Th_Nom = P_Th_nom
 
-        self.El_Th_Coupling_constr = None
+        self.Activation_constr = LowerActivationLimit(self, "P_Th", lower_activation_limit, -P_Th_nom)
 
-    def populate_model(self, model, mode=""):
-        """Add variables to Gurobi model.
+    def populate_model(self, model, mode="convex"):
+        """Add device block to pyomo ConcreteModel.
 
         Call parent's `populate_model` method and set thermal variables lower
         bounds to `-self.P_Th_Nom` and the upper bounds to zero. Also add
@@ -71,63 +69,34 @@ class HeatPump(ThermalEntity, ElectricalEntity, hp.Heatpump):
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control
+                           decisions
         """
-        ThermalEntity.populate_model(self, model, mode)
-        ElectricalEntity.populate_model(self, model, mode)
+        super().populate_model(model, mode)
+        m = self.model
 
-        for var in self.P_Th_vars:
-            var.lb = -self.P_Th_Nom
-            var.ub = -self.lowerActivationLimit*self.P_Th_Nom
+        if mode == "convex" or "integer":
+            m.P_Th_vars.setlb(-self.P_Th_Nom)
+            m.P_Th_vars.setub(0)
 
-        for t in self.op_time_vec:
-            model.addConstr(
-                -self.P_Th_vars[t] == self.COP[t] * self.P_El_vars[t],
-                "{0:s}_Th_El_coupl_at_t={1}".format(self._long_ID, t)
+            m.COP = pyomo.Param(m.t, mutable=True)
+
+            def p_coupl_rule(model, t):
+                return model.P_Th_vars[t] + model.COP[t] * model.P_El_vars[t] == 0
+            m.p_coupl_constr = pyomo.Constraint(m.t, rule=p_coupl_rule)
+
+            self.Activation_constr.apply(m, mode)
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by heat pump." % str(mode)
             )
 
-    def update_schedule(self, mode=""):
-        ThermalEntity.update_schedule(self, mode)
-        ElectricalEntity.update_schedule(self, mode)
-
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the heatpump wheighted with coeff.
-        Sum of self.P_El_vars.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.LinExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        ThermalEntity.save_ref_schedule(self)
-        ElectricalEntity.save_ref_schedule(self)
-
-    def reset(self, schedule=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        ThermalEntity.reset(self, schedule, reference)
-        ElectricalEntity.reset(self, schedule, reference)
+    def update_model(self, mode=""):
+        m = self.model
+        cop = self.COP[self.op_slice]
+        for t in self.op_time_vec:
+            m.COP[t] = cop[t]

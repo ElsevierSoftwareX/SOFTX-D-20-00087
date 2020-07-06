@@ -7,20 +7,20 @@ from pycity_scheduling.algorithms import algorithms
 
 
 class TestAlgorithms(unittest.TestCase):
-    def __init__(self, *args, **kwargs):
-        super(TestAlgorithms, self).__init__(*args, **kwargs)
+
+    def setUp(self):
 
         t = Timer(op_horizon=2)
         p = Prices(t)
         w = Weather(t)
         e = Environment(t, w, p)
-        cd = CityDistrict(e, objective='valley_filling')
+        cd = CityDistrict(e, objective='peak-shaving')
 
-        bd1 = Building(e, objective='peak_shaving')
+        bd1 = Building(e, objective='peak-shaving')
         cd.addEntity(bd1, [0, 0])
         bes = BuildingEnergySystem(e)
         bd1.addEntity(bes)
-        tes = ThermalEnergyStorage(e, 40, 0.5, 0.5)
+        tes = ThermalEnergyStorage(e, 40, 0.5)
         bes.addDevice(tes)
         eh = ElectricalHeater(e, 10)
         bes.addDevice(eh)
@@ -32,11 +32,11 @@ class TestAlgorithms(unittest.TestCase):
         sh = SpaceHeating(e, method=0, loadcurve=load)
         ap.addEntity(sh)
 
-        bd2 = Building(e, objective='peak_shaving')
+        bd2 = Building(e, objective='peak-shaving')
         cd.addEntity(bd2, [0, 0])
         bes = BuildingEnergySystem(e)
         bd2.addEntity(bes)
-        tes = ThermalEnergyStorage(e, 40, 0.5, 0.5)
+        tes = ThermalEnergyStorage(e, 40, 0.5)
         bes.addDevice(tes)
         eh = ElectricalHeater(e, 20)
         bes.addDevice(eh)
@@ -53,15 +53,9 @@ class TestAlgorithms(unittest.TestCase):
         self.bd1 = bd1
         self.bd2 = bd2
 
-    def setUp(self):
-        self.timer.reset()
-        self.cd.reset()
-        self.bd1.reset()
-        self.bd2.reset()
-
     def test_exchange_admm(self):
         f = algorithms['exchange-admm']
-        r = f(self.cd, rho=2, eps_primal=0.001)
+        f(self.cd, rho=2, eps_primal=0.001)
 
         self.assertEqual(20, self.bd1.P_El_Schedule[0])
         self.assertEqual(20, self.bd1.P_El_Schedule[1])
@@ -69,15 +63,6 @@ class TestAlgorithms(unittest.TestCase):
         self.assertEqual(40, self.bd2.P_El_Schedule[1])
         self.assertAlmostEqual(60, self.cd.P_El_Schedule[0], 2)
         self.assertAlmostEqual(60, self.cd.P_El_Schedule[1], 2)
-
-        # print(r[0])
-        # print(r[1][-5:])
-        # print(r[2][-5:])
-        # print(r[3])
-        #
-        # print(self.cd.P_El_Schedule)
-        # for bd in self.cd.get_lower_entities():
-        #     print(bd.P_El_Schedule)
 
     def test_dual_decomposition(self):
         f = algorithms['dual-decomposition']

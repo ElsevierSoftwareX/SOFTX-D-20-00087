@@ -1,11 +1,18 @@
+import numpy as np
+import pyomo.environ as pyomo
+
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from pycity_scheduling.classes.electrical_entity import ElectricalEntity
+from pycity_scheduling import util
 
 
 class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
     """
     Extension of pyCity_base class ElectricalDemand for scheduling purposes.
+
+    As for all uncontrollable loads, the `P_El_Schedule` contains the forecast
+    of the load.
     """
 
     def __init__(self, environment, method=0, demand=0, annualDemand=0,
@@ -68,19 +75,28 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
            http://www.die-stromsparinitiative.de/fileadmin/bilder/Stromspiegel/
            Brosch%C3%BCre/Stromspiegel2014web_final.pdf
         """
-        super(FixedLoad, self).__init__(environment.timer, environment,
-                                        method, demand*1000, annualDemand,
-                                        profileType, singleFamilyHouse,
-                                        total_nb_occupants,
-                                        randomizeAppliances,
-                                        lightConfiguration, occupancy)
+        super().__init__(environment, method, demand*1000, annualDemand, profileType, singleFamilyHouse,
+                         total_nb_occupants, randomizeAppliances, lightConfiguration, occupancy)
         self._long_ID = "FL_" + self._ID_string
 
         ts = self.timer.time_in_year(from_init=True)
-        self.P_El_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        self.P_El_Schedule = p
 
-    def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
+    def update_model(self, mode=""):
+        m = self.model
+        timestep = self.timestep
+
         for t in self.op_time_vec:
-            self.P_El_vars[t].lb = self.P_El_Demand[t+timestep]
-            self.P_El_vars[t].ub = self.P_El_Demand[t+timestep]
+            m.P_El_vars[t].setlb(self.P_El_Schedule[timestep + t])
+            m.P_El_vars[t].setub(self.P_El_Schedule[timestep + t])
+
+    def new_schedule(self, schedule):
+        super().new_schedule(schedule)
+        self.copy_schedule(schedule, "default", "P_El")
+
+    def update_schedule(self, mode=""):
+        pass
+
+    def reset(self, name=None):
+        pass

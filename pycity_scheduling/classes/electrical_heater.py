@@ -1,5 +1,8 @@
-import gurobipy as gurobi
+import numpy as np
+import pyomo.environ as pyomo
+
 import pycity_base.classes.supply.ElectricalHeater as eh
+from ..util.generic_constraints import LowerActivationLimit
 
 from .thermal_entity import ThermalEntity
 from .electrical_entity import ElectricalEntity
@@ -10,35 +13,33 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
     Extension of pyCity_base class ElectricalHeater for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, eta=1,
-                 tMax=85, lowerActivationLimit=0):
+    def __init__(self, environment, P_Th_nom, eta=1, lower_activation_limit=0):
         """Initialize ElectricalHeater.
 
         Parameters
         ----------
         environment : pycity_scheduling.classes.Environment
             Common to all other objects. Includes time and weather instances.
-        P_Th_Nom : float
+        P_Th_nom : float
             Nominal thermal power output in [kW].
         eta : float, optional
             Efficiency of the electrical heater.
-        tMax : integer, optional
-            maximum provided temperature in °C
-        lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
-            Define the lower activation limit. For example, heat pumps are
-            typically able to operate between 50 % part load and rated load.
-            In this case, lowerActivationLimit would be 0.5
-            Two special cases:
-            Linear behavior: lowerActivationLimit = 0
-            Two-point controlled: lowerActivationLimit = 1
+        lower_activation_limit : float, optional (only adhered to in integer mode)
+            Must be in [0, 1]. Lower activation limit of the electrical heater
+            as a percentage of the rated power. When the electrical heater is
+            running its power nust be zero or between the lower activation
+            limit and its rated power.
+            `lower_activation_limit = 0`: Linear behavior
+            `lower_activation_limit = 1`: Two-point controlled
         """
-        super(ElectricalHeater, self).__init__(environment.timer, environment,
-                                               P_Th_Nom*1000, eta, tMax,
-                                               lowerActivationLimit)
+        # Flow temperature of 55 C
+        super().__init__(environment, P_Th_nom*1000, eta, 55, lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
+        self.P_Th_Nom = P_Th_nom
+        self.Activation_constr = LowerActivationLimit(self, "P_Th", lower_activation_limit, -P_Th_nom)
 
-    def populate_model(self, model, mode=""):
-        """Add variables to Gurobi model.
+    def populate_model(self, model, mode="convex"):
+        """Add device block to pyomo ConcreteModel.
 
         Call parent's `populate_model` method and set thermal variables upper
         bounds to `self.P_Th_Nom`. Also add constraint to bind electrical
@@ -46,62 +47,26 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control decisions
         """
-        ThermalEntity.populate_model(self, model, mode)
-        ElectricalEntity.populate_model(self, model, mode)
+        super().populate_model(model, mode)
+        m = self.model
 
-        for var in self.P_Th_vars:
-            var.lb = -self.qNominal / 1000
-            var.ub = 0
+        if mode == "convex" or "integer":
+            m.P_Th_vars.setlb(-self.P_Th_Nom)
+            m.P_Th_vars.setub(0)
 
-        for t in self.op_time_vec:
-            model.addConstr(
-                - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
+            def p_coupl_rule(model, t):
+                return - model.P_Th_vars[t] == self.eta * model.P_El_vars[t]
+            m.p_coupl_constr = pyomo.Constraint(m.t, rule=p_coupl_rule)
+
+            self.Activation_constr.apply(m, mode)
+
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by electrical heater." % str(mode)
             )
-
-    def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
-
-        Return the objective function of the electrical heater wheighted with
-        coeff. Sum of self.P_El_vars.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.LinExpr :
-            Objective function.
-        """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars
-        )
-        return obj
-
-    def update_schedule(self, mode=""):
-        ThermalEntity.update_schedule(self, mode)
-        ElectricalEntity.update_schedule(self, mode)
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        ThermalEntity.save_ref_schedule(self)
-        ElectricalEntity.save_ref_schedule(self)
-
-    def reset(self, schedule=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        ThermalEntity.reset(self, schedule, reference)
-        ElectricalEntity.reset(self, schedule, reference)

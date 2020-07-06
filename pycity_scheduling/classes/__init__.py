@@ -14,7 +14,6 @@ from .boiler import Boiler
 from .combined_heat_power import CombinedHeatPower
 from .curtailable_load import CurtailableLoad
 from .deferrable_load import DeferrableLoad
-from .domestic_hot_water import DomesticHotWater
 from .electrical_heater import ElectricalHeater
 from .electrical_vehicle import ElectricalVehicle
 from .fixed_load import FixedLoad
@@ -41,7 +40,6 @@ __all__ = [
     'CombinedHeatPower',
     'CurtailableLoad',
     'DeferrableLoad',
-    'DomesticHotWater',
     'ElectricalHeater',
     'ElectricalVehicle',
     'FixedLoad',
@@ -70,7 +68,6 @@ all_entities = {
     'CHP': CombinedHeatPower,
     'CL': CurtailableLoad,
     'DL': DeferrableLoad,
-    'DHW': DomesticHotWater,
     'EH': ElectricalHeater,
     'EV': ElectricalVehicle,
     'FL': FixedLoad,

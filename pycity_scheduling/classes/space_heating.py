@@ -1,11 +1,18 @@
+import numpy as np
+import pyomo.environ as pyomo
+
 import pycity_base.classes.demand.SpaceHeating as sh
 
 from .thermal_entity import ThermalEntity
+from pycity_scheduling import util
 
 
 class SpaceHeating(ThermalEntity, sh.SpaceHeating):
     """
     Extension of pyCity_base class SpaceHeating for scheduling purposes.
+
+    As for all uncontrollable loads, the `P_Th_Schedule` contains the forecast
+    of the load.
     """
 
     def __init__(self, environment, method=0, loadcurve=1, livingArea=0,
@@ -81,29 +88,38 @@ class SpaceHeating(ThermalEntity, sh.SpaceHeating):
            http://mediatum.ub.tum.de/doc/601557/601557.pdf
         """
 
-        super(SpaceHeating, self).__init__(
-            environment.timer, environment, method, loadcurve*1000, livingArea,
-            specificDemand, profile_type, zoneParameters, T_m_init,
-            ventilation, TCoolingSet, THeatingSet, occupancy, appliances,
-            lighting
-        )
+        super().__init__(environment, method, loadcurve*1000, livingArea, specificDemand, profile_type, zoneParameters,
+                         T_m_init, ventilation, TCoolingSet, THeatingSet, occupancy, appliances, lighting)
         self._long_ID = "SH_" + self._ID_string
 
         ts = self.timer.time_in_year(from_init=True)
-        self.P_Th_Demand = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
+        self.P_Th_Schedule = p
 
-    def update_model(self, model, mode=""):
-        """Update model variables.
+    def update_model(self, mode=""):
+        """Add device block to pyomo ConcreteModel.
 
         Set variable bounds to equal the given demand, as pure space heating does
         not provide any flexibility.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
         """
-        timestep = self.timer.currentTimestep
+        m = self.model
+        timestep = self.timestep
+
         for t in self.op_time_vec:
-            self.P_Th_vars[t].lb = self.P_Th_Demand[t+timestep]
-            self.P_Th_vars[t].ub = self.P_Th_Demand[t+timestep]
+            m.P_Th_vars.setlb(self.P_Th_Schedule[timestep + t])
+            m.P_Th_vars.setub(self.P_Th_Schedule[timestep + t])
+
+    def new_schedule(self, schedule):
+        super().new_schedule(schedule)
+        self.copy_schedule(schedule, "default", "P_Th")
+
+    def update_schedule(self, mode=""):
+        pass
+
+    def reset(self, name=None):
+        pass

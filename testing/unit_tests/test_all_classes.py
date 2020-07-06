@@ -14,7 +14,7 @@ class TestAllClasses(unittest.TestCase):
         cd.addEntity(bd, [0, 0])
         bes = BuildingEnergySystem(e)
         bd.addEntity(bes)
-        tes = ThermalEnergyStorage(e, 1000, 0.5, 0.5)
+        tes = ThermalEnergyStorage(e, 1000, 0.5)
         bes.addDevice(tes)
         bat = Battery(e, 10, 10)
         bes.addDevice(bat)
@@ -27,13 +27,11 @@ class TestAllClasses(unittest.TestCase):
         bd.addEntity(ap)
         fl = FixedLoad(e, method=1, annualDemand=6000,
                        profileType='H0')
-        dhw = DomesticHotWater(e, 60, method=1, dailyConsumption=10,
-                               supplyTemperature=50)
         sh = SpaceHeating(e, method=1, livingArea=100, specificDemand=50,
                           profile_type='HEF')
-        ap.addMultipleEntities([fl, dhw, sh])
+        ap.addMultipleEntities([fl, sh])
         ev = ElectricalVehicle(e, 10, 10, 1, [1]*48+[0]*48)
         ap.addEntity(ev)
-        cl = CurtailableLoad(e, 0.5, method=1, annualDemand=1000)
+        cl = CurtailableLoad(e, 0.1, 0.5)
         dl = DeferrableLoad(e, 10, 10, [1]*96)
         ap.addMultipleEntities([cl, dl])

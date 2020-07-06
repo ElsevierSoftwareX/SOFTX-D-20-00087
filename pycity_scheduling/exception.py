@@ -1,14 +1,10 @@
-class PyCitySchedulingException(Exception):
-    """Base class for all exceptions in pycity_scheduling"""
+class SchedulingError(Exception):
+    """Exception raised, when a scheduling fails."""
 
 
-class PyCitySchedulingMaxIteration(PyCitySchedulingException):
-    """Exception raised, when number of maximum iterations is reached"""
+class MaxIterationError(SchedulingError):
+    """Exception raised, when the maximum number of iterations is reached."""
 
 
-class PyCitySchedulingGurobiException(PyCitySchedulingException):
-    """Exception raised, when GurobiExceptions are encountered"""
-
-
-class PyCitySchedulingInitError(PyCitySchedulingException):
-    """Exception raised, when Init of a class fails due to inconsitent data"""
+class NonoptimalError(SchedulingError):
+    """Exception raised, when a model does not lead to an optimal solution."""

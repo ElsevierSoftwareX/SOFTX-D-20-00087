@@ -1,5 +1,7 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+from pyomo.core.expr.numeric_expr import ExpressionBase
+
 import pycity_base.classes.supply.WindEnergyConverter as wec
 
 from .electrical_entity import ElectricalEntity
@@ -18,9 +20,9 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         ----------
         environment : Environment
             Common Environment instance.
-        velocity : array_like (numpy.ndarray)
+        velocity : numpy.ndarray
             Wind speeds in [m/s].
-        power : array_like (numpy.ndarray)
+        power : anumpy.ndarray
             Power for given velocities in [kW].
         hub_height : float, optional
             Height of the wind energy converter in [m].
@@ -29,10 +31,8 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         force_renewables : bool, optional
             `True` if generation may not be reduced for optimization puposes.
         """
-        super(WindEnergyConverter, self).__init__(
-            environment.timer, environment,
-            velocity, power, hub_height, roughness
-        )
+        super(WindEnergyConverter, self).__init__(environment, velocity, power,
+                                                  hub_height, roughness)
         self._long_ID = "WEC_" + self._ID_string
 
         self.force_renewables = force_renewables
@@ -47,14 +47,16 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         log_wind = self._logWindProfile(total_wind)
         return np.interp(log_wind, self.velocity, self.power, right=0)
 
-    def update_model(self, model, mode=""):
-        timestep = self.timer.currentTimestep
+    def update_model(self, mode=""):
+        m = self.model
+        timestep = self.timestep
+
         for t in self.op_time_vec:
-            self.P_El_vars[t].lb = -self.P_El_Supply[t+timestep]
+            m.P_El_vars[t].setlb(-self.P_El_Supply[timestep + t])
             if self.force_renewables:
-                self.P_El_vars[t].ub = -self.P_El_Supply[t+timestep]
+                m.P_El_vars[t].setub(-self.P_El_Supply[timestep + t])
             else:
-                self.P_El_vars[t].ub = 0
+                m.P_El_vars[t].setub(0)
 
     def get_objective(self, coeff=1):
         """Objective function of the WindEnergyConverter.
@@ -71,20 +73,11 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
 
         Returns
         -------
-        gurobi.QuadExpr :
+        ExpressionBase :
             Objective function.
         """
-        obj = gurobi.QuadExpr()
-        if not self.force_renewables:
-            obj.addTerms(
-                [coeff] * self.op_horizon,
-                self.P_El_vars,
-                self.P_El_vars
-            )
-            t1 = self.timer.currentTimestep
-            t2 = t1 + self.op_horizon
-            obj.addTerms(
-                - 2 * coeff * self.P_El_Supply[t1:t2],
-                self.P_El_vars
-            )
-        return obj
+        m = self.model
+
+        s = pyomo.sum_product(m.P_El_vars, m.P_El_vars)
+        s += -2 * pyomo.sum_product(m.P_El_Supply[self.op_slice], m.P_El_vars)
+        return coeff * s

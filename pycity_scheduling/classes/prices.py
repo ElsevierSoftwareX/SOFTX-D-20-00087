@@ -150,7 +150,7 @@ class Prices(pr.Prices):
 
         Parameters
         ----------
-        prices : np.ndarray
+        prices : array_like
             Original prices. Is not modified by the function.
         timesteps : int
             First timestep in the interpolated prices.
@@ -165,7 +165,7 @@ class Prices(pr.Prices):
 
         Returns
         -------
-        np.ndarray :
+        numpy.ndarray :
             Interpolated prices.
         """
         if factor != 1:

@@ -1,11 +1,13 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
 import pycity_base.classes.Building as bd
+from pycity_scheduling import util, classes
 
-from .electrical_entity import ElectricalEntity
+from .entity_container import EntityContainer
+from pycity_scheduling.exception import NonoptimalError
 
 
-class Building(ElectricalEntity, bd.Building):
+class Building(EntityContainer, bd.Building):
     """
     Extension of pyCity_base class Building for scheduling purposes.
 
@@ -14,7 +16,7 @@ class Building(ElectricalEntity, bd.Building):
      - exchange of thermal energy is currently not supported / turned off
     """
 
-    def __init__(self, environment, objective="price", name=None,
+    def __init__(self, environment, objective='price', name=None,
                  profile_type=None, building_type=None,
                  storage_end_equality=False):
         """Initialize building.
@@ -27,7 +29,11 @@ class Building(ElectricalEntity, bd.Building):
             - 'price' : Optimize for the prices given by `prices.tou_prices`.
             - 'co2' : Optimize for the CO2 emissions given by
                       `prices.co2_prices`.
-            - 'peak_shaving' : Try to flatten the scheudle as much as possible.
+            - 'peak-shaving' : Try to flatten the schedule as much as possible.
+            - 'max-consumption' : Try to reduce the maximum of the absolute values
+                                  of the schedule as much as possible.
+            - 'none' : No objective (leave all flexibility to other
+                       participants).
         name : str, optional
             Name for the building.
             If name is None set it to self._long_ID
@@ -56,7 +62,7 @@ class Building(ElectricalEntity, bd.Building):
             the inintial soc.
             `False` if it has to be greater or equal than the initial soc.
         """
-        super(Building, self).__init__(environment.timer, environment)
+        super().__init__(environment)
 
         self._long_ID = "BD_" + self._ID_string
         if name is None:
@@ -69,125 +75,114 @@ class Building(ElectricalEntity, bd.Building):
         self.building_type = building_type
         self.storage_end_equality = storage_end_equality
 
-    def populate_model(self, model, mode=""):
-        """Add variables and constraints to Gurobi model.
+    def populate_model(self, model, mode="convex", robustness=None):
+        """Add building block to pyomo ConcreteModel.
 
-        Call both parent's `populate_model` methods and set variables lower
-        bounds to `-gurobi.GRB.INFINITY`. Then call `populate_model` method
-        of the BES and all contained apartments and add constraints that the
-        sum of their variables for each period period equals the corresponding
-        own variable.
+        Call parent's `populate_model` method and set variables lower
+        bounds to `None`. Then call `populate_model` method of the BES
+        and all contained apartments and add constraints that the sum
+        of their variables for each period period equals the
+        corresponding own variable.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use same constraints as convex mode
         """
-        super(Building, self).populate_model(model, mode)
-
-        P_Th_var_list = []
-        P_El_var_list = []
         if not self.hasBes:
             raise AttributeError(
                 "No BES in %s\nModeling aborted." % str(self)
             )
-        for entity in self.get_lower_entities():
-            entity.populate_model(model, mode)
-            P_Th_var_list.extend(entity.P_Th_vars)
-            P_El_var_list.extend(entity.P_El_vars)
+        super().populate_model(model, mode)
+        m = self.model
+
+        def p_equality_rule(model, t):
+            return 0 == model.P_Th_vars[t]
+        m.P_equality_constr = pyomo.Constraint(m.t, rule=p_equality_rule)
+
+        if robustness is not None and self.bes.hasTes:
+            self._create_robust_constraints()
+
+
+
+    def update_model(self, mode="", robustness=None):
+        super().update_model(mode)
+
+        if robustness is not None and self.bes.hasTes:
+            self._update_robust_constraints(robustness)
+
+
+    def _create_robust_constraints(self):
+        m = self.model
+        tes_m = self.bes.tes.model
+        m.lower_robustness_bounds = pyomo.Param(m.t, mutable=True)
+        m.upper_robustness_bounds = pyomo.Param(m.t, mutable=True)
+
+        def e_lower_rule(model, t):
+            return tes_m.E_Th_vars[t] >= model.lower_robustness_bounds[t]
+        m.lower_robustness_constr = pyomo.Constraint(m.t, rule=e_lower_rule)
+
+        def e_upper_rule(model, t):
+            return tes_m.E_Th_vars[t] <= model.upper_robustness_bounds[t]
+        m.upper_robustness_constr = pyomo.Constraint(m.t, rule=e_upper_rule)
+
+
+    def _update_robust_constraints(self, robustness):
+        m = self.model
+        timestep = self.timer.currentTimestep
+        E_Th_Max = self.bes.tes.E_Th_Max
+        end_value = self.bes.tes.SOC_Ini * E_Th_Max
+        uncertain_P_Th = np.zeros(self.op_horizon)
+        P_Th_Demand_sum = np.zeros(self.op_horizon)
+
+        # aggregate demand from all thermal demands
+        t1 = timestep
+        t2 = timestep + self.op_horizon
+        for apartment in self.apartments:
+            for entity in apartment.Th_Demand_list:
+                if isinstance(entity, classes.SpaceHeating):
+                    P_Th_Demand_sum += entity.P_Th_Schedule[t1:t2]
+
+        P_Th_Max_Supply = sum(
+            e.P_Th_Nom for e in classes.filter_entities(self, 'heating_devices')
+        )
+
+        # Get parameter for robustness conservativeness
+        lambda_i, lambda_d = divmod(robustness[0], 1)
+        lambda_i = int(lambda_i)
+        if lambda_i >= self.op_horizon:
+            lambda_i = self.op_horizon - 1
+            lambda_d = 1
 
         for t in self.op_time_vec:
-            self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-            P_Th_var_sum = gurobi.quicksum(P_Th_var_list[t::self.op_horizon])
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::self.op_horizon])
-            model.addConstr(
-                0 == P_Th_var_sum,
-                "{0:s}_P_Th_at_t={1}".format(self._long_ID, t)
-            )
-            model.addConstr(
-                self.P_El_vars[t] == P_El_var_sum,
-                "{0:s}_P_El_at_t={1}".format(self._long_ID, t)
-            )
+            uncertain_P_Th[t] = min(P_Th_Demand_sum[t] * robustness[1],
+                                    P_Th_Max_Supply)
+            tmp = sorted(uncertain_P_Th, reverse=True)
+            uncertain_E_Th = self.time_slot * (sum(tmp[:lambda_i])
+                                               + tmp[lambda_i]*lambda_d)
 
-    def get_objective(self, coeff=1):
-        """Objective function of the building.
-
-        Return the objective function of the bulding wheighted with coeff.
-        Depending on self.objective build objective function for shape
-        shifting, or price / CO2 minimization.
-
-        Parameters
-        ----------
-        coeff : float, optional
-            Coefficient for the objective function.
-
-        Returns
-        -------
-        gurobi.QuadExpr :
-            Objective function.
-        """
-        obj = gurobi.QuadExpr()
-        timestep = self.timer.currentTimestep
-        if self.objective == "peak_shaving":
-            obj.addTerms(
-                [coeff]*self.op_horizon,
-                self.P_El_vars,
-                self.P_El_vars
-            )
-        else:
-            if self.objective == "price":
-                prices = self.environment.prices.tou_prices
-            elif self.objective == "co2":
-                prices = self.environment.prices.co2_prices
+            # If environment is too uncertain, keep storage on half load
+            if uncertain_E_Th >= E_Th_Max / 2:
+                m.lower_robustness_bounds[t] = E_Th_Max / 2
+                m.upper_robustness_bounds[t] = E_Th_Max / 2
+            # standard case in
+            elif t < self.op_horizon - 1:
+                m.upper_robustness_bounds[t] = E_Th_Max - uncertain_E_Th
+                m.lower_robustness_bounds[t] = uncertain_E_Th
+            # set storage to uncertain_E_Th or set SOC_End to SOC_Ini to
+            # prevent depletion of storage
             else:
-                # TODO: Print warning.
-                prices = np.ones(self.simu_horizon)
-            prices = prices[timestep:timestep+self.op_horizon]
-            prices = prices * self.op_horizon / sum(prices)
-            obj.addTerms(
-                coeff * prices,
-                self.P_El_vars
-            )
-        return obj
-
-    def update_model(self, model, mode=""):
-        for entity in self.get_lower_entities():
-            entity.update_model(model, mode)
-
-    def update_schedule(self, mode=""):
-        super(Building, self).update_schedule(mode)
-        for entity in self.get_lower_entities():
-            entity.update_schedule()
-
-    def save_ref_schedule(self):
-        """Save the schedule of the current reference scheduling."""
-        super(Building, self).save_ref_schedule()
-
-        for entity in self.get_lower_entities():
-            entity.save_ref_schedule()
-
-    def reset(self, schedule=True, reference=False):
-        """Reset entity for new simulation.
-
-        Parameters
-        ----------
-        schedule : bool, optional
-            Specify if to reset schedule.
-        reference : bool, optional
-            Specify if to reset reference schedule.
-        """
-        super(Building, self).reset(schedule, reference)
-
-        for entity in self.get_lower_entities():
-            entity.reset(schedule, reference)
+                if self.bes.tes.SOC_Ini <= 0.5:
+                    end_value = max(end_value, uncertain_E_Th)
+                else:
+                    end_value = min(end_value, E_Th_Max - uncertain_E_Th)
+                m.lower_robustness_bounds[t] = end_value
+                m.upper_robustness_bounds[t] = end_value
 
     def get_lower_entities(self):
-        """
-
-        Yields
-        ------
-        All contained entities.
-        """
         if self.hasBes:
             yield self.bes
         yield from self.apartments

@@ -1,8 +1,10 @@
-import gurobipy as gurobi
+import numpy as np
+import pyomo.environ as pyomo
+from pyomo.core.expr.numeric_expr import ExpressionBase
 import pycity_base.classes.supply.Boiler as bl
 
-from pycity_scheduling import constants, util
 from .thermal_entity import ThermalEntity
+from ..util.generic_constraints import LowerActivationLimit
 
 
 class Boiler(ThermalEntity, bl.Boiler):
@@ -10,51 +12,59 @@ class Boiler(ThermalEntity, bl.Boiler):
     Extension of pyCity_base class Boiler for scheduling purposes.
     """
 
-    def __init__(self, environment, P_Th_Nom, eta=1,
-                 tMax=85, lowerActivationLimit=0):
+    def __init__(self, environment, P_Th_nom, eta=1, lower_activation_limit=0):
         """Initialize Boiler.
 
         Parameters
         ----------
         environment : pycity_scheduling.classes.Environment
             Common to all other objects. Includes time and weather instances.
-        P_Th_Nom : float
+        P_Th_nom : float
             Nominal heat output in [kW].
         eta : float, optional
             Efficiency.
-        tMax : float, optional
-            maximum provided temperature in [°C]
-        lowerActivationLimit : float (0 <= lowerActivationLimit <= 1)
-            Define the lower activation limit. For example, heat pumps are
-            typically able to operate between 50 % part load and rated load.
-            In this case, lowerActivationLimit would be 0.5
-            Two special cases:
-            Linear behavior: lowerActivationLimit = 0
-            Two-point controlled: lowerActivationLimit = 1
+        lower_activation_limit : float, optional (only adhered to in integer mode)
+            Must be in [0, 1]. Lower activation limit of the boiler as a
+            percentage of the rated power. When the boiler is running its
+            power must be zero or between the lower activation limit and its
+            rated power.
+            `lower_activation_limit = 0`: Linear behavior
+            `lower_activation_limit = 1`: Two-point controlled
         """
-        super(Boiler, self).__init__(environment.timer, environment,
-                                     1000*P_Th_Nom, eta, tMax,
-                                     lowerActivationLimit)
+        # Flow temperature of 55 C
+        super().__init__(environment, 1000*P_Th_nom, eta, 55, lower_activation_limit)
         self._long_ID = "BL_" + self._ID_string
+        self.P_Th_Nom = P_Th_nom
 
-        self.P_Th_Nom = P_Th_Nom
+        self.Activation_constr = LowerActivationLimit(self, "P_Th", lower_activation_limit, -P_Th_nom)
 
-    def populate_model(self, model, mode=""):
-        """Add variables to Gurobi model
+    def populate_model(self, model, mode="convex"):
+        """Add device block to pyomo ConcreteModel
 
         Call parent's `populate_model` method and set variables upper bounds
         to `self.P_Th_Nom`.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : Use integer variables representing discrete control
+                           decisions
         """
-        super(Boiler, self).populate_model(model, mode)
+        super().populate_model(model, mode)
+        m = self.model
 
-        for var in self.P_Th_vars:
-            var.lb = -self.P_Th_Nom
-            var.ub = 0
+        if mode == "convex" or "integer":
+            m.P_Th_vars.setlb(-self.P_Th_Nom)
+            m.P_Th_vars.setub(0)
+
+            self.Activation_constr.apply(m, mode)
+        else:
+            raise ValueError(
+                "Mode %s is not implemented by boiler." % str(mode)
+            )
 
     def get_objective(self, coeff=1):
         """Objective function for entity level scheduling.
@@ -69,35 +79,7 @@ class Boiler(ThermalEntity, bl.Boiler):
 
         Returns
         -------
-        gurobi.LinExpr :
+        ExpressionBase :
             Objective function.
         """
-        obj = gurobi.LinExpr()
-        obj.addTerms(
-            [- coeff] * self.op_horizon,
-            self.P_Th_vars
-        )
-        return obj
-
-    def calculate_co2(self, timestep=None, co2_emissions=None,
-                      reference=False):
-        """Calculate CO2 emissions of the Boiler.
-
-        Parameters
-        ----------
-        timestep : int, optional
-            If specified, calculate costs only to this timestep.
-        co2_emissions : array_like, optional
-            CO2 emissions for all timesteps in simulation horizon.
-        reference : bool, optional
-            `True` if CO2 for reference schedule.
-
-        Returns
-        -------
-        float :
-            CO2 emissions in [g].
-        """
-        p = util.get_schedule(self, reference, timestep, thermal=True)
-        co2 = -(sum(p) * self.time_slot / self.eta
-                * constants.CO2_EMISSIONS_GAS)
-        return co2
+        return coeff * pyomo.sum_product(self.model.P_Th_vars)
