@@ -1,5 +1,6 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+from pyomo.core.expr.numeric_expr import ExpressionBase
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from warnings import warn
@@ -58,11 +59,18 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 .format(self._long_ID)
             )
 
-        self.new_var("P_Start")
-        self.runtime = None
+        self.new_var("P_Start", dtype=np.bool, func=lambda model, t:
+                     t == np.argmax(np.array(
+                         [sum(pyomo.value(model.P_El_vars[i])
+                          for i in range(start, start+self.runtime))
+                          for start in range(0, self.op_horizon - self.runtime)
+                          ])
+                     ))
+
+        self.runtime = int(round(self.E_Consumption / (self.P_El_Nom * self.time_slot)))
 
     def populate_model(self, model, mode="convex"):
-        """Add variables and constraints to Gurobi model
+        """Add device block to pyomo ConcreteModel
 
         Call parent's `populate_model` method and set the upper bounds to the
         nominal power or zero depending on `self.time`. Also set a constraint
@@ -71,7 +79,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
@@ -82,6 +90,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
         """
         super().populate_model(model, mode)
+        m = self.model
         if mode == "convex":
             if self.E_Consumption > self.op_horizon * self.time_slot * self.P_El_Nom:
                 warn(
@@ -91,9 +100,9 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 )
 
             # consume E_Consumption the op_horizon
-            model.addConstr(
-                gurobi.quicksum(self.P_El_vars) * self.time_slot == self.E_Consumption
-            )
+            def p_consumption_rule(model):
+                return pyomo.sum_product(model.P_El_vars) * self.time_slot == self.E_Consumption
+            m.P_consumption_constr = pyomo.Constraint(rule=p_consumption_rule)
 
         elif mode == "integer":
             self.runtime = self.E_Consumption / (self.P_El_Nom * self.time_slot)
@@ -113,40 +122,35 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
             # create binary variables representing if operation begins in timeslot t
             # Since the DL has to finish operation when the op_horizon ends, binary variables representing a too late
             # start can be omitted.
-            for t in self.op_time_vec[: -self.runtime + 1]:
-                self.P_Start_vars.append(model.addVar(
-                    vtype=gurobi.GRB.BINARY,
-                    name="%s_Start_at_t=%i"
-                         % (self._long_ID, t + 1)
-                ))
-            model.update()
+            m.P_Start_vars = pyomo.Var(pyomo.RangeSet(0, self.op_horizon-self.runtime), domain=pyomo.Binary)
 
-            for t in self.op_time_vec:
-                # coupling the start variable to the electrical variables following
-                model.addConstr(
-                    self.P_El_vars[t] == self.P_El_Nom * gurobi.quicksum(
-                        self.P_Start_vars[max(0, t+1-self.runtime):t+1]
-                    )
-                )
+            # coupling the start variable to the electrical variables following
+            def state_coupl_rule(model, t):
+                return model.P_El_vars[t] == self.P_El_Nom * pyomo.quicksum(
+                       (model.P_Start_vars[t] for t in range(max(0, t+1-self.runtime),
+                                                             min(self.op_horizon-self.runtime+1, t+1))))
+            m.state_coupl_constr = pyomo.Constraint(m.t, rule=state_coupl_rule)
 
             # run once in the op_horizon
-            model.addConstr(
-                gurobi.quicksum(self.P_Start_vars) == 1
-            )
+            def state_once_rule(model):
+                return 1 == pyomo.sum_product(model.P_Start_vars)
+            m.state_once_constr = pyomo.Constraint(rule=state_once_rule)
+
         else:
             raise ValueError(
                 "Mode %s is not implemented by deferrable load." % str(mode)
             )
 
-    def update_model(self, model, mode="convex"):
+    def update_model(self, mode="convex"):
+        m = self.model
         if mode == "convex":
             load_time = self.load_time[self.op_slice]
 
             for t in self.op_time_vec:
                 if load_time[t] == 1:
-                    self.P_El_vars[t].ub = self.P_El_Nom
+                    m.P_El_vars[t].setub(self.P_El_Nom)
                 else:
-                    self.P_El_vars[t].ub = 0
+                    m.P_El_vars[t].setub(0)
 
         elif mode == "integer":
             if (self.load_time[self.timestep + self.op_horizon - 1] == 1 and
@@ -159,11 +163,11 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
             load_time = self.load_time[self.op_slice]
 
-            for t, start_var in enumerate(self.P_Start_vars):
+            for t, start_var in m.P_Start_vars.items():
                 if all(lt == 1 for lt in load_time[t:t+self.runtime]):
-                    start_var.ub = 1
+                    start_var.setub(1)
                 else:
-                    start_var.ub = 0
+                    start_var.setub(0)
 
         else:
             raise ValueError(
@@ -184,19 +188,12 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
         Returns
         -------
-        gurobi.QuadExpr :
+        ExpressionBase :
             Objective function.
         """
+        m = self.model
         max_loading_time = sum(self.time) * self.time_slot
         optimal_P_El = self.E_Consumption / max_loading_time
-        obj = gurobi.QuadExpr()
-        obj.addTerms(
-            [coeff] * self.op_horizon,
-            self.P_El_vars,
-            self.P_El_vars
-        )
-        obj.addTerms(
-            [- 2 * coeff * optimal_P_El] * self.op_horizon,
-            self.P_El_vars
-        )
+        obj = coeff * pyomo.sum_product(m.P_El_vars, m.P_El_vars)
+        obj += -2 * coeff * optimal_P_El * pyomo.sum_product(m.P_El_vars)
         return obj

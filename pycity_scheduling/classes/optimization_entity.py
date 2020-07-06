@@ -1,6 +1,7 @@
 import numpy as np
-from typing import Callable, Any, Union
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+from pyomo.core.expr.numeric_expr import ExpressionBase
+from typing import Callable, Any
 
 class OptimizationEntity(object):
     """
@@ -30,9 +31,9 @@ class OptimizationEntity(object):
         self.timer = environment.timer
         self.schedules = {'default': {}, 'Ref': {}}
 
-        self.vars = {}
         self.__var_funcs__ = {}
         self.current_schedule = 'default'
+        self.model = None
 
         if hasattr(super(), "__module__"):
             # This allows ElectricalEntity and ThermalEntity to be instantiated
@@ -87,11 +88,36 @@ class OptimizationEntity(object):
         return slice(t1, t2)
 
     def populate_model(self, model, mode=""):
-        # reset var list
-        for name in self.vars.keys():
-            self.vars[name] = []
+        """Add entity block to pyomo ConcreteModel.
 
-    def update_model(self, model, mode=""):
+        Places the block with the name of the entity in the ConcreteModel.
+
+        Parameters
+        ----------
+        model : pyomo.ConcreteModel
+        mode : str, optional
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : May use integer variables
+        """
+        # generate empty pyomo block
+        self.model = pyomo.Block()
+        setattr(model, "_".join([self._kind, self._ID_string]), self.model)
+        # add time
+        self.model.t = pyomo.RangeSet(0, self.op_horizon-1)
+
+    def update_model(self, mode=""):
+        """Update block parameters and bounds.
+
+        Set parameters and bounds according to the current situation of the
+        device according to the previous schedule and the current forecasts.
+
+        Parameters
+        ----------
+        Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : May use integer variables
+        """
         pass
 
     def update_schedule(self):
@@ -103,12 +129,12 @@ class OptimizationEntity(object):
         """
         op_slice = self.op_slice
         for name, schedule in self.schedule.items():
-            if name in self.__var_funcs__:
+            if name in self.__var_funcs__ and not hasattr(self.model, name + "_vars"):
                 func = self.__var_funcs__[name]
-                values = np.fromiter((func(t) for t in self.op_time_vec), dtype=schedule.dtype)
+                values = np.fromiter((func(self.model, t) for t in self.op_time_vec), dtype=schedule.dtype)
             else:
-                values = [var.X for var in self.vars[name]]
-            if schedule.dtype == np.bool:
+                values = np.fromiter(getattr(self.model, name + "_vars").extract_values().values(), dtype=schedule.dtype)
+            if schedule.dtype == np.bool: # TODO is this still needed?
                 pad = False
             else:
                 pad = True
@@ -128,11 +154,11 @@ class OptimizationEntity(object):
 
         Returns
         -------
-        Union[gurobi.QuadExpr, gurobi.LinExpr] :
+        ExpressionBase :
             Objective function.
         """
         if self.objective is None:
-            return gurobi.LinExpr()
+            return 0
         else:
             raise ValueError(
                 "Objective {} is not implemented by entity {}.".format(self.objective, self.__class__.__name__)
@@ -159,7 +185,8 @@ class OptimizationEntity(object):
         if name is None:
             for name in self.schedules.keys():
                 self.new_schedule(name)
-        self.new_schedule(name)
+        else:
+            self.new_schedule(name)
 
     def get_entities(self):
         top = False
@@ -190,7 +217,6 @@ class OptimizationEntity(object):
             Function to generate schedule with.
             If `None`, schedule is generated with values of variables.
         """
-        self.vars[name] = []
         if func is not None:
             self.__var_funcs__[name] = func
         for schedule in self.schedules.values():
@@ -204,7 +230,7 @@ class OptimizationEntity(object):
         schedule : str
             Name of new schedule.
         """
-        self.schedules[schedule] = {name: np.full_like(entries, 0)for name, entries in self.current_schedule.keys()}
+        self.schedules[schedule] = {name: np.full_like(entries, 0) for name, entries in self.schedule.items()}
         for e in self.get_lower_entities():
             e.new_schedule(schedule)
 
@@ -238,7 +264,7 @@ class OptimizationEntity(object):
         for e in self.get_lower_entities():
             e.copy_schedule(dst, src, name)
 
-    def load_schedule(self, schedule):
+    def load_schedule(self, schedule): # TODO add warm start capability
         """Copy values of one schedule in another schedule.
 
         Parameters
@@ -268,10 +294,6 @@ class OptimizationEntity(object):
                     schedule = schedule.get(varname, None)
                     if schedule is not None:
                         return schedule
-                elif "vars" == items[-1]:
-                    varlist = self.vars.get(item[:-5], None)
-                    if varlist is not None:
-                        return varlist
         raise AttributeError(item)
 
     def __setattr__(self, attr, value):
@@ -287,6 +309,4 @@ class OptimizationEntity(object):
                         varname = "_".join(attrs[:-1])
                     schedule[varname] = value
                     return
-                elif "vars" == attrs[-1]:
-                    self.vars[attr[:-5]] = value
         super().__setattr__(attr, value)

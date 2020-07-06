@@ -1,50 +1,49 @@
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+from pyomo.opt import SolverStatus, TerminationCondition
+from pyomo.solvers.plugins.solvers.direct_or_persistent_solver import DirectOrPersistentSolver
+from pyomo.opt.results.results_ import SolverResults
+import pyomo.solvers.plugins.solvers as Solvers
 
 
-_status_codes = [
-    'LOADED',
-    'OPTIMAL',
-    'INFEASIBLE',
-    'INF_OR_UNBD',
-    'UNBOUNDED',
-    'CUTOFF',
-    'ITERATION_LIMIT',
-    'NODE_LIMIT',
-    'TIME_LIMIT',
-    'SOLUTION_LIMIT',
-    'INTERRUPTED',
-    'NUMERIC',
-    'SUBOPTIMAL',
-    'INPROGRESS',
-    'USER_OBJ_LIMIT',
-]
-
-status_codes_map = {eval(c, {}, gurobi.GRB.__dict__): c for c in _status_codes}
-
-
-def analyze_model(model, exception=None):
-    """Analyze a Gurobi model which is not optimal.
+def analyze_model(model, optimizer, result, options={}):
+    """Analyze a model which is not optimal.
 
     Parameters
     ----------
-    model : gurobipy.Model
+    model : pyomo.ConcreteModel
         Model with `status != GRB.OPTIAML`
-    exception : Exception, optional
-        Original exception, whose message will be printed
+    optimizer : DirectOrPersistentSolver
+        The solver that was used for optimization and is used for analyzes
+    result: SolverResults
+        The not optimal result that was returned by the solver
+    options : str, optional
+        Options which should be passed to the solver when analyzing
     """
-    model.setParam('OutputFlag', True)
-    if model.status == gurobi.GRB.INF_OR_UNBD:
-        model.setParam('dualreductions', 0)
-        model.optimize()
-    status = model.status
-    print("Model status is {}.".format(status_codes_map[status]))
-    if exception:
-        print("Original Error:")
-        print(exception)
-    if status == gurobi.GRB.INFEASIBLE:
-        model.computeIIS()
-        model.write('model.ilp')
-        print("IIS written to 'model.ilp'.")
+    if result.solver.termination_condition in \
+            [TerminationCondition.infeasibleOrUnbounded, TerminationCondition.infeasible] and \
+            (isinstance(optimizer, Solvers.GUROBI.GUROBI)
+             or isinstance(optimizer, Solvers.gurobi_persistent.GurobiPersistent)
+             or isinstance(optimizer, Solvers.gurobi_direct.GurobiDirect) \
+             or isinstance(optimizer, Solvers.GUROBI.GUROBISHELL)):
+
+        options["dualreductions"] = 0
+        if isinstance(optimizer, Solvers.gurobi_persistent.GurobiPersistent):
+            optimizer.set_instance(model, symbolic_solver_labels=True)
+            result = optimizer.solve(options=options, tee=True)
+            if result.solver.termination_condition == TerminationCondition.infeasible:
+                options["ResultFile"] = "model.ilp"
+                optimizer.solve(options=options, tee=True)
+                print("IIS written to 'model.ilp'.")
+        else:
+            result = optimizer.solve(model, options=options, tee=True, symbolic_solver_labels=True)
+            if result.solver.termination_condition == TerminationCondition.infeasible:
+                options["ResultFile"] = "model.ilp"
+                optimizer.solve(model, options=options, tee=True, symbolic_solver_labels=True)
+                print("IIS written to 'model.ilp'.")
+    status = result.solver.status
+    condition = result.solver.termination_condition
+    print("Model status is {}.".format(status))
+    print("Model condition is {}.".format(condition))
 
 
 def print_district(cd, lvl=1):

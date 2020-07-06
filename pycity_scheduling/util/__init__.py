@@ -1,7 +1,7 @@
 import math
 
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
 
 from .write_csv import schedule_to_csv
 
@@ -136,7 +136,7 @@ def compute_profile(timer, profile, pattern=None):
         )
 
 
-def populate_models(city_district, algorithm, num_threads=0):
+def populate_models(city_district, mode, algorithm, robustness):
     """Create/Populate optimization models for scheduling.
 
     Creates Gurobi model(s) for scheduling. One model for reference, local and
@@ -147,25 +147,25 @@ def populate_models(city_district, algorithm, num_threads=0):
     ----------
     city_district : pycity_scheduling.classes.CityDistrict
         District for which models shall be generated.
+    mode : str
+            Specifies which set of constraints to use
+            - `convex`  : Use linear constraints
+            - `integer`  : May use non-linear constraints
     algorithm : str
         Define which algorithm the models are used for. Must be one of
         'exchange-admm', 'dual-decompostition', 'stand-alone', 'local' or
         'central'.
-    num_threads : int, optional
-        Number of threads for the gurobi optimization.
-        See also: https://www.gurobi.com/documentation/7.5/refman/threads.html#parameter:Threads
-        "Controls the number of threads to apply to parallel algorithms (concurrent LP, parallel barrier, parallel MIP,
-        etc.). The default value of 0 is an automatic setting. It will generally use all of the cores in the machine,
-        but it may choose to use fewer."
-
+    robustness : tuple, optional
+        Tuple of two floats. First entry defines how many time steps are
+        protected from deviations. Second entry defines the magnitude of
+        deviations which are considered.
     Returns
     -------
     dict :
-        int -> gurobipy.Model
+        int -> pyomo.ConcreteModel
         `0` : Central or aggregator model.
         node ids : Bulding models.
     """
-    gurobi.setParam('OutputFlag', False)
     op_horizon = city_district.op_horizon
     op_time_vec = city_district.op_time_vec
     nodes = city_district.node
@@ -173,30 +173,24 @@ def populate_models(city_district, algorithm, num_threads=0):
     # create dictionary
     models = {}
     if algorithm in ['stand-alone', 'local', 'central']:
-        m = gurobi.Model("Central Scheduling Model")
-        m.setParam("LogFile", "")
-        m.setParam("Threads", num_threads)
+        m = pyomo.ConcreteModel()
         P_El_var_list = []
         for node in nodes.values():
             entity = node['entity']
-            entity.populate_model(m)
-            P_El_var_list.extend(entity.P_El_vars)
-        city_district.populate_model(m)
-        for t in op_time_vec:
-            P_El_var_sum = gurobi.quicksum(P_El_var_list[t::op_horizon])
-            m.addConstr(city_district.P_El_vars[t] == P_El_var_sum)
+            entity.populate_model(m, mode, robustness)
+            P_El_var_list.append(entity.model.P_El_vars)
+        city_district.populate_model(m, mode)
+        def p_el_couple_rule(model, t):
+            return city_district.model.P_El_vars[t] == pyomo.quicksum(P_El_var[t] for P_El_var in P_El_var_list)
+        m.p_coupl_constr = pyomo.Constraint(city_district.model.t, rule=p_el_couple_rule)
         models[0] = m
     elif algorithm in ['exchange-admm', 'dual-decomposition']:
-        m = gurobi.Model("Aggregator Scheduling Model")
-        m.setParam("LogFile", "")
-        m.setParam("Threads", num_threads)
-        city_district.populate_model(m)
+        m = pyomo.ConcreteModel()
+        city_district.populate_model(m, mode)
         models[0] = m
         for node_id, node in nodes.items():
-            m = gurobi.Model(str(node_id) + " Scheduling Model")
-            m.setParam("LogFile", "")
-            m.setParam("Threads", num_threads)
-            node['entity'].populate_model(m)
+            m = pyomo.ConcreteModel()
+            node['entity'].populate_model(m, mode, robustness)
             models[node_id] = m
     return models
 

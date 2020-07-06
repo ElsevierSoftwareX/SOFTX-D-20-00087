@@ -1,5 +1,5 @@
-import gurobipy as gurobi
 import numpy as np
+import pyomo.environ as pyomo
 import pycity_base.classes.supply.Battery as bat
 
 from .electrical_entity import ElectricalEntity
@@ -48,122 +48,82 @@ class Battery(ElectricalEntity, bat.Battery):
 
         self.new_var("P_El_Demand")
         self.new_var("P_El_Supply")
-        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_El_Demand_vars[t].X > self.P_El_Supply_vars[t].X)
+        self.new_var("P_State", dtype=np.bool, func=lambda model, t: pyomo.value(
+            model.P_El_Demand_vars[t] > model.P_El_Supply_vars[t]))
         self.new_var("E_El")
-        self.E_El_Init_constr = None
-        self.E_El_coupl_constrs = []
 
     def populate_model(self, model, mode="convex"):
-        """Add variables and constraints to Gurobi model.
+        """Add device block of variables and constraints to pyomo ConcreteModel.
 
         Call parent's `populate_model` method and set variables lower bounds to
-        `-gurobi.GRB.INFINITY`. Then add variables for demand, supply and the
-        state of charge, with their corresponding upper bounds
-        (`self.P_El_Max_Charge`, `self.P_El_Max_Discharge`, `self.E_El_Max`).
-        Finally add continuity constraints to the model.
+        `None`. Then add variables for demand, supply and the state of charge,
+        with their corresponding upper bounds (`self.P_El_Max_Charge`,
+        `self.P_El_Max_Discharge`, `self.E_El_Max`). Finally add continuity
+        constraints to the block.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
             - `integer`  : Use integer variables representing discrete control decisions
         """
         super().populate_model(model, mode)
+        m = self.model
         if mode in ["convex", "integer"]:
             # additional variables for battery
-            for t in self.op_time_vec:
-                self.P_El_vars[t].lb = -gurobi.GRB.INFINITY
-                self.P_El_Demand_vars.append(
-                    model.addVar(
-                        ub=self.P_El_Max_Charge,
-                        name="%s_P_El_Demand_at_t=%i"
-                             % (self._long_ID, t + 1)
-                    )
-                )
-                self.P_El_Supply_vars.append(
-                    model.addVar(
-                        ub=self.P_El_Max_Discharge,
-                        name="%s_P_El_Supply_at_t=%i"
-                             % (self._long_ID, t + 1)
-                    )
-                )
-                self.E_El_vars.append(
-                    model.addVar(
-                        ub=self.E_El_Max,
-                        name="%s_E_El_at_t=%i" % (self._long_ID, t + 1)
-                    )
-                )
-            model.update()
+            m.P_El_vars.setlb(None)
+            m.P_El_Demand_vars = pyomo.Var(m.t, domain=pyomo.NonNegativeReals,
+                                           bounds=(0.0, np.inf if mode == "integer" else self.P_El_Max_Charge),
+                                           initialize=0)
+            m.P_El_Supply_vars = pyomo.Var(m.t, domain=pyomo.NonNegativeReals,
+                                           bounds=(0.0, np.inf if mode == "integer" else self.P_El_Max_Discharge),
+                                           initialize=0)
+            m.E_El_vars = pyomo.Var(m.t, domain=pyomo.NonNegativeReals, bounds=(0, self.E_El_Max), initialize=0)
 
-            for t in self.op_time_vec:
-                # Need to be stored to enable removal by the Electric Vehicle
-                model.addConstr(
-                    self.P_El_vars[t]
-                    == self.P_El_Demand_vars[t] - self.P_El_Supply_vars[t]
-                )
+            def p_rule(model, t):
+                return model.P_El_vars[t] == model.P_El_Demand_vars[t] - model.P_El_Supply_vars[t]
+            m.P_constr = pyomo.Constraint(m.t, rule=p_rule)
+            m.E_El_ini = pyomo.Param(default=self.SOC_Ini * self.E_El_Max, mutable=True)
 
-            for t in range(1, self.op_horizon):
+            def e_rule(model, t):
                 delta = (
-                    (self.etaCharge * self.P_El_Demand_vars[t]
-                     - (1/self.etaDischarge) * self.P_El_Supply_vars[t])
-                    * self.time_slot
+                        (self.etaCharge * model.P_El_Demand_vars[t]
+                         - (1 / self.etaDischarge) * model.P_El_Supply_vars[t])
+                        * self.time_slot
                 )
-                self.E_El_coupl_constrs.append(model.addConstr(
-                    self.E_El_vars[t] == self.E_El_vars[t-1] + delta
-                ))
-            self.E_El_vars[-1].lb = self.E_El_Max * self.SOC_Ini
-            if self.storage_end_equality:
-                self.E_El_vars[-1].ub = self.E_El_Max * self.SOC_Ini
+                E_El_last = model.E_El_vars[t - 1] if t >= 1 else model.E_El_ini
+                return model.E_El_vars[t] == E_El_last + delta
+            m.E_constr = pyomo.Constraint(m.t, rule=e_rule)
+
+            def e_end_rule(model):
+                if self.storage_end_equality:
+                    return model.E_El_vars[self.op_horizon-1] == self.E_El_Max * self.SOC_Ini
+                else:
+                    return model.E_El_vars[self.op_horizon-1] >= self.E_El_Max * self.SOC_Ini
+            m.E_end_constr = pyomo.Constraint(rule=e_end_rule)
+
 
             if mode == "integer":
-                # Add additional binary variables representing dis-/charging state
-                for t in self.op_time_vec:
-                    self.P_State_vars.append(
-                        model.addVar(
-                            vtype=gurobi.GRB.BINARY,
-                            name="%s_P_Mode_at_t=%i"
-                                 % (self._long_ID, t + 1)
-                        )
-                    )
-                model.update()
-                for t in self.op_time_vec:
-                    # Couple state to discharging and charging variables
-                    model.addConstr(
-                        self.P_El_Demand_vars[t]
-                        <= self.P_State_vars[t] * self.P_El_Max_Charge
-                    )
-                    model.addConstr(
-                        self.P_El_Supply_vars[t]
-                        <= (1 - self.P_State_vars[t]) * self.P_El_Max_Discharge
-                    )
-                    # Remove redundant ub of P_El_Demand_vars and P_El_Supply_vars
-                    self.P_El_Demand_vars[t].ub = gurobi.GRB.INFINITY
-                    self.P_El_Supply_vars[t].ub = gurobi.GRB.INFINITY
+                m.P_State_vars = pyomo.Var(m.t, domain=pyomo.Binary)
+                def c_rule(model, t):
+                    return model.P_El_Demand_vars[t] <= model.P_State_vars[t] * self.P_El_Max_Charge
+                m.E_charge_constr = pyomo.Constraint(m.t, rule=c_rule)
+                def d_rule(model, t):
+                    return model.P_El_Supply_vars[t] <= (1 - model.P_State_vars[t]) * self.P_El_Max_Discharge
+                m.E_discharge_constr = pyomo.Constraint(m.t, rule=d_rule)
 
         else:
             raise ValueError(
                 "Mode %s is not implemented by battery." % str(mode)
             )
 
-    def update_model(self, model, mode=""):
-        # raises GurobiError if constraint is from a prior scheduling
-        # optimization or not present
-        try:
-            model.remove(self.E_El_Init_constr)
-        except gurobi.GurobiError:
-            pass
+    def update_model(self, mode=""):
+        m = self.model
         timestep = self.timestep
+
         if timestep == 0:
-            E_El_Ini = self.SOC_Ini * self.E_El_Max
+            m.E_El_Ini = self.SOC_Ini * self.E_El_Max
         else:
-            E_El_Ini = self.E_El_Schedule[timestep - 1]
-        delta = (
-            (self.etaCharge * self.P_El_Demand_vars[0]
-             - (1 / self.etaDischarge) * self.P_El_Supply_vars[0])
-            * self.time_slot
-        )
-        self.E_El_Init_constr = model.addConstr(
-            self.E_El_vars[0] == E_El_Ini + delta
-        )
+            m.E_El_Ini = self.E_El_Schedule[timestep - 1]

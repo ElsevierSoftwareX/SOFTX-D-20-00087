@@ -1,5 +1,6 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+
 import pycity_base.classes.supply.ThermalEnergyStorage as tes
 
 from .thermal_entity import ThermalEntity
@@ -44,67 +45,54 @@ class ThermalEnergyStorage(ThermalEntity, tes.ThermalEnergyStorage):
         )
 
         self.new_var("E_Th")
-        self.E_Th_Init_constr = None
 
     def populate_model(self, model, mode="convex"):
-        """Add variables and constraints to Gurobi model
+        """Add device block to pyomo ConcreteModel
 
         Call parent's `populate_model` method and set variables lower bounds
-        to `-gurobi.GRB.INFINITY`. Then add variables for the state of charge
-        with an upper bound of `self.E_Th_Max`. Also add continuity constraints
-        to the model.
+        to `None`. Then add variables for the state of charge with an upper
+        bound of `self.E_Th_Max`. Also add continuity constraints to the model.
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
             - `integer`  : Use same constraints as convex mode
         """
         super().populate_model(model, mode)
+        m = self.model
 
         if mode == "convex" or "integer":
-            for var in self.P_Th_vars:
-                var.lb = -gurobi.GRB.INFINITY
+            m.P_Th_vars.setlb(None)
 
-            for t in self.op_time_vec:
-                self.E_Th_vars.append(
-                    model.addVar(
-                        ub=self.E_Th_Max,
-                        name="%s_E_Th_at_t=%i" % (self._long_ID, t+1)
-                    )
-                )
-            model.update()
-            for t in range(1, self.op_horizon):
-                model.addConstr(
-                    self.E_Th_vars[t]
-                    == self.E_Th_vars[t-1] * (1 - self.Th_Loss_coeff)
-                       + self.P_Th_vars[t] * self.time_slot,
-                    "{0:s}_P_Th_t={1}".format(self._long_ID, t)
-                )
-            self.E_Th_vars[-1].lb = self.E_Th_Max * self.SOC_Ini
-            if self.storage_end_equality:
-                self.E_Th_vars[-1].ub = self.E_Th_Max * self.SOC_Ini
+            m.E_Th_vars = pyomo.Var(m.t, domain=pyomo.NonNegativeReals, bounds=(0, self.E_Th_Max), initialize=0)
+
+            m.E_Th_ini = pyomo.Param(default=self.SOC_Ini * self.E_Th_Max, mutable=True)
+
+            def e_rule(model, t):
+                E_Th_last = model.E_Th_vars[t - 1] if t >= 1 else model.E_Th_ini
+                return model.E_Th_vars[t] == E_Th_last * (1 - self.Th_Loss_coeff) + m.P_Th_vars[t] * self.time_slot
+            m.E_constr = pyomo.Constraint(m.t, rule=e_rule)
+
+            def e_end_rule(model):
+                if self.storage_end_equality:
+                    return model.E_Th_vars[self.op_horizon-1] == self.E_Th_Max * self.SOC_Ini
+                else:
+                    return model.E_Th_vars[self.op_horizon-1] >= self.E_Th_Max * self.SOC_Ini
+            m.E_end_constr = pyomo.Constraint(rule=e_end_rule)
+
         else:
             raise ValueError(
                 "Mode %s is not implemented by TES." % str(mode)
             )
 
-    def update_model(self, model, mode=""):
+    def update_model(self, mode=""):
+        m = self.model
         timestep = self.timestep
-        try:
-            model.remove(self.E_Th_Init_constr)
-        except gurobi.GurobiError:
-            # raises GurobiError if constraint is from a prior scheduling
-            # optimization or not present
-            pass
+
         if timestep == 0:
-            E_Th_Ini = self.SOC_Ini * self.E_Th_Max
+            m.E_Th_Ini = self.SOC_Ini * self.E_Th_Max
         else:
-            E_Th_Ini = self.E_Th_Schedule[timestep-1]
-        self.E_Th_Init_constr = model.addConstr(
-            self.E_Th_vars[0] == E_Th_Ini * (1 - self.Th_Loss_coeff)
-                                 + self.P_Th_vars[0] * self.time_slot,
-            "{0:s}_P_Th_t=0".format(self._long_ID)
-        )
+            m.E_Th_Ini = self.E_Th_Schedule[timestep-1]

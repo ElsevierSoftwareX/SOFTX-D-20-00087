@@ -1,3 +1,6 @@
+import numpy as np
+import pyomo.environ as pyomo
+
 import pycity_base.classes.demand.ElectricalDemand as ed
 
 from pycity_scheduling.classes.electrical_entity import ElectricalEntity
@@ -80,11 +83,13 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
         self.P_El_Schedule = p
 
-    def update_model(self, model, mode=""):
+    def update_model(self, mode=""):
+        m = self.model
         timestep = self.timestep
+
         for t in self.op_time_vec:
-            self.P_El_vars[t].lb = self.P_El_Schedule[t+timestep]
-            self.P_El_vars[t].ub = self.P_El_Schedule[t+timestep]
+            m.P_El_vars.setlb(self.P_El_Schedule[timestep + t])
+            m.P_El_vars.setub(self.P_El_Schedule[timestep + t])
 
     def new_schedule(self, schedule):
         super().new_schedule(schedule)

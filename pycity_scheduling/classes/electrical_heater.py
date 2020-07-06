@@ -1,6 +1,8 @@
 import numpy as np
-import gurobipy as gurobi
+import pyomo.environ as pyomo
+
 import pycity_base.classes.supply.ElectricalHeater as eh
+from ..util.generic_constraints import LowerActivationLimit
 
 from .thermal_entity import ThermalEntity
 from .electrical_entity import ElectricalEntity
@@ -34,10 +36,10 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
         super().__init__(environment, P_Th_nom*1000, eta, 55, lower_activation_limit)
         self._long_ID = "EH_" + self._ID_string
         self.P_Th_Nom = P_Th_nom
-        self.new_var("P_State", dtype=np.bool, func=lambda t: self.P_Th_vars[t].x > 0.01*P_Th_nom)
+        self.Activation_constr = LowerActivationLimit(self, "P_Th", lower_activation_limit, -P_Th_nom)
 
     def populate_model(self, model, mode="convex"):
-        """Add variables to Gurobi model.
+        """Add device block to pyomo ConcreteModel.
 
         Call parent's `populate_model` method and set thermal variables upper
         bounds to `self.P_Th_Nom`. Also add constraint to bind electrical
@@ -45,48 +47,25 @@ class ElectricalHeater(ThermalEntity, ElectricalEntity, eh.ElectricalHeater):
 
         Parameters
         ----------
-        model : gurobi.Model
+        model : pyomo.ConcreteModel
         mode : str, optional
             Specifies which set of constraints to use
             - `convex`  : Use linear constraints
             - `integer`  : Use integer variables representing discrete control decisions
         """
         super().populate_model(model, mode)
+        m = self.model
 
         if mode == "convex" or "integer":
-            for var in self.P_Th_vars:
-                var.lb = -self.P_Th_Nom
-                var.ub = 0
+            m.P_Th_vars.setlb(-self.P_Th_Nom)
+            m.P_Th_vars.setub(0)
 
-            for t in self.op_time_vec:
-                model.addConstr(
-                    - self.P_Th_vars[t] == self.eta * self.P_El_vars[t]
-                )
-            if mode == "integer" and self.lowerActivationLimit != 0.0:
-                # Add additional binary variables representing operating state
-                for t in self.op_time_vec:
-                    self.P_State_vars.append(
-                        model.addVar(
-                            vtype=gurobi.GRB.BINARY,
-                            name="%s_Mode_at_t=%i"
-                                 % (self._long_ID, t + 1)
-                        )
-                    )
-                model.update()
+            def p_coupl_rule(model, t):
+                return - model.P_Th_vars[t] == self.eta * model.P_El_vars[t]
+            m.p_coupl_constr = pyomo.Constraint(m.t, rule=p_coupl_rule)
 
-                for t in self.op_time_vec:
-                    # Couple state to operating variable
-                    model.addConstr(
-                        self.P_Th_vars[t]
-                        >= -self.P_State_vars[t] * self.P_Th_Nom
-                    )
-                    model.addConstr(
-                        self.P_Th_vars[t]
-                        <= -self.P_State_vars[t] * self.P_Th_Nom * self.lowerActivationLimit
-                    )
-                    # Remove redundant limits of P_Th_vars
-                    self.P_Th_vars[t].lb = -gurobi.GRB.INFINITY
-                    self.P_Th_vars[t].ub = gurobi.GRB.INFINITY
+            self.Activation_constr.apply(m, mode)
+
         else:
             raise ValueError(
                 "Mode %s is not implemented by electrical heater." % str(mode)
