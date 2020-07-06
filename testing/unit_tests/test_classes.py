@@ -644,7 +644,8 @@ class TestDeferrableLoad(unittest.TestCase):
         self.lt = [0, 1, 1, 1, 0, 1, 1, 1, 0]
 
     def test_update_model(self):
-        dl = DeferrableLoad(self.e, 19, 10, load_time=self.lt)
+        with self.assertWarns(UserWarning):
+            dl = DeferrableLoad(self.e, 19, 10, load_time=self.lt)
         model = pyomo.ConcreteModel()
         dl.populate_model(model)
         obj = pyomo.sum_product(dl.model.P_El_vars, dl.model.P_El_vars)
@@ -667,7 +668,8 @@ class TestDeferrableLoad(unittest.TestCase):
         assert_equal_array(dl.P_El_Schedule[:7], [0, 8, 8, 8, 0, 8, 8])
 
     def test_infeasible_consumption(self):
-        feasible = DeferrableLoad(self.e, 10, 10, load_time=self.lt)
+        with self.assertWarns(UserWarning):
+            feasible = DeferrableLoad(self.e, 10, 10, load_time=self.lt)
         m = pyomo.ConcreteModel()
         feasible.populate_model(m)
         feasible.update_model()
@@ -677,7 +679,8 @@ class TestDeferrableLoad(unittest.TestCase):
         self.assertEqual(results.solver.termination_condition, TerminationCondition.optimal)
 
         m = pyomo.ConcreteModel()
-        infeasible = DeferrableLoad(self.e, 10, 10.6, load_time=self.lt)
+        with self.assertWarns(UserWarning):
+            infeasible = DeferrableLoad(self.e, 10, 10.6, load_time=self.lt)
         infeasible.populate_model(m)
         infeasible.update_model()
         obj = pyomo.sum_product(infeasible.model.P_El_vars)
@@ -690,21 +693,27 @@ class TestDeferrableLoad(unittest.TestCase):
         self.assertEqual(results.solver.termination_condition, TerminationCondition.infeasible)
 
     def test_update_model_integer(self):
-        dl = DeferrableLoad(self.e, 19, 9.5, load_time=self.lt)
+        with self.assertWarns(UserWarning):
+            dl = DeferrableLoad(self.e, 19, 9.5, load_time=self.lt)
         m = pyomo.ConcreteModel()
         dl.populate_model(m, mode="integer")
 
         obj = pyomo.sum_product([0] * 2 + [1] * 2 + [0] * 2, dl.model.P_El_vars, dl.model.P_El_vars)
         m.o = pyomo.Objective(expr=obj)
-        dl.update_model(mode="integer")
+        with self.assertWarns(UserWarning):
+            dl.update_model(mode="integer")
         results = solve_model(m)
         self.assertEqual(results.solver.termination_condition, TerminationCondition.optimal)
         dl.update_schedule()
 
         assert_equal_array(dl.P_El_Schedule[:6], [0, 19, 19, 0, 0, 0])
-        for _ in range(3):
+        for t in range(3):
             dl.timer.mpc_update()
-            dl.update_model(mode="integer")
+            if t == 0:
+                with self.assertWarns(UserWarning):
+                    dl.update_model(mode="integer")
+            else:
+                dl.update_model(mode="integer")
             results = solve_model(m)
             self.assertEqual(results.solver.termination_condition, TerminationCondition.optimal)
             dl.update_schedule()
@@ -713,10 +722,11 @@ class TestDeferrableLoad(unittest.TestCase):
 
     def test_infeasible_integer(self):
         e = get_env(1, 9)
-        dl = DeferrableLoad(e, 19, 9.5, load_time=self.lt)
         model = pyomo.ConcreteModel()
-        dl.populate_model(model, mode="integer")
-        dl.update_model(mode="integer")
+        with self.assertWarns(UserWarning):
+            dl = DeferrableLoad(e, 19, 9.5, load_time=self.lt)
+            dl.populate_model(model, mode="integer")
+            dl.update_model(mode="integer")
         obj = pyomo.sum_product(dl.model.P_El_vars)
         model.o = pyomo.Objective(expr=obj)
         logger = logging.getLogger("pyomo.core")
@@ -726,10 +736,11 @@ class TestDeferrableLoad(unittest.TestCase):
         logger.setLevel(oldlevel)
         self.assertEqual(results.solver.termination_condition, TerminationCondition.infeasible)
 
-        dl = DeferrableLoad(self.e, 19, 19, load_time=self.lt)
         model = pyomo.ConcreteModel()
-        dl.populate_model(model, mode="integer")
-        dl.update_model(mode="integer")
+        with self.assertWarns(UserWarning):
+            dl = DeferrableLoad(self.e, 19, 19, load_time=self.lt)
+            dl.populate_model(model, mode="integer")
+            dl.update_model(mode="integer")
         obj = pyomo.sum_product(dl.model.P_El_vars)
         model.o = pyomo.Objective(expr=obj)
         logger = logging.getLogger("pyomo.core")
@@ -739,10 +750,11 @@ class TestDeferrableLoad(unittest.TestCase):
         logger.setLevel(oldlevel)
         self.assertEqual(results.solver.termination_condition, TerminationCondition.infeasible)
 
-        dl = DeferrableLoad(self.e, 19, 19*3/4, load_time=self.lt)
         model = pyomo.ConcreteModel()
-        dl.populate_model(model, mode="integer")
-        dl.update_model(mode="integer")
+        with self.assertWarns(UserWarning):
+            dl = DeferrableLoad(self.e, 19, 19*3/4, load_time=self.lt)
+            dl.populate_model(model, mode="integer")
+            dl.update_model(mode="integer")
         obj = pyomo.sum_product(dl.model.P_El_vars)
         model.o = pyomo.Objective(expr=obj)
         results = solve_model(model)
@@ -859,7 +871,8 @@ class TestElectricalEntity(unittest.TestCase):
         ratio = peak_to_average_ratio(self.ee)
         self.assertEqual(20/5, ratio)
         self.ee.load_schedule("Ref")
-        ratio = peak_to_average_ratio(self.ee)
+        with self.assertWarns(RuntimeWarning):
+            ratio = peak_to_average_ratio(self.ee)
         self.assertEqual(np.inf, ratio)
 
     def test_peak_reduction_ratio(self):
