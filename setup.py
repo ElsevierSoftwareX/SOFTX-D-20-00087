@@ -10,6 +10,8 @@ setup(
     install_requires=[
         'pyomo',
         'numpy>=1.13.3,<1.14.0',
+        'pandas < 1.1.0 ',
+        'matplotlib < 3.3.0',
         'pycity_base>=0.2.1,<0.3.0',
         'Shapely>=1.6.4'
     ],
