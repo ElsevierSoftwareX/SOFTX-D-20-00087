@@ -71,8 +71,8 @@ doc:
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/src
-    - sudo -u builduser /bin/bash -c 'bash $CI_PROJECT_DIR/docs/docu.sh'
+    - cd $CI_PROJECT_DIR/docs
+    - bash ./docu.sh
   artifacts:
     name: "documentation"
     paths:
