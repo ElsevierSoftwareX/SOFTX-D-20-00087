@@ -88,9 +88,9 @@ def main(do_plot=False):
     # Print some ADMM results:
     print("Dual Decomposition - Number of iterations:")
     print(results["iterations"][-1])
-    print("Dual Decomposition  - Norm vector 'r' over iterations:")
+    print("Dual Decomposition - Norm vector 'r' over iterations:")
     print(results["r_norms"])
-    print("Dual Decomposition  - Final shadow price vector:")
+    print("Dual Decomposition - Final shadow price vector:")
     print(results["lambdas"][-1])
     print("")
 
