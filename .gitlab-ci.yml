@@ -53,7 +53,7 @@ lint:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/src/pylint_report.txt || true
-    - tail -n 3 pylint_report.txt
+    - tail -n 2 pylint_report.txt
   artifacts:
     name: "pylint-report"
     paths:
