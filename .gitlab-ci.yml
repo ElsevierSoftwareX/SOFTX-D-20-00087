@@ -52,12 +52,12 @@ lint:
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
-    - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > pylint_report.txt || true
+    - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/src/pylint_report.txt || true
     - tail -n 3 pylint_report.txt
   artifacts:
-    name: "pylint report"
+    name: "pylint-report"
     paths:
-      - pylint_report.txt
+      - $CI_PROJECT_DIR/src/pylint_report.txt
     expire_in: 4 weeks
     when: always
 
@@ -71,9 +71,10 @@ doc:
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/docs
-    - ./docu.sh
+    - sudo -u builduser /bin/bash -c '$CI_PROJECT_DIR/docs/docu.sh'
   artifacts:
+    name: "documentation"
     paths:
       - $CI_PROJECT_DIR/docs/_build/html
     expire_in: 365 days
+    when: always
