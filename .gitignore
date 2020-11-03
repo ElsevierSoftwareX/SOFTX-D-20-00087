@@ -1,11 +1,11 @@
-# Ignore the following files in GIT:
-######################################
+# Ignore the following files in git repository:
+###############################################
 
 # Python compiled files:
 *.pyc
 *.orig
 
-# PyCharm Settings:
+# PyCharm settings:
 .idea
 .cache
 
@@ -15,12 +15,19 @@
 # Output files:
 output/
 
-#Model Files
+# Saved output files in examples
+src/examples/*.csv
+src/examples/*.json
+
+# Optimization model files
 *.lp
 *.ilp
 
-# Files in matlab library
+# Other files
 *.pdf
 *.emf
-src/
 *.asv
+
+# Documentation build files
+docs/pycity_scheduling*.rst
+docs/_build

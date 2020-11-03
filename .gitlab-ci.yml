@@ -1,6 +1,6 @@
 variables:
   GIT_STRATEGY: fetch
-  DOCKER_FILE: utils/Dockerfile
+  DOCKER_FILE: gitlab-utils/Dockerfile
   DOCKER_TAG: ${CI_COMMIT_REF_SLUG}
   DOCKER_IMAGE_DEV: pycity_scheduling
 
@@ -8,6 +8,7 @@ variables:
 stages:
   - prepare
   - test
+  - release
 
 prepare:
   stage: prepare
@@ -20,22 +21,28 @@ prepare:
         --file ${DOCKER_FILE}
         --target lint
         --tag ${DOCKER_IMAGE_DEV}:lint-${DOCKER_TAG} .
+    - docker build
+        --file ${DOCKER_FILE}
+        --target doc
+        --tag ${DOCKER_IMAGE_DEV}:doc-${DOCKER_TAG} .
+    - docker build
+      --file ${DOCKER_FILE}
+      --target unittest
+      --tag ${DOCKER_IMAGE_DEV}:unittest-${DOCKER_TAG} .
   tags:
     - shell
     - linux
 
 unittest:
   stage: test
-  image: ${DOCKER_IMAGE_DEV}:base-${DOCKER_TAG}
+  image: ${DOCKER_IMAGE_DEV}:unittest-${DOCKER_TAG}
   tags:
     - docker
   script:
-    - mkdir /opt/gurobi
-    - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
-    - cd $CI_PROJECT_DIR
-    - pip3 install .
-    - cd testing/unit_tests
-    - python3 -m unittest discover
+    - cd $CI_PROJECT_DIR/src
+    - python3.6 -m pip install --no-cache-dir .
+    - cd $CI_PROJECT_DIR/src/testing/unit_tests
+    - python3.6 -m unittest discover -v
 
 lint:
   stage: test
@@ -43,13 +50,30 @@ lint:
   tags:
     - docker
   script:
-    - cd $CI_PROJECT_DIR
-    - pip3 install .
-    - pylint --rcfile=./utils/.pylintrc pycity_scheduling > report.txt || true
-    - tail -n 3 report.txt
+    - cd $CI_PROJECT_DIR/src
+    - python3.6 -m pip install --no-cache-dir .
+    - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > pylint_report.txt || true
+    - tail -n 3 pylint_report.txt
   artifacts:
-    name: "Pylint Report"
+    name: "pylint report"
     paths:
-      - report.txt
-    expire_in: 2 weeks
+      - pylint_report.txt
+    expire_in: 4 weeks
     when: always
+
+doc:
+  stage: release
+  only:
+    - master
+  image: ${DOCKER_IMAGE_DEV}:doc-${DOCKER_TAG}
+  tags:
+    - docker
+  script:
+    - cd $CI_PROJECT_DIR/src
+    - python3.6 -m pip install --no-cache-dir .
+    - cd $CI_PROJECT_DIR/docs
+    - ./docu.sh
+  artifacts:
+    paths:
+      - $CI_PROJECT_DIR/docs/_build/html
+    expire_in: 365 days
