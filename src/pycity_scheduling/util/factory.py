@@ -24,6 +24,12 @@ from pycity_scheduling.data.ev_data import ev_data as evd
 
 
 def generate_standard_environment(**timer_args):
+    """Generate a standard environment object.
+
+    Returns
+    -------
+    pycity_scheduling.classes.Environment
+    """
     timer = Timer(**timer_args)
     weather = Weather(timer)
     prices = Prices(timer)

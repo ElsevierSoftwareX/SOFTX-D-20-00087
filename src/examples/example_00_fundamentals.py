@@ -181,7 +181,7 @@ def main(do_plot=False):
 
     # Set the city district / district operator objective and perform the power scheduling using the central
     # optimization algorithm:
-    cd.setObjective("peak-shaving")
+    cd.set_objective("peak-shaving")
     opt = CentralOptimization(cd)
     opt.solve()
 

@@ -101,7 +101,7 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
         self.copy_schedule(schedule, "default", "p_th_cool")
         return
 
-    def update_schedule(self, mode=""):
+    def update_schedule(self):
         pass
 
     def reset(self, name=None):

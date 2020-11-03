@@ -121,7 +121,7 @@ class OptimizationAlgorithm:
     def _get_beta(params, entity):
         """Returns the beta value for a specific entity."""
         beta = params["beta"]
-        if type(beta) is dict:
+        if isinstance(beta, dict):
             return beta.get(entity.ID, 1.0)
         if isinstance(entity, CityDistrict):
             return 1.0

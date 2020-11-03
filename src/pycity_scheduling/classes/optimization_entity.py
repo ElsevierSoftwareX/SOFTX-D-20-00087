@@ -159,7 +159,7 @@ class OptimizationEntity(object):
                 schedule[op_slice] = values
         return
 
-    def setObjective(self, objective):
+    def set_objective(self, objective):
         """Set a new objective to be returned by get_objective.
 
         Parameters
@@ -194,25 +194,24 @@ class OptimizationEntity(object):
             raise ValueError(
                 "Objective {} is not implemented by entity {}.".format(self.objective, self.__class__.__name__)
             )
-        return
 
-    def reset(self, name=None):
+    def reset(self, schedule=None):
         """Reset all values of specified schedule.
 
         Parameters
         ----------
-        name : str, optional
+        schedule : str, optional
             Specify which schedule to reset.
 
             - `None` : Resets all schedules
             - 'default' : Resets normal schedule
             - 'ref' : Resets reference schedule
         """
-        if name is None:
+        if schedule is None:
             for name in self.schedules.keys():
                 self.new_schedule(name)
         else:
-            self.new_schedule(name)
+            self.new_schedule(schedule)
         return
 
     def get_entities(self):

@@ -133,11 +133,11 @@ class Building(EntityContainer, bd.Building):
         m = self.model
 
         def p_th_cool_equality_rule(model, t):
-            return 0 == model.p_th_cool_vars[t]
+            return model.p_th_cool_vars[t] == 0
         m.p_th_cool_equality_constr = pyomo.Constraint(m.t, rule=p_th_cool_equality_rule)
 
         def p_th_heat_equality_rule(model, t):
-            return 0 == model.p_th_heat_vars[t]
+            return model.p_th_heat_vars[t] == 0
         m.p_th_heat_equality_constr = pyomo.Constraint(m.t, rule=p_th_heat_equality_rule)
 
         if robustness is not None and (self.bes.getHasDevices(all_devices=False, ths=True)[0]):

@@ -93,7 +93,8 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
                 return pyomo.sum_product(prices, self.model.p_el_vars)
             else:
                 return 0
-        return super().get_objective(coeff)
+        else:
+            return super().get_objective(coeff)
 
     def get_lower_entities(self):
         for node in self.nodes.values():

@@ -128,7 +128,7 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
         self.copy_schedule(schedule, "default", "p_th_heat")
         return
 
-    def update_schedule(self, mode=""):
+    def update_schedule(self):
         pass
 
     def reset(self, name=None):

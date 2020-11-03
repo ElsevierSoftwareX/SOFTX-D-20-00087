@@ -101,10 +101,10 @@ class TestBattery(unittest.TestCase):
         model = pyomo.ConcreteModel()
         self.bat.populate_model(model)
         self.bat.update_model()
-        self.bat.model.p_el_demand_vars.setlb(3)
-        self.bat.model.p_el_demand_vars.setub(3)
-        self.bat.model.p_el_supply_vars.setlb(0)
-        self.bat.model.p_el_supply_vars.setub(0)
+        self.bat.model.p_el_demand_vars.setlb(3.0)
+        self.bat.model.p_el_demand_vars.setub(3.0)
+        self.bat.model.p_el_supply_vars.setlb(0.0)
+        self.bat.model.p_el_supply_vars.setub(0.0)
         obj = pyomo.sum_product(self.bat.model.p_el_demand_vars, self.bat.model.p_el_demand_vars)
         model.o = pyomo.Objective(expr=obj)
         solve_model(model)
@@ -535,10 +535,10 @@ class TestCurtailableLoad(unittest.TestCase):
                     cl.p_el_schedule[0] = 1
                     cl.update_model("integer")
 
-                    cl.model.p_state_vars[0].setub(1)
-                    cl.model.p_state_vars[0].setlb(1)
-                    cl.model.p_state_vars[1].setub(0)
-                    cl.model.p_state_vars[1].setlb(0)
+                    cl.model.p_state_vars[0].setub(1.0)
+                    cl.model.p_state_vars[0].setlb(1.0)
+                    cl.model.p_state_vars[1].setub(0.0)
+                    cl.model.p_state_vars[1].setlb(0.0)
 
                     model.o = pyomo.Objective(expr=cl.model.p_state_vars[0])
                     logger = logging.getLogger("pyomo.core")
@@ -1132,13 +1132,13 @@ class TestElectricalEntity(unittest.TestCase):
         for t in range(4):
             self.ee.model.p_el_vars[t].setlb(t)
             self.ee.model.p_el_vars[t].setub(t)
-        self.ee.setObjective("peak-shaving")
+        self.ee.set_objective("peak-shaving")
         obj = self.ee.get_objective()
         model.o = pyomo.Objective(expr=obj)
         solve_model(model)
         obj = self.ee.get_objective()
         self.assertEqual(sum(t**2 for t in range(4)), pyomo.value(obj))
-        self.ee.setObjective("max-consumption")
+        self.ee.set_objective("max-consumption")
         with self.assertRaises(ValueError):
             obj = self.ee.get_objective()
 
@@ -1182,7 +1182,7 @@ class TestElectricalHeater(unittest.TestCase):
         eh.populate_model(m)
         eh.update_model()
         obj = eh.model.p_el_vars[0] - eh.model.p_el_vars[1]
-        eh.model.p_el_vars[0].setlb(5)
+        eh.model.p_el_vars[0].setlb(5.0)
         eh.model.p_el_vars[1].setub(0.05)
         m.o = pyomo.Objective(expr=obj)
         solve_model(m)

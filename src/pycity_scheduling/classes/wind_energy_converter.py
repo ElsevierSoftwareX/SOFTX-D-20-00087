@@ -67,11 +67,11 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         log_wind = self._logWindProfile(total_wind)
         return np.interp(log_wind, self.velocity, self.power, right=0)
 
-    def populate_model(self, model, mode="convex", robustness=None):
+    def populate_model(self, model, mode="convex"):
         super().populate_model(model, mode)
         return
 
-    def update_model(self, mode="", robustness=None):
+    def update_model(self, mode=""):
         m = self.model
         timestep = self.timestep
 

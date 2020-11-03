@@ -62,8 +62,7 @@ class CombinedHeatPower(ThermalEntityHeating, ElectricalEntity, chp.CHP):
     Generates additional constraints for the `lower_activation_limit` in `integer` mode.
     """
 
-    def __init__(self, environment, p_th_nom, p_el_nom=None, eta=1,
-                 lower_activation_limit=0):
+    def __init__(self, environment, p_th_nom, p_el_nom=None, eta=1, lower_activation_limit=0):
         q_nominal = p_th_nom * 1000
         if p_el_nom is None:
             p_nominal = q_nominal
@@ -99,9 +98,9 @@ class CombinedHeatPower(ThermalEntityHeating, ElectricalEntity, chp.CHP):
 
         if mode in ["convex", "integer"]:
             m.p_th_heat_vars.setlb(-self.p_th_nom)
-            m.p_th_heat_vars.setub(0)
+            m.p_th_heat_vars.setub(0.0)
             m.p_el_vars.setlb(-self.p_el_nom)
-            m.p_el_vars.setub(0)
+            m.p_el_vars.setub(0.0)
 
             def p_coupl_rule(model, t):
                 return model.p_th_heat_vars[t] * self.sigma == model.p_el_vars[t]

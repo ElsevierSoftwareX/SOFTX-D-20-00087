@@ -177,7 +177,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
             # run once in the op_horizon
             def state_once_rule(model):
-                return 1 == pyomo.sum_product(model.p_start_vars)
+                return pyomo.sum_product(model.p_start_vars) == 1.0
             m.state_once_integer_constr = pyomo.Constraint(rule=state_once_rule)
 
         else:
@@ -195,7 +195,7 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
                 if load_time[t] == 1:
                     m.p_el_vars[t].setub(self.p_el_nom)
                 else:
-                    m.p_el_vars[t].setub(0)
+                    m.p_el_vars[t].setub(0.0)
 
         elif mode == "integer":
             if (self.timestep + self.op_horizon < self.simu_horizon and
@@ -211,9 +211,9 @@ class DeferrableLoad(ElectricalEntity, ed.ElectricalDemand):
 
             for t, start_var in m.p_start_vars.items():
                 if all(lt == 1 for lt in load_time[t:t+self.runtime]):
-                    start_var.setub(1)
+                    start_var.setub(1.0)
                 else:
-                    start_var.setub(0)
+                    start_var.setub(0.0)
 
         else:
             raise ValueError(

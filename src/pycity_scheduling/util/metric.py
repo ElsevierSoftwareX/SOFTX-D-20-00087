@@ -382,8 +382,8 @@ def autarky(entity, timestep=None):
     if consumption == 0:
         return 1
     cover = sum(np.minimum(res_schedule, load))
-    autarky = cover / consumption
-    return autarky
+    autarky_val = cover / consumption
+    return autarky_val
 
 
 def absolute_flexibility_gain(entity, schedule, timestep=None):

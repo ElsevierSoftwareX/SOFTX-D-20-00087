@@ -115,11 +115,11 @@ class ThermalCoolingStorage(ThermalEntityCooling, tes.ThermalEnergyStorage):
                     return model.e_th_cool_vars[self.op_horizon-1] >= self.e_th_max * self.soc_init
             m.e_end_constr = pyomo.Constraint(rule=e_end_rule)
 
+            return
         else:
             raise ValueError(
                 "Mode %s is not implemented by class ThermalCoolingStorage." % str(mode)
             )
-        return
 
     def update_model(self, mode=""):
         m = self.model

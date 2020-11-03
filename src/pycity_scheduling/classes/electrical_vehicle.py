@@ -183,17 +183,17 @@ class ElectricalVehicle(Battery):
         # Reset e_el bounds
         for t in self.op_time_vec:
             m.e_el_vars[t].setub(self.e_el_max)
-            m.e_el_vars[t].setlb(0)
+            m.e_el_vars[t].setlb(0.0)
 
         for t in self.op_time_vec:
             if charging_time[t]:
                 m.p_el_demand_vars[t].setub(self.p_el_max_charge)
                 m.p_el_supply_vars[t].setub(self.p_el_max_discharge)
-                m.p_el_drive_vars[t].setub(0)
+                m.p_el_drive_vars[t].setub(0.0)
                 is_initial = False
             else:
-                m.p_el_demand_vars[t].setub(0)
-                m.p_el_supply_vars[t].setub(0)
+                m.p_el_demand_vars[t].setub(0.0)
+                m.p_el_supply_vars[t].setub(0.0)
                 m.p_el_drive_vars[t].setub(None)
 
                 if is_initial:

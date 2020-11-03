@@ -88,7 +88,7 @@ class ElectricalHeater(ThermalEntityHeating, ElectricalEntity, eh.ElectricalHeat
 
         if mode == "convex" or "integer":
             m.p_th_heat_vars.setlb(-self.p_th_nom)
-            m.p_th_heat_vars.setub(0)
+            m.p_th_heat_vars.setub(0.0)
 
             def p_coupl_rule(model, t):
                 return - model.p_th_heat_vars[t] == self.eta * model.p_el_vars[t]

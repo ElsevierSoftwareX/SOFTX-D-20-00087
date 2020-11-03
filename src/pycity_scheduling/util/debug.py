@@ -37,10 +37,10 @@ def analyze_model(model, optimizer, result, options={}):
     """
     if result.solver.termination_condition in \
             [TerminationCondition.infeasibleOrUnbounded, TerminationCondition.infeasible] and \
-            (isinstance(optimizer, Solvers.GUROBI.GUROBI)
-             or isinstance(optimizer, Solvers.gurobi_persistent.GurobiPersistent)
-             or isinstance(optimizer, Solvers.gurobi_direct.GurobiDirect)
-             or isinstance(optimizer, Solvers.GUROBI.GUROBISHELL)):
+            (isinstance(optimizer, (Solvers.GUROBI.GUROBI,
+                                    Solvers.gurobi_persistent.GurobiPersistent,
+                                    Solvers.gurobi_direct.GurobiDirect,
+                                    Solvers.GUROBI.GUROBISHELL))):
 
         options["dualreductions"] = 0
         if isinstance(optimizer, Solvers.gurobi_persistent.GurobiPersistent):

@@ -91,7 +91,7 @@ class TestAlgorithms(unittest.TestCase):
 
         # Test infeasible model:
         self.bd1.model.new_constr = pyomo.Constraint(expr=self.bd1.model.p_el_vars[0] == 0)
-        self.bd1.model.p_el_vars[0].setub(15)
+        self.bd1.model.p_el_vars[0].setub(15.0)
         with self.assertRaises(NonoptimalError):
             f.solve(full_update=True, debug=False)
 
