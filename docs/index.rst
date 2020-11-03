@@ -6,7 +6,7 @@ pycity_scheduling
    :align: right
 
 
-pycity_scheduling Documentation
+The pycity_scheduling documentation
 
 .. toctree::
    :maxdepth: 3
