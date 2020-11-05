@@ -5,6 +5,9 @@
 *.pyc
 *.orig
 
+# Python backup files:
+*.py~
+
 # PyCharm settings:
 .idea
 .cache
@@ -27,6 +30,7 @@ src/examples/*.json
 *.pdf
 *.emf
 *.asv
+*.bak
 
 # Documentation build files
 docs/pycity_scheduling*.rst
