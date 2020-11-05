@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -40,9 +43,9 @@ def schedule_to_dict(input_list, schedule=None):
            - 'default' : Normal schedule
            - 'ref' : Reference schedule
     """
-    if type(schedule) is str or schedule is None:
+    if isinstance(schedule, str) or schedule is None:
         schedules = [schedule]
-    elif type(schedule) is list:
+    elif isinstance(schedule, list):
         schedules = schedule
     else:
         raise ValueError("Unknown type for schedule argument.")
@@ -81,7 +84,7 @@ def schedule_to_json(input_list, file_name, schedule=None):
             for var_name in sub_schedule.keys():
                 sub_schedule[var_name] = sub_schedule[var_name].tolist()
 
-    if type(file_name) is str:
+    if isinstance(file_name, str):
         if not file_name.endswith(".json"):
             file_name = file_name + ".json"
         with open(file_name, 'w') as outfile:
@@ -123,7 +126,7 @@ def schedule_to_csv(input_list, file_name, delimiter=";", schedule=None):
                 sub_schedules.append(var_schedule+0.0)
                 max_schedule_length = max(max_schedule_length, len(var_schedule))
 
-    if type(file_name) is str and not file_name.endswith(".csv"):
+    if isinstance(file_name, str) and not file_name.endswith(".csv"):
         file_name = file_name + ".csv"
     with open(str(file_name), 'w', newline='') as file:
         writer = csv.writer(file, delimiter=delimiter, escapechar='', quoting=csv.QUOTE_NONE)

@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -37,9 +40,9 @@ class OptimizationEntity(object):
 
     def __init__(self, environment, *args, **kwargs):
         OptimizationEntity.static_entity_id += 1
-        self.ID = OptimizationEntity.static_entity_id
-        self._ID_string = "{0:05d}".format(self.ID)
-        self._long_ID = ""
+        self.id = OptimizationEntity.static_entity_id
+        self._id_string = "{0:05d}".format(self.id)
+        self._long_id = ""
         self._kind = ""
 
         self.objective = None
@@ -58,11 +61,11 @@ class OptimizationEntity(object):
             super().__init__()
 
     def __str__(self):
-        return self._long_ID
+        return self._long_id
 
     def __repr__(self):
         return ("<OptimizationEntity of kind " + self._kind
-                + " with ID: " + self._long_ID + ">")
+                + " with ID: " + self._long_id + ">")
 
     @property
     def op_horizon(self):
@@ -118,7 +121,7 @@ class OptimizationEntity(object):
         """
         # generate empty pyomo block
         self.model = pyomo.Block()
-        setattr(model, "_".join([self._kind, self._ID_string]), self.model)
+        setattr(model, "_".join([self._kind, self._id_string]), self.model)
         # add time
         self.model.t = pyomo.RangeSet(0, self.op_horizon-1)
         return
@@ -358,10 +361,10 @@ class OptimizationEntity(object):
         return self.schedules[self.current_schedule_active]
 
     def __getattr__(self, item):
-        if type(item) == str:
+        if isinstance(item, str):
             items = item.split("_")
             if len(items) >= 2:
-                if "schedule" == items[-1]:
+                if items[-1] == "schedule":
                     if items[-2] in self.schedules and "_".join(items[:-2]) in self.schedule:
                         schedule = self.schedules[items[-2]]
                         varname = "_".join(items[:-2])
@@ -374,10 +377,10 @@ class OptimizationEntity(object):
         raise AttributeError(item)
 
     def __setattr__(self, attr, value):
-        if type(attr) == str:
+        if isinstance(attr, str):
             attrs = attr.split("_")
             if len(attrs) >= 2:
-                if "schedule" == attrs[-1]:
+                if attrs[-1] == "schedule":
                     if attrs[-2] in self.schedules and "_".join(attrs[:-2]) in self.schedule:
                         schedule = self.schedules[attrs[-2]]
                         varname = "_".join(attrs[:-2])

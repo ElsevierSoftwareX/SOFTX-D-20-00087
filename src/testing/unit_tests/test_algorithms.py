@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -141,7 +144,7 @@ class TestAlgorithms(unittest.TestCase):
         self.assertAlmostEqual(0, cd.p_el_schedule[0], 2)
         self.assertAlmostEqual(0, cd.p_el_schedule[1], 2)
 
-        r = f.solve(full_update=False, beta={bd1.ID: 0, bd2.ID: 1, cd.ID: 0})
+        r = f.solve(full_update=False, beta={bd1.id: 0, bd2.id: 1, cd.id: 0})
         self.assertAlmostEqual(10, bd1.p_el_schedule[0], 4)
         self.assertAlmostEqual(-10, bd1.p_el_schedule[1], 4)
         self.assertAlmostEqual(0, bd2.p_el_schedule[0], 2)

@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -40,7 +43,7 @@ class Building(EntityContainer, bd.Building):
         - 'none' : No objective (leave all flexibility to other participants).
     name : str, optional
         Name for the building.
-        If name is None, set it to self._long_ID.
+        If name is None, set it to self._long_id.
     profile_type : str, optional
         Thermal SLP profile name
         Requires `method=1`
@@ -69,7 +72,7 @@ class Building(EntityContainer, bd.Building):
 
     Notes
     -----
-    The exchange of thermal energy between different buildings is currently not supported.
+     - The exchange of thermal energy between different buildings is currently not supported.
     As a result, the building adds the following set of constrains additionally to the
     ones of the EntityContainer:
 
@@ -77,12 +80,12 @@ class Building(EntityContainer, bd.Building):
         p_{th\\_heat} &=& 0 \\\\
         p_{th\\_cool} &=& 0
 
-    The building can also add robustness constrains for thermal heating storage:
+     - The building can also add robustness constrains for thermal heating storage:
 
     .. math::
         e_{u\\_bound} \\geq \\sum_i e_{th\\_heat\\_i} \\geq e_{l\\_bound} \\\\
 
-    The :math:`E_{u\\_bound}` and :math:`E_{l\\_bound}` are determined by the
+     - The :math:`E_{u\\_bound}` and :math:`E_{l\\_bound}` are determined by the
     robustness parameter, the available capacity of thermal heating storage, the magnitude of heating
     required by SpaceHeating and the magnitude of heating that can be produced by the building's heating units.
     """
@@ -92,9 +95,9 @@ class Building(EntityContainer, bd.Building):
                  storage_end_equality=False):
         super().__init__(environment)
 
-        self._long_ID = "BD_" + self._ID_string
+        self._long_id = "BD_" + self._id_string
         if name is None:
-            self.name = self._long_ID
+            self.name = self._long_id
         else:
             self.name = name
 

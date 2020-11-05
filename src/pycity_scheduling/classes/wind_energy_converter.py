@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -43,7 +46,7 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
 
     Notes
     -----
-    The following constraint is added for removing the bounds from EE:
+     - The following constraint is added for removing the bounds from EE:
 
     .. math::
         p_{el} &=& -p_{el\\_supply}, & \\quad \\text{if force_renewables} \\\\
@@ -53,7 +56,7 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
     def __init__(self, environment, velocity, power,
                  hub_height=70, roughness=0.1, force_renewables=True):
         super(WindEnergyConverter, self).__init__(environment, velocity, power, hub_height, roughness)
-        self._long_ID = "WEC_" + self._ID_string
+        self._long_id = "WEC_" + self._id_string
 
         self.force_renewables = force_renewables
         self.p_el_supply = self._get_power_supply()

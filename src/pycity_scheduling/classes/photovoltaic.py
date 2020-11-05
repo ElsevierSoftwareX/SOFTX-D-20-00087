@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -75,7 +78,7 @@ class Photovoltaic(ElectricalEntity, pv.PV):
 
     Notes
     -----
-    The following constraint is added for removing the bounds from EE:
+     - The following constraint is added for removing the bounds from EE:
 
     .. math::
         p_{el} &=& -p_{el\\_supply}, & \\quad \\text{if force_renewables} \\\\
@@ -87,18 +90,18 @@ class Photovoltaic(ElectricalEntity, pv.PV):
                  force_renewables=True):
         super().__init__(environment, method, area, peak_power, eta_noct, radiation_noct, t_cell_noct, t_ambient_noct,
                          alpha_noct, beta, gamma, tau_alpha)
-        self._long_ID = "PV_" + self._ID_string
+        self._long_id = "PV_" + self._id_string
 
         self.force_renewables = force_renewables
         self.getPower(currentValues=False)
         ts = self.timer.time_in_year(from_init=True)
         self.p_el_supply = self.total_power[ts:ts+self.simu_horizon] / 1000
 
-    def populate_model(self, model, mode="convex", robustness=None):
+    def populate_model(self, model, mode="convex"):
         super().populate_model(model, mode)
         return
 
-    def update_model(self, mode="", robustness=None):
+    def update_model(self, mode=""):
         m = self.model
         timestep = self.timestep
 

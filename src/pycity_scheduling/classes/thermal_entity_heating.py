@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -29,7 +32,7 @@ class ThermalEntityHeating(OptimizationEntity):
 
     Notes
     -----
-    Heating TEs add the :math:`p_{th\\_heat}` variable to the model. When not modified
+     - Heating TEs add the :math:`p_{th\\_heat}` variable to the model. When not modified
     by other classes, the following constraint is added:
 
     .. math::

@@ -2,22 +2,23 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
 
 import numpy as np
 import pyomo.environ as pyomo
-
-from pycity_scheduling.classes.optimization_entity import OptimizationEntity
 
 
 class Constraint:
@@ -27,7 +28,7 @@ class Constraint:
     This class provides functionality common to all generic constraints.
     Generic constraints can be easily added to an entity block.
     """
-    def apply(self, model):
+    def apply(self, model, mode=""):
         """
         Apply constraint to block during populate_model method call.
 
@@ -36,6 +37,11 @@ class Constraint:
         model : pyomo.Block
             The block corresponding to the entity the constraint should
             be applied to.
+        mode : str, optional
+            Specifies which set of constraints to use.
+
+            - `convex`  : Use linear constraints
+            - `integer`  : May use integer variables
         """
         raise NotImplementedError()
 
@@ -87,7 +93,7 @@ class LowerActivationLimit(Constraint):
         o.new_var(var_name+"_state", dtype=np.bool, func=lambda model:
                   abs(o.schedule[self.var_name][o.op_slice]) > abs(0.01 * var_nom))
 
-    def apply(self, m, mode):
+    def apply(self, m, mode=""):
         if mode == "integer" and self.lower_activation_limit != 0.0 and self.var_nom != 0.0:
             # Add additional binary variables representing operating state
             if hasattr(m, self.var_name+"_state"):

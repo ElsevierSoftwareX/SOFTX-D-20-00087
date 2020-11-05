@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -118,14 +121,14 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
 
     Notes
     -----
-    Standard load profiles, for instance for Germany, can be found here:
+     - Standard load profiles, for instance for Germany, can be found here:
     https://www.bdew.de/energie/standardlastprofile-strom/ (accessed on 2020/09/28)
 
-    Average German electricity consumption data per household can be found here:
+     - Average German electricity consumption data per household can be found here:
     https://lena.sachsen-anhalt.de/fileadmin/Bibliothek/Sonstige_Webprojekte/Lena/Pressemitteilungen/
     Stromspiegel/Stromspiegel2014_Medienblatt.pdf (accessed on 2020/09/28)
 
-    The following constraint is added for removing the bounds from EE:
+     - The following constraint is added for removing the bounds from EE:
 
     .. math::
         p_{el} = load\\_curve
@@ -139,7 +142,7 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
                          total_nb_occupants, randomize_appliances, light_configuration, occupancy, do_normalization,
                          method_3_type, method_4_type, prev_heat_dev, app_filename, light_filename, season_light_mod,
                          light_mod_fac)
-        self._long_ID = "FL_" + self._ID_string
+        self._long_id = "FL_" + self._id_string
 
         ts = self.timer.time_in_year(from_init=True)
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
@@ -159,8 +162,8 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
         self.copy_schedule(schedule, "default", "p_el")
         return
 
-    def update_schedule(self, mode=""):
+    def update_schedule(self):
         pass
 
-    def reset(self, name=None):
+    def reset(self, schedule=None):
         pass

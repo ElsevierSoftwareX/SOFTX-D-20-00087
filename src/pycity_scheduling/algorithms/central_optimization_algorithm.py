@@ -2,20 +2,22 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
 
 import numpy as np
-import time
 import pyomo.environ as pyomo
 
 from pycity_scheduling.algorithms.algorithm import OptimizationAlgorithm, SolverNode
@@ -30,7 +32,7 @@ class CentralOptimization(OptimizationAlgorithm):
     """
     def __init__(self, city_district, solver=DEFAULT_SOLVER, solver_options=DEFAULT_SOLVER_OPTIONS, mode="convex",
                  robustness=None):
-        super(CentralOptimization, self).__init__(city_district, solver, solver_options, mode, robustness)
+        super(CentralOptimization, self).__init__(city_district, solver, solver_options, mode)
         # create single solver node for all entities
         self.node = SolverNode(solver, solver_options, self.entities, mode, robustness=robustness)
         # add coupling between all entities in the single model

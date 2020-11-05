@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -32,7 +35,7 @@ class EntityContainer(ThermalEntityCooling, ThermalEntityHeating, ElectricalEnti
 
     Notes
     -----
-    EntityContainers offer sets of constraints for operation. The following
+     - EntityContainers offer sets of constraints for operation. The following
     constraints are added.
 
     .. math::
@@ -40,7 +43,7 @@ class EntityContainer(ThermalEntityCooling, ThermalEntityHeating, ElectricalEnti
         p_{th\\_heat} &=& \\sum_i p_{th\\_heat\\_i} \\\\
         p_{el} &=& \\sum_i p_{el\\_i}
 
-    :math:`p_{th\\_cool\\_i}`, :math:`p_{th\\_heat\\_i}`, and :math:`p_{el\\_i}` are the variables from lower
+     - :math:`p_{th\\_cool\\_i}`, :math:`p_{th\\_heat\\_i}`, and :math:`p_{el\\_i}` are the variables from lower
     entities. The Bounds from TEC, TEH, and EE are removed.
     """
 

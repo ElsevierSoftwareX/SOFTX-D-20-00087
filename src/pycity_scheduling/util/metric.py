@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -17,7 +20,7 @@ Univ.-Prof. Antonello Monti, Ph.D.
 import numpy as np
 
 from pycity_scheduling import constants, classes
-from pycity_scheduling.classes import OptimizationEntity, Boiler, ElectricalEntity, CityDistrict
+from pycity_scheduling.classes import Boiler, ElectricalEntity, CityDistrict
 
 
 def calculate_costs(entity, timestep=None, prices=None, feedin_factor=None):
@@ -133,7 +136,7 @@ def calculate_co2(entity, timestep=None, co2_emissions=None):
             e.p_el_schedule[:timestep]
             for e in classes.filter_entities(entity, 'BAT')
         )
-        # TODO this ignores battery losses right now
+        # ToDo: This approach neglects battery losses.
         p = p - bat_schedule
         co2 = entity.time_slot * np.dot(p[p>0], co2_emissions[p>0])
         gas_schedule = sum(
@@ -248,11 +251,11 @@ def metric_delta_g(entity, schedule):
         - Implementation as given in the lecture "Elektrizitaetswirtschaft"
           by Prof. Dr.-Ing. Christian Rehtanz at TU Dortmund.
     """
-    p_el_Min_dsm = min(entity.p_el_schedule)
+    p_el_min_dsm = min(entity.p_el_schedule)
     p_el_max_dsm = max(entity.p_el_schedule)
-    p_el_Min_ref = min(entity.schedules[schedule]["p_el"])
+    p_el_min_ref = min(entity.schedules[schedule]["p_el"])
     p_el_max_ref = max(entity.schedules[schedule]["p_el"])
-    g = 1.0 - (abs(p_el_max_dsm - p_el_Min_dsm) / abs(p_el_max_ref - p_el_Min_ref))
+    g = 1.0 - (abs(p_el_max_dsm - p_el_min_dsm) / abs(p_el_max_ref - p_el_min_ref))
     return g
 
 

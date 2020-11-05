@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -28,7 +31,7 @@ class LocalOptimization(DistributedAlgorithm):
     """
     def __init__(self, city_district, solver=DEFAULT_SOLVER, solver_options=DEFAULT_SOLVER_OPTIONS, mode="convex",
                  robustness=None):
-        super(LocalOptimization, self).__init__(city_district, solver, solver_options, mode, robustness)
+        super(LocalOptimization, self).__init__(city_district, solver, solver_options, mode)
         # create solver nodes for each entity
         self.nodes = [
             SolverNode(solver, solver_options, [entity], mode, robustness=robustness)

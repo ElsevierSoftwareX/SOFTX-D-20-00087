@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -43,10 +46,8 @@ class Prices(pr.Prices):
 
     Notes
     -----
-     - If prices are loaded automatically, simulation must stay within a
-       single year.
-     - CO2 emissions and day-ahead prices are the only available for 2015 at
-       the moment.
+     - If prices are loaded automatically, the simulation period must lie within a single year.
+     - CO2 emissions and day-ahead prices are currently available for the year 2015 only.
     """
 
     da_price_cache = None

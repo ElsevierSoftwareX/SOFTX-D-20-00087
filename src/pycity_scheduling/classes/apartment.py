@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -38,12 +41,12 @@ class Apartment(EntityContainer, apm.Apartment):
 
     Notes
     -----
-    Apartments inherit their set of constraints from EntityContainer.
+     - Apartments inherit their set of constraints from EntityContainer.
     """
 
     def __init__(self, environment, net_floor_area=None, occupancy=None):
         super().__init__(environment, net_floor_area, occupancy)
-        self._long_ID = "APM_" + self._ID_string
+        self._long_id = "APM_" + self._id_string
 
         self.th_cooling_demand_list = []
         self.th_heating_demand_list = []

@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -63,7 +66,7 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
 
     Notes
     -----
-    The following constraint is added for removing the bounds from the TEC:
+     - The following constraint is added for removing the bounds from the TEC:
 
     .. math::
         p_{th\\_cool} = load\\_curve
@@ -72,7 +75,7 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
     def __init__(self, environment, method=0, loadcurve=1, living_area=0, specific_demand=0, profile_type='HEF'):
 
         super().__init__(environment, method, loadcurve*1000, living_area, specific_demand, profile_type)
-        self._long_ID = "SC_" + self._ID_string
+        self._long_id = "SC_" + self._id_string
 
         ts = self.timer.time_in_year(from_init=True)
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
@@ -104,5 +107,5 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
     def update_schedule(self):
         pass
 
-    def reset(self, name=None):
+    def reset(self, schedule=None):
         pass

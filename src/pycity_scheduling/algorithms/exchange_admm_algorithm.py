@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -71,7 +74,7 @@ class ExchangeADMM(IterationAlgorithm, DistributedAlgorithm):
     """
     def __init__(self, city_district, solver=DEFAULT_SOLVER, solver_options=DEFAULT_SOLVER_OPTIONS, mode="convex",
                  eps_primal=0.1, eps_dual=1.0, rho=2.0, max_iterations=10000, robustness=None):
-        super(ExchangeADMM, self).__init__(city_district, solver, solver_options, mode, robustness)
+        super(ExchangeADMM, self).__init__(city_district, solver, solver_options, mode)
         self.eps_primal = eps_primal
         self.eps_dual = eps_dual
         self.rho = rho

@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -86,7 +89,7 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
        TU München, Germany, 2003:
        http://mediatum.ub.tum.de/doc/601557/601557.pdf (accessed on 2020/09/28)
 
-    The following constraint is added for removing the bounds from TEH:
+     - The following constraint is added for removing the bounds from TEH:
 
     .. math::
         p_{th\\_heat} = load\\_curve
@@ -99,7 +102,7 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
         super().__init__(environment, method, loadcurve*1000, living_area, specific_demand, profile_type,
                          zone_parameters, t_m_init, ventilation, t_cooling_set, t_heating_set, occupancy, appliances,
                          lighting)
-        self._long_ID = "SH_" + self._ID_string
+        self._long_id = "SH_" + self._id_string
 
         ts = self.timer.time_in_year(from_init=True)
         p = self.loadcurve[ts:ts+self.simu_horizon] / 1000
@@ -131,5 +134,5 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
     def update_schedule(self):
         pass
 
-    def reset(self, name=None):
+    def reset(self, schedule=None):
         pass

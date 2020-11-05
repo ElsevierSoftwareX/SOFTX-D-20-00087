@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -19,7 +22,7 @@ Dictionary with electrical vehicle data from German ADAC e.V.:
 https://www.adac.de/rund-ums-fahrzeug/autokatalog/ (accessed on 2020/09/28)
 """
 
-ev_data = {}
+ev_data = dict()
 
 
 ev_data['EV.01'] = {'name': 'BMW i3',

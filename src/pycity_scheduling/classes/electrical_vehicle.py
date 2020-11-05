@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -56,14 +59,14 @@ class ElectricalVehicle(Battery):
 
     Notes
     -----
-    EVs offer sets of constraints for operation. The :math:`e_{el}` equivalence
+     - EVs offer sets of constraints for operation. The :math:`e_{el}` equivalence
     constraint is replaced by the following constraint:
 
     .. math::
         e_{el} &=& e_{el\\_previous} + (\\eta * p_{el\\_demand}
         - (1 / \\eta) * p_{el\\_supply} - p_{el\\_drive}) * \\Delta t \\\\
 
-    The following constraints are added:
+     - The following constraints are added:
 
     .. math::
         p_{el\\_drive} \\geq 0 \\\\
@@ -74,7 +77,7 @@ class ElectricalVehicle(Battery):
         e_{el\\_i} = 0.2 * e_{el\\_max}, & \\quad \\text{else if} \\quad ct\\_pattern_i = 0 \\\\
         e_{el\\_i} = e_{el\\_max}, & \\quad \\text{else if} \\quad ct\\_pattern_i+1 = 0
 
-    The constraint for the parameter `storage_end_equality` is removed. Instead,
+     - The constraint for the parameter `storage_end_equality` is removed. Instead,
     the EV needs to be fully charged at the end of the `simu_horizon` if parameter `ct_pattern`
     is one at the end of the simulation horizon.
     """
@@ -84,7 +87,7 @@ class ElectricalVehicle(Battery):
         super().__init__(environment, e_el_max, p_el_max_charge, p_el_max_discharge, soc_init, eta=1,
                          storage_end_equality=False)
         self._kind = "electricalvehicle"
-        self._long_ID = "EV_" + self._ID_string
+        self._long_id = "EV_" + self._id_string
 
         self.charging_time_initial = charging_time
         self.ct_pattern = ct_pattern

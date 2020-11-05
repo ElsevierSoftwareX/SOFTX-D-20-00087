@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -63,8 +66,7 @@ class OptimizationAlgorithm:
         deviations which are considered.
     """
 
-    def __init__(self, city_district, solver=DEFAULT_SOLVER, solver_options=DEFAULT_SOLVER_OPTIONS, mode="convex",
-                 robustness=None):
+    def __init__(self, city_district, solver=DEFAULT_SOLVER, solver_options=DEFAULT_SOLVER_OPTIONS, mode="convex"):
         self.city_district = city_district
         self.entities = [city_district]
         self.entities.extend([node["entity"] for node in city_district.nodes.values()])
@@ -122,7 +124,7 @@ class OptimizationAlgorithm:
         """Returns the beta value for a specific entity."""
         beta = params["beta"]
         if isinstance(beta, dict):
-            return beta.get(entity.ID, 1.0)
+            return beta.get(entity.id, 1.0)
         if isinstance(entity, CityDistrict):
             return 1.0
         return beta
@@ -276,7 +278,7 @@ class DistributedAlgorithm(OptimizationAlgorithm):
             node.solve(variables=variables_, debug=debug)
             stop = time.monotonic()
 
-            entity_ids = tuple(entity.ID for entity in node.entities)
+            entity_ids = tuple(entity.id for entity in node.entities)
             node_times[entity_ids] = stop - start
         results["distributed_times"].append(node_times)
         return
@@ -325,7 +327,7 @@ class SolverNode:
         deviations which are considered.
     """
     def __init__(self, solver, solver_options, entities, mode="convex", robustness=None):
-        self.solver = pyomo.SolverFactory(solver, node_ids=[entity.ID for entity in entities],
+        self.solver = pyomo.SolverFactory(solver, node_ids=[entity.id for entity in entities],
                                           **solver_options.get("__call__", {}))
         self.solver_options = solver_options
         self.is_persistent = isinstance(self.solver, PersistentSolver)

@@ -2,14 +2,17 @@
 The pycity_scheduling framework
 
 
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
+Institution
+-----------
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
 RWTH Aachen University
 
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
+
+Authors
+-------
+Sebastian Schwarz, M.Sc.;
+Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
@@ -19,7 +22,7 @@ import os
 import os.path as op
 import matplotlib.pyplot as plt
 
-from pycity_scheduling.classes import *
+from pycity_scheduling.classes import Battery, ElectricalVehicle, CombinedHeatPower
 
 
 _known_varnames = {
@@ -69,9 +72,9 @@ def plot_entity(entity, schedule=None, ax=None, title=None):
 
     if schedule is None:
         schedule_names = [entity.current_schedule]
-    elif type(schedule) is str:
+    elif isinstance(schedule, str):
         schedule_names = [schedule]
-    elif type(schedule) is list:
+    elif isinstance(schedule, list):
         if len(schedule) > 2:
             raise ValueError("Amount of schedules to plot is too large.")
         schedule_names = schedule
@@ -150,9 +153,9 @@ def plot_imbalance(entity, schedule=None, var_name="p_el", ax=None, title=None):
 
     if schedule is None:
         schedule_names = [entity.current_schedule]
-    elif type(schedule) is str:
+    elif isinstance(schedule, str):
         schedule_names = [schedule]
-    elif type(schedule) is list:
+    elif isinstance(schedule, list):
         schedule_names = schedule
     else:
         raise ValueError("Unknown type for schedule.")
