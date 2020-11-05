@@ -1,18 +1,18 @@
 """
-#######################################
-### The pycity_scheduling framework ###
-#######################################
+:::::::::::::::::::::::::::::::::::::::
+::: The pycity_scheduling Framework :::
+:::::::::::::::::::::::::::::::::::::::
 
 
 Institution:
-############
+::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-########
+::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -57,8 +57,8 @@ class Boiler(ThermalEntityHeating, bl.Boiler):
         0 \\geq p_{th\\_heat} \\geq -p_{th\\_nom}
 
     - See also:
-        - pycity_scheduling.util.generic_constraints.LowerActivationLimit: Generates additional constraints for the
-        `lower_activation_limit` in `integer` mode.
+        - pycity_scheduling.util.generic_constraints.LowerActivationLimit:
+        Generates additional constraints for the `lower_activation_limit` in `integer` mode.
     """
 
     def __init__(self, environment, p_th_nom, eta=1, lower_activation_limit=0):

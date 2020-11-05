@@ -1,18 +1,18 @@
 """
-#######################################
-### The pycity_scheduling framework ###
-#######################################
+:::::::::::::::::::::::::::::::::::::::
+::: The pycity_scheduling Framework :::
+:::::::::::::::::::::::::::::::::::::::
 
 
 Institution:
-############
+::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-########
+::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -74,8 +74,8 @@ class Chiller(ThermalEntityCooling, ElectricalEntity, cc.CompressionChiller):
         cop * p_{el} &=& - p_{th\\_cool}
 
     - See also:
-        - pycity_scheduling.util.generic_constraints.LowerActivationLimit: Generates additional constraints for the
-        `lower_activation_limit` in `integer` mode.
+        - pycity_scheduling.util.generic_constraints.LowerActivationLimit:
+        Generates additional constraints for the `lower_activation_limit` in `integer` mode.
     """
 
     def __init__(self, environment, p_th_nom, cop=None, eta=0.36, t_min=4.0, lower_activation_limit=0, t_flow=16.0):
