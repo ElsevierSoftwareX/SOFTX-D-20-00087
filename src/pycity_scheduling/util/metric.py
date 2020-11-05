@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -250,8 +246,8 @@ def metric_delta_g(entity, schedule):
 
     Notes
     -----
-        - Implementation as given in the lecture "Elektrizitaetswirtschaft"
-          by Prof. Dr.-Ing. Christian Rehtanz at TU Dortmund.
+    - Implementation as given in the lecture "Elektrizitaetswirtschaft"
+      by Prof. Dr.-Ing. Christian Rehtanz from TU Dortmund, Germany.
     """
     p_el_min_dsm = min(entity.p_el_schedule)
     p_el_max_dsm = max(entity.p_el_schedule)

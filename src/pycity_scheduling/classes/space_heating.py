@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -86,8 +82,8 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
     Notes
     -----
     - The thermal standard load profile is based on the dissertation of Mark Hellwig
-    "Entwicklung und Anwendung parametrisierter Standard-Lastprofile",
-    TU München, Germany, 2003: http://mediatum.ub.tum.de/doc/601557/601557.pdf (accessed on 2020/09/28)
+      "Entwicklung und Anwendung parametrisierter Standard-Lastprofile",
+      TU München, Germany, 2003: http://mediatum.ub.tum.de/doc/601557/601557.pdf (accessed on 2020/09/28)
 
     - The following constraint is added for removing the bounds from TEH:
 

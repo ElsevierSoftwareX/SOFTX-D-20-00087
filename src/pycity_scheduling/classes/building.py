@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -75,8 +71,8 @@ class Building(EntityContainer, bd.Building):
     Notes
     -----
     - The exchange of thermal energy between different buildings is currently not supported.
-    As a result, the building adds the following set of constrains additionally to the
-    ones of the EntityContainer:
+      As a result, the building adds the following set of constrains additionally to the
+      ones of the EntityContainer:
 
     .. math::
         p_{th\\_heat} &=& 0 \\\\
@@ -88,8 +84,8 @@ class Building(EntityContainer, bd.Building):
         e_{u\\_bound} \\geq \\sum_i e_{th\\_heat\\_i} \\geq e_{l\\_bound} \\\\
 
     - The :math:`E_{u\\_bound}` and :math:`E_{l\\_bound}` are determined by the
-    robustness parameter, the available capacity of thermal heating storage, the magnitude of heating
-    required by SpaceHeating and the magnitude of heating that can be produced by the building's heating units.
+      robustness parameter, the available capacity of thermal heating storage, the magnitude of heating
+      required by SpaceHeating and the magnitude of heating that can be produced by the building's heating units.
     """
 
     def __init__(self, environment, objective='price', name=None,

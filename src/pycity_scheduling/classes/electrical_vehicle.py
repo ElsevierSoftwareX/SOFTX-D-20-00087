@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -62,7 +58,7 @@ class ElectricalVehicle(Battery):
     Notes
     -----
     - EVs offer sets of constraints for operation. The :math:`e_{el}` equivalence
-    constraint is replaced by the following constraint:
+      constraint is replaced by the following constraint:
 
     .. math::
         e_{el} &=& e_{el\\_previous} + (\\eta * p_{el\\_demand}
@@ -80,8 +76,8 @@ class ElectricalVehicle(Battery):
         e_{el\\_i} = e_{el\\_max}, & \\quad \\text{else if} \\quad ct\\_pattern_i+1 = 0
 
     - The constraint for the parameter `storage_end_equality` is removed. Instead,
-    the EV needs to be fully charged at the end of the `simu_horizon` if parameter `ct_pattern`
-    is one at the end of the simulation horizon.
+      the EV needs to be fully charged at the end of the `simu_horizon` if parameter `ct_pattern`
+      is one at the end of the simulation horizon.
     """
 
     def __init__(self, environment, e_el_max, p_el_max_charge, p_el_max_discharge=0.0,

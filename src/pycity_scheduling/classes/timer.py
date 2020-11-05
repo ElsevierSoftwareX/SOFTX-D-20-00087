@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -50,7 +46,7 @@ class Timer(ti.Timer):
     Notes
     -----
     - This class' behaviour may differ from the one of the baseclass, as it
-    keeps an actual date rather than a relative counter only
+      keeps an actual date rather than a relative counter only
     """
 
     def __init__(self, step_size=900, op_horizon=96,

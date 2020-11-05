@@ -1,18 +1,14 @@
 """
-:::::::::::::::::::::::::::::::::::::::
-::: The pycity_scheduling Framework :::
-:::::::::::::::::::::::::::::::::::::::
+The pycity_scheduling Framework
 
 
 Institution:
-::::::::::::
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
 Authors:
-::::::::
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -59,7 +55,7 @@ class LowerActivationLimit(Constraint):
 
     Notes
     -----
-    In `integer` mode the following constraints are added:
+    - In `integer` mode the following constraints are added:
 
     .. math::
         State  \\geq \\frac{var}{var\\_nom} \\geq State * lower\\_activation\\_limit
