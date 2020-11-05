@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -66,7 +68,7 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
 
     Notes
     -----
-     - The following constraint is added for removing the bounds from the TEC:
+    - The following constraint is added for removing the bounds from the TEC:
 
     .. math::
         p_{th\\_cool} = load\\_curve
@@ -82,7 +84,8 @@ class SpaceCooling(ThermalEntityCooling, sc.SpaceCooling):
         self.p_th_cool_schedule = p
 
     def update_model(self, mode=""):
-        """Add device block to pyomo ConcreteModel.
+        """
+        Add device block to pyomo ConcreteModel.
 
         Set variable bounds to equal the given demand, as pure space cooling does
         not provide any flexibility.

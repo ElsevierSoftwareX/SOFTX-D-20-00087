@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -30,7 +32,8 @@ __all__ = [
 
 
 def schedule_to_dict(input_list, schedule=None):
-    """Create a dict containing a reference to the optimized schedules.
+    """
+    Create a dictionary containing a reference to the optimized schedules.
 
     Parameters
     ----------
@@ -61,7 +64,8 @@ def schedule_to_dict(input_list, schedule=None):
 
 
 def schedule_to_json(input_list, file_name, schedule=None):
-    """Write the optimized schedule of all entities to a json file.
+    """
+    Write the optimized schedule of all entities to a json file.
 
     Parameters
     ----------
@@ -94,8 +98,8 @@ def schedule_to_json(input_list, file_name, schedule=None):
 
 
 def schedule_to_csv(input_list, file_name, delimiter=";", schedule=None):
-    """Write the optimized schedule of all entities to a CSV file.
-
+    """
+    Write the optimized schedule of all entities to a CSV file.
 
     Parameters
     ----------

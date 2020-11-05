@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -46,7 +48,7 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
 
     Notes
     -----
-     - The following constraint is added for removing the bounds from EE:
+    - The following constraint is added for removing the bounds from EE:
 
     .. math::
         p_{el} &=& -p_{el\\_supply}, & \\quad \\text{if force_renewables} \\\\
@@ -87,7 +89,8 @@ class WindEnergyConverter(ElectricalEntity, wec.WindEnergyConverter):
         return
 
     def get_objective(self, coeff=1):
-        """Objective function of the WindEnergyConverter.
+        """
+        Objective function of the WindEnergyConverter.
 
         Return the objective function of the wind energy converter weighted
         with `coeff`. Depending on `self.force_renewables` leave objective

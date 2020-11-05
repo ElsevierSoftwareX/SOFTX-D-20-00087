@@ -59,14 +59,14 @@ class ElectricalVehicle(Battery):
 
     Notes
     -----
-     - EVs offer sets of constraints for operation. The :math:`e_{el}` equivalence
+    - EVs offer sets of constraints for operation. The :math:`e_{el}` equivalence
     constraint is replaced by the following constraint:
 
     .. math::
         e_{el} &=& e_{el\\_previous} + (\\eta * p_{el\\_demand}
         - (1 / \\eta) * p_{el\\_supply} - p_{el\\_drive}) * \\Delta t \\\\
 
-     - The following constraints are added:
+    - The following constraints are added:
 
     .. math::
         p_{el\\_drive} \\geq 0 \\\\
@@ -77,7 +77,7 @@ class ElectricalVehicle(Battery):
         e_{el\\_i} = 0.2 * e_{el\\_max}, & \\quad \\text{else if} \\quad ct\\_pattern_i = 0 \\\\
         e_{el\\_i} = e_{el\\_max}, & \\quad \\text{else if} \\quad ct\\_pattern_i+1 = 0
 
-     - The constraint for the parameter `storage_end_equality` is removed. Instead,
+    - The constraint for the parameter `storage_end_equality` is removed. Instead,
     the EV needs to be fully charged at the end of the `simu_horizon` if parameter `ct_pattern`
     is one at the end of the simulation horizon.
     """
@@ -131,7 +131,8 @@ class ElectricalVehicle(Battery):
         self.new_var("p_el_drive")
 
     def populate_model(self, model, mode="convex"):
-        """Add device block to pyomo ConcreteModel
+        """
+        Add device block to pyomo ConcreteModel
 
         Call parent's `populate_model` method. Replace coupling
         constraints from Battery class with coupling constraints
@@ -225,7 +226,8 @@ class ElectricalVehicle(Battery):
         return
 
     def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
+        """
+        Objective function for entity level scheduling.
 
         Return the objective function of the electric vehicle weighted with
         coeff. Quadratic term with additional weights to reward charging the

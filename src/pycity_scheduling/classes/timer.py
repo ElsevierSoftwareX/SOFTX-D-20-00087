@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -47,7 +49,7 @@ class Timer(ti.Timer):
 
     Notes
     -----
-     - This class' behaviour may differ from the one of the baseclass, as it
+    - This class' behaviour may differ from the one of the baseclass, as it
     keeps an actual date rather than a relative counter only
     """
 
@@ -100,65 +102,90 @@ class Timer(ti.Timer):
 
     @property
     def datetime(self):
-        """The datetime of the current timestep."""
+        """
+        The datetime of the current timestep.
+        """
         return self._dt
 
     @property
     def date(self):
-        """The date of the current timestep."""
+        """
+        The date of the current timestep.
+        """
         return datetime.date(self._dt.year, self._dt.month, self._dt.day)
 
     @property
     def is_leap(self):
-        """If the year of the current timestep is a leap year."""
+        """
+        If the year of the current timestep is a leap year.
+        """
         return calendar.isleap(self._dt.year)
 
     @property
     def year(self):
-        """The year of the current timestep."""
+        """
+        The year of the current timestep.
+        """
         return self._dt.year
 
     @property
     def month(self):
-        """The month of the current timestep."""
+        """
+        The month of the current timestep.
+        """
         return self._dt.month
 
     @property
     def day(self):
-        """The day of the month for the current timestep."""
+        """
+        The day of the month for the current timestep.
+        """
         return self._dt.day
 
     @property
     def weekday(self):
-        """The weekday of the current timestep."""
+        """
+        The weekday of the current timestep.
+        """
         return self._dt.weekday()
 
     @property
     def time(self):
-        """The time for the current timestep."""
+        """
+        The time for the current timestep.
+        """
         return datetime.time(self._dt.hour, self._dt.minute, self._dt.second)
 
     @property
     def hour(self):
-        """The hour of the current timestep."""
+        """
+        The hour of the current timestep.
+        """
         return self._dt.hour
 
     @property
     def minute(self):
-        """The minute of the current timestep."""
+        """
+        The minute of the current timestep.
+        """
         return self._dt.minute
 
     @property
     def second(self):
-        """The second of the current timestep."""
+        """
+        The second of the current timestep.
+        """
         return self._dt.second
 
     def print_datetime(self):
-        """Print the datetime for the current timestep."""
+        """
+        Print the datetime for the current timestep.
+        """
         return str(self._dt)
 
     def mpc_update(self):
-        """Update Timer for MPC.
+        """
+        Update Timer for MPC.
 
         Move `self.mpc_step_width` timesteps forward.
         """
@@ -174,7 +201,8 @@ class Timer(ti.Timer):
         return
 
     def op_update(self):
-        """Update Timer for a normal scheduling optimization.
+        """
+        Update Timer for a normal scheduling optimization.
 
         Go `self.timesteps_used_horizon` timesteps forward.
         """
@@ -190,7 +218,9 @@ class Timer(ti.Timer):
         return
 
     def reset(self):
-        """Reset the Timer to the initial state."""
+        """
+        Reset the Timer to the initial state.
+        """
         self._dt = self._init_dt
         self.current_timestep = 0
         self.current_weekday = self._dt.weekday() + 1
@@ -199,7 +229,8 @@ class Timer(ti.Timer):
         return
 
     def time_in_year(self, unit="timesteps", from_init=False):
-        """Time passed since the beginning of the year.
+        """
+        Time passed since the beginning of the year.
 
         Parameters
         ----------
@@ -238,7 +269,8 @@ class Timer(ti.Timer):
             return seconds
 
     def time_in_week(self, unit="timesteps", from_init=False):
-        """Time passed since beginning of the day.
+        """
+        Time passed since beginning of the day.
 
         Parameters
         ----------
@@ -278,7 +310,8 @@ class Timer(ti.Timer):
             return seconds
 
     def time_in_day(self, unit="timesteps", from_init=False):
-        """Time passed since beginning of the day.
+        """
+        Time passed since beginning of the day.
 
         Parameters
         ----------

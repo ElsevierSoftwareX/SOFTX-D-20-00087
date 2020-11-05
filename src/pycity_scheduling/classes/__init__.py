@@ -144,7 +144,8 @@ storage_devices = {
 
 
 def filter_entities(entities, entity_type):
-    """Filter a list of entities for given entity types.
+    """
+    Filter a list of entities for given entity types.
 
     Parameters
     ----------

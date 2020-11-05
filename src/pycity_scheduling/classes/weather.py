@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.

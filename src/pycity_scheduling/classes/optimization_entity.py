@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -69,22 +71,29 @@ class OptimizationEntity(object):
 
     @property
     def op_horizon(self):
-        """Number of time steps in a scheduling period."""
+        """
+        Number of time steps in a scheduling period.
+        """
         return self.timer.timesteps_used_horizon
 
     @property
     def op_time_vec(self):
-        """Iterator over scheduling period."""
+        """
+        Iterator over scheduling period.
+        """
         return range(self.timer.timesteps_used_horizon)
 
     @property
     def simu_horizon(self):
-        """Number of time steps in the whole simulation horizon."""
+        """
+        Number of time steps in the whole simulation horizon.
+        """
         return self.timer.simu_horizon
 
     @property
     def time_slot(self):
-        """Length of a time step as a portion of an hour.
+        """
+        Length of a time step as a portion of an hour.
 
         Examples
         --------
@@ -95,18 +104,23 @@ class OptimizationEntity(object):
 
     @property
     def timestep(self):
-        """Time step indicating the current scheduling."""
+        """
+        Time step indicating the current scheduling.
+        """
         return self.timer.current_timestep
 
     @property
     def op_slice(self):
-        """Slice to select values of current scheduling from whole horizon."""
+        """
+        Slice to select values of current scheduling from whole horizon.
+        """
         t1 = self.timer.current_timestep
         t2 = t1 + self.timer.timesteps_used_horizon
         return slice(t1, t2)
 
     def populate_model(self, model, mode=""):
-        """Add entity block to pyomo ConcreteModel.
+        """
+        Add entity block to pyomo ConcreteModel.
 
         Places the block with the name of the entity in the ConcreteModel.
 
@@ -127,7 +141,8 @@ class OptimizationEntity(object):
         return
 
     def update_model(self, mode=""):
-        """Update block parameters and bounds.
+        """
+        Update block parameters and bounds.
 
         Set parameters and bounds according to the current situation of the
         device according to the previous schedule and the current forecasts.
@@ -143,7 +158,8 @@ class OptimizationEntity(object):
         pass
 
     def update_schedule(self):
-        """Update the schedule with the scheduling model solution.
+        """
+        Update the schedule with the scheduling model solution.
 
         Retrieve the solution from the scheduling model and write it to the
         schedule. The model must be optimal. The time / position of the
@@ -163,7 +179,8 @@ class OptimizationEntity(object):
         return
 
     def set_objective(self, objective):
-        """Set a new objective to be returned by get_objective.
+        """
+        Set a new objective to be returned by get_objective.
 
         Parameters
         ----------
@@ -176,7 +193,8 @@ class OptimizationEntity(object):
         return
 
     def get_objective(self, coeff=1):
-        """Objective function for entity level scheduling.
+        """
+        Objective function for entity level scheduling.
 
         Return the objective function of the entity weighted with
         coeff.
@@ -199,7 +217,8 @@ class OptimizationEntity(object):
             )
 
     def reset(self, schedule=None):
-        """Reset all values of specified schedule.
+        """
+        Reset all values of specified schedule.
 
         Parameters
         ----------
@@ -219,6 +238,7 @@ class OptimizationEntity(object):
 
     def get_entities(self):
         """
+        Yield all lowest contained entities.
 
         Yields
         ------
@@ -233,6 +253,7 @@ class OptimizationEntity(object):
 
     def get_lower_entities(self):
         """
+        Yield all lower-level entities.
 
         Yields
         ------
@@ -242,6 +263,7 @@ class OptimizationEntity(object):
 
     def get_all_entities(self):
         """
+        Yield all entities.
 
         Yields
         ------
@@ -252,7 +274,8 @@ class OptimizationEntity(object):
             yield from entity.get_all_entities()
 
     def new_var(self, name, dtype=np.float64, func=None):
-        """Create a new entry and empty schedule for variable with specified name.
+        """
+        Create a new entry and empty schedule for variable with specified name.
 
         Parameters
         ----------
@@ -272,7 +295,8 @@ class OptimizationEntity(object):
         return
 
     def new_schedule(self, schedule):
-        """Create a new schedule with default values.
+        """
+        Create a new schedule with default values.
 
         Parameters
         ----------
@@ -285,7 +309,8 @@ class OptimizationEntity(object):
         return
 
     def copy_schedule(self, dst=None, src=None, name=None):
-        """Copy values of one schedule in another schedule.
+        """
+        Copy values of one schedule in another schedule.
 
         Parameters
         ----------
@@ -316,7 +341,8 @@ class OptimizationEntity(object):
         return
 
     def load_schedule(self, schedule):
-        """Copy values of one schedule in another schedule.
+        """
+        Copy values of one schedule in another schedule.
 
         Parameters
         ----------
@@ -329,7 +355,8 @@ class OptimizationEntity(object):
         return
 
     def load_schedule_into_model(self, schedule=None):
-        """Overwrites the values in the entity model with the values in the schedule.
+        """
+        Overwrites the values in the entity model with the values in the schedule.
 
         Parameters
         ----------
@@ -357,7 +384,9 @@ class OptimizationEntity(object):
 
     @property
     def schedule(self):
-        """The current loaded schedule."""
+        """
+        The current loaded schedule.
+        """
         return self.schedules[self.current_schedule_active]
 
     def __getattr__(self, item):

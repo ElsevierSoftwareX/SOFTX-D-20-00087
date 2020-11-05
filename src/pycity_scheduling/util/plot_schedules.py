@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -47,7 +49,8 @@ def _extended_schedule(var_name, schedule):
 
 
 def plot_entity(entity, schedule=None, ax=None, title=None):
-    """Plot single entity into axis.
+    """
+    Plot a single entity into axis.
 
     Parameters
     ----------
@@ -122,7 +125,8 @@ def plot_entity(entity, schedule=None, ax=None, title=None):
 
 
 def plot_imbalance(entity, schedule=None, var_name="p_el", ax=None, title=None):
-    """Plot the imbalance of a schedule to its sub-entities.
+    """
+    Plot the imbalance of a schedule to its sub-entities.
 
     For entity containers and other similar entities with sub-entities the
     schedule of some variables should be the equal to the sum of the schedule
@@ -180,7 +184,8 @@ def plot_imbalance(entity, schedule=None, var_name="p_el", ax=None, title=None):
 
 
 def plot_entity_directory(entity, schedule=None, directory_path=None, levels=None, extension="png"):
-    """Plot the entity and its sub-entities into a directory.
+    """
+    Plot the entity and its sub-entities into a directory.
 
     Creates the directories and places the plots in them.
     Parameters

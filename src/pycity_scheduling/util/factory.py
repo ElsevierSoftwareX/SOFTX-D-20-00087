@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -27,7 +29,8 @@ from pycity_scheduling.data.ev_data import ev_data as evd
 
 
 def generate_standard_environment(**timer_args):
-    """Generate a standard environment object.
+    """
+    Generate a standard environment object.
 
     Returns
     -------
@@ -73,7 +76,8 @@ def _calculate_dl_times(timer):
 
 
 def _distribute(d, number):
-    """Generates amounts based on distribution and total number and minimizes rounding error
+    """
+    Generates amounts based on distribution and total number and minimizes rounding error
 
     Parameters
     ----------
@@ -114,7 +118,8 @@ def generate_tabula_buildings(environment,
                               device_probabilities=None,
                               objective='price',
                               seed=None):
-    """Generate buildings based on the TABULA data.
+    """
+    Generate buildings based on the TABULA data.
 
     Generate buildings based on the TABULA data from: http://www.episcope.eu/ (accessed on 2020/09/28)
     Heating units are automatically dimensioned and added to each building. A
@@ -303,7 +308,8 @@ def generate_tabula_district(environment,
                              district_objective='price',
                              building_objective='price',
                              seed=1):
-    """Create a TABULA district.
+    """
+    Generate a TABULA-based city district.
 
     Parameters
     ----------
@@ -389,7 +395,8 @@ def generate_tabula_district(environment,
 
 
 def generate_simple_building(env, fl=0, sh=0, eh=0, ths=0, bat=0):
-    """Generate a simple building with loads and storages.
+    """
+    Generate a simple building with loads and storages.
 
     Parameters
     ----------

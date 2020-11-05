@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -34,6 +36,7 @@ __all__ = [
 
 def compute_profile(timer, profile, pattern=None):
     """
+    Compute a load series profile for an electrical vehicle.
 
     Parameters
     ----------
@@ -95,7 +98,8 @@ def compute_profile(timer, profile, pattern=None):
 
 
 def calculate_flexibility_potential(city_district, algorithm="central", reference_algorithm="stand-alone"):
-    """Calculate and quantify the operational flexibility potential for a certain city district.
+    """
+    Calculate and quantify the operational flexibility potential for a certain city district.
 
 
     Parameters
@@ -149,7 +153,8 @@ _numpy_type = {
 
 
 def extract_pyomo_value(variable, var_type=None):
-    """Extract a single values out of the pyomo Variable after optimization.
+    """
+    Extract a single values out of the pyomo Variable after optimization.
 
     Parameters
     ----------
@@ -212,7 +217,8 @@ def extract_pyomo_value(variable, var_type=None):
 
 
 def extract_pyomo_values(variable, var_type=None):
-    """Extract values out of the pyomo Variable container after optimization.
+    """
+    Extract values out of the pyomo Variable container after optimization.
 
     Parameters
     ----------

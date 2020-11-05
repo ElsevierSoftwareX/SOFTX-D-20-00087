@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -32,7 +34,7 @@ class ThermalEntityCooling(OptimizationEntity):
 
     Notes
     -----
-     - Cooling TEs add the :math:`p_{th\\_cool}` variable to the model. When not modified
+    - Cooling TEs add the :math:`p_{th\\_cool}` variable to the model. When not modified
     by other classes, the following constraint is added:
 
     .. math::
@@ -45,7 +47,8 @@ class ThermalEntityCooling(OptimizationEntity):
         self.new_var("p_th_cool")
 
     def populate_model(self, model, mode="convex"):
-        """Add device block to pyomo ConcreteModel.
+        """
+        Add device block to pyomo ConcreteModel.
 
         Add variables for the thermal cooling demand of the entity to the optimization
         model.

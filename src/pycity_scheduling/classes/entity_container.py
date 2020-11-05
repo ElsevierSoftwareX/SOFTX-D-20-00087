@@ -35,7 +35,7 @@ class EntityContainer(ThermalEntityCooling, ThermalEntityHeating, ElectricalEnti
 
     Notes
     -----
-     - EntityContainers offer sets of constraints for operation. The following
+    - EntityContainers offer sets of constraints for operation. The following
     constraints are added.
 
     .. math::
@@ -43,12 +43,13 @@ class EntityContainer(ThermalEntityCooling, ThermalEntityHeating, ElectricalEnti
         p_{th\\_heat} &=& \\sum_i p_{th\\_heat\\_i} \\\\
         p_{el} &=& \\sum_i p_{el\\_i}
 
-     - :math:`p_{th\\_cool\\_i}`, :math:`p_{th\\_heat\\_i}`, and :math:`p_{el\\_i}` are the variables from lower
+    - :math:`p_{th\\_cool\\_i}`, :math:`p_{th\\_heat\\_i}`, and :math:`p_{el\\_i}` are the variables from lower
     entities. The Bounds from TEC, TEH, and EE are removed.
     """
 
     def populate_model(self, model, mode="convex"):
-        """Add entity block and lower entities blocks to pyomo ConcreteModel.
+        """
+        Add entity block and lower entities blocks to pyomo ConcreteModel.
 
         Call both parent's `populate_model` methods and set variables lower
         bounds to `None`. Then call `populate_model` method of all contained

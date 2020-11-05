@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -42,7 +44,7 @@ class ElectricalEntity(OptimizationEntity):
 
     Notes
     -----
-     - EEs add the :math:`p_{el}` variable to the model. When not modified
+    - EEs add the :math:`p_{el}` variable to the model. When not modified
     by other classes, the following constraint is added:
 
     .. math::

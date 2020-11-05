@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -23,7 +25,8 @@ import pyomo.solvers.plugins.solvers as Solvers
 
 
 def analyze_model(model, optimizer, result, options={}):
-    """Analyze a model which is not optimal.
+    """
+    Analyze a model which is not optimal.
 
     Parameters
     ----------
@@ -64,7 +67,8 @@ def analyze_model(model, optimizer, result, options={}):
 
 
 def print_district(cd, lvl=1):
-    """Hierarchically print a city district.
+    """
+    Hierarchically print a city district.
 
     Parameters
     ----------

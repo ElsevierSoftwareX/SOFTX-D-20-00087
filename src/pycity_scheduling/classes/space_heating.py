@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -83,13 +85,11 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
 
     Notes
     -----
-     - The thermal standard load profile is based on the dissertation of
-       Mark Hellwig
-       "Entwicklung und Anwendung parametrisierter Standard-Lastprofile",
-       TU München, Germany, 2003:
-       http://mediatum.ub.tum.de/doc/601557/601557.pdf (accessed on 2020/09/28)
+    - The thermal standard load profile is based on the dissertation of Mark Hellwig
+    "Entwicklung und Anwendung parametrisierter Standard-Lastprofile",
+    TU München, Germany, 2003: http://mediatum.ub.tum.de/doc/601557/601557.pdf (accessed on 2020/09/28)
 
-     - The following constraint is added for removing the bounds from TEH:
+    - The following constraint is added for removing the bounds from TEH:
 
     .. math::
         p_{th\\_heat} = load\\_curve
@@ -109,7 +109,8 @@ class SpaceHeating(ThermalEntityHeating, sh.SpaceHeating):
         self.p_th_heat_schedule = p
 
     def update_model(self, mode=""):
-        """Add device block to pyomo ConcreteModel.
+        """
+        Add device block to pyomo ConcreteModel.
 
         Set variable bounds to equal the given demand, as pure space heating does
         not provide any flexibility.

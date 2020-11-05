@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -46,8 +48,9 @@ class Prices(pr.Prices):
 
     Notes
     -----
-     - If prices are loaded automatically, the simulation period must lie within a single year.
-     - CO2 emissions and day-ahead prices are currently available for the year 2015 only.
+    - If prices are loaded automatically, the simulation period must lie within a single year.
+
+    - CO2 emissions and day-ahead prices are currently available for the year 2015 only.
     """
 
     da_price_cache = None
@@ -164,7 +167,8 @@ class Prices(pr.Prices):
 
     @staticmethod
     def _interp_prices(prices, timesteps, length, factor=1, mode='linear'):
-        """Interpolate and slice prices.
+        """
+        Interpolate and slice prices.
 
         Interpolates a price vector to the correct resolution and then extracts
         the specified range from it.

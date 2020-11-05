@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -72,7 +74,7 @@ class Building(EntityContainer, bd.Building):
 
     Notes
     -----
-     - The exchange of thermal energy between different buildings is currently not supported.
+    - The exchange of thermal energy between different buildings is currently not supported.
     As a result, the building adds the following set of constrains additionally to the
     ones of the EntityContainer:
 
@@ -80,12 +82,12 @@ class Building(EntityContainer, bd.Building):
         p_{th\\_heat} &=& 0 \\\\
         p_{th\\_cool} &=& 0
 
-     - The building can also add robustness constrains for thermal heating storage:
+    - The building can also add robustness constrains for thermal heating storage:
 
     .. math::
         e_{u\\_bound} \\geq \\sum_i e_{th\\_heat\\_i} \\geq e_{l\\_bound} \\\\
 
-     - The :math:`E_{u\\_bound}` and :math:`E_{l\\_bound}` are determined by the
+    - The :math:`E_{u\\_bound}` and :math:`E_{l\\_bound}` are determined by the
     robustness parameter, the available capacity of thermal heating storage, the magnitude of heating
     required by SpaceHeating and the magnitude of heating that can be produced by the building's heating units.
     """
@@ -107,7 +109,8 @@ class Building(EntityContainer, bd.Building):
         self.storage_end_equality = storage_end_equality
 
     def populate_model(self, model, mode="convex", robustness=None):
-        """Add building block to pyomo ConcreteModel.
+        """
+        Add building block to pyomo ConcreteModel.
 
         Call parent's `populate_model` method and set variables lower
         bounds to `None`. Then call `populate_model` method of the BES
@@ -148,7 +151,8 @@ class Building(EntityContainer, bd.Building):
         return
 
     def update_model(self, mode="", robustness=None):
-        """Update block parameters and bounds.
+        """
+        Update block parameters and bounds.
 
         Set parameters and bounds according to the current situation of the device
         according to the previous schedule and the current forecasts.

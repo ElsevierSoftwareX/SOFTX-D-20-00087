@@ -1,16 +1,18 @@
 """
-The pycity_scheduling framework
+#######################################
+### The pycity_scheduling framework ###
+#######################################
 
 
-Institution
------------
+Institution:
+############
 Institute for Automation of Complex Power Systems (ACS);
 E.ON Energy Research Center;
 RWTH Aachen University
 
 
-Authors
--------
+Authors:
+########
 Sebastian Schwarz, M.Sc.;
 Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
@@ -121,14 +123,14 @@ class FixedLoad(ElectricalEntity, ed.ElectricalDemand):
 
     Notes
     -----
-     - Standard load profiles, for instance for Germany, can be found here:
+    - Standard load profiles, for instance for Germany, can be found here:
     https://www.bdew.de/energie/standardlastprofile-strom/ (accessed on 2020/09/28)
 
      - Average German electricity consumption data per household can be found here:
     https://lena.sachsen-anhalt.de/fileadmin/Bibliothek/Sonstige_Webprojekte/Lena/Pressemitteilungen/
     Stromspiegel/Stromspiegel2014_Medienblatt.pdf (accessed on 2020/09/28)
 
-     - The following constraint is added for removing the bounds from EE:
+    - The following constraint is added for removing the bounds from EE:
 
     .. math::
         p_{el} = load\\_curve
