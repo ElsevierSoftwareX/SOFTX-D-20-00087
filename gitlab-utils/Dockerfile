@@ -27,6 +27,7 @@ RUN cd / &&\
     wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
     python3.6 get-pip.py &&\
     python3.6 -m pip install --upgrade pip &&\
+    python3.6 -m pip install pytest &&\
     cd /
 
 
