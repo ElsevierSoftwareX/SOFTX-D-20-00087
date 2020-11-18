@@ -1,8 +1,8 @@
 variables:
   GIT_STRATEGY: fetch
-  DOCKER_FILE: gitlab-utils/Dockerfile
+  DOCKER_FILE: ${CI_PROJECT_DIR}/gitlab-utils/Dockerfile
   DOCKER_TAG: ${CI_COMMIT_REF_SLUG}
-  DOCKER_IMAGE_DEV: pycity_scheduling
+  DOCKER_IMAGE_DEV: pycity_scheduling_ci
 
 
 stages:
@@ -10,50 +10,30 @@ stages:
   - test
   - release
 
-prepare:
-  stage: prepare
-  script:
-    - docker build
-        --file ${DOCKER_FILE}
-        --target base
-        --tag ${DOCKER_IMAGE_DEV}:base-${DOCKER_TAG} .
-    - docker build
-        --file ${DOCKER_FILE}
-        --target lint
-        --tag ${DOCKER_IMAGE_DEV}:lint-${DOCKER_TAG} .
-    - docker build
-        --file ${DOCKER_FILE}
-        --target doc
-        --tag ${DOCKER_IMAGE_DEV}:doc-${DOCKER_TAG} .
-    - docker build
-      --file ${DOCKER_FILE}
-      --target unittest
-      --tag ${DOCKER_IMAGE_DEV}:unittest-${DOCKER_TAG} .
-  tags:
-    - shell
-    - linux
 
-unittest:
-  stage: test
-  image: ${DOCKER_IMAGE_DEV}:unittest-${DOCKER_TAG}
-  tags:
-    - docker
+prepare:
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  stage: prepare
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [ "" ]
   script:
-    - cd $CI_PROJECT_DIR/src
-    - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/src/testing/unit_tests
-    - python3.6 -m unittest discover -v
+    - mkdir -p /kaniko/.docker
+    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG} --cache=true --snapshotMode=redo --use-new-run
+
 
 lint:
   stage: test
-  image: ${DOCKER_IMAGE_DEV}:lint-${DOCKER_TAG}
-  tags:
-    - docker
+  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/src/pylint_report.txt || true
     - tail -n 2 pylint_report.txt
+    - python3.6 -m pip uninstall -y pycity_scheduling
+    - cd $CI_PROJECT_DIR
   artifacts:
     name: "pylint-report"
     paths:
@@ -61,18 +41,31 @@ lint:
     expire_in: 4 weeks
     when: always
 
+
+unittest:
+  stage: test
+  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
+  script:
+    - cd $CI_PROJECT_DIR/src
+    - python3.6 -m pip install --no-cache-dir .
+    - cd $CI_PROJECT_DIR/src/testing/unit_tests
+    - python3.6 -m unittest discover -v
+    - python3.6 -m pip uninstall -y pycity_scheduling
+    - cd $CI_PROJECT_DIR
+
+
 doc:
   stage: release
   only:
     - master
-  image: ${DOCKER_IMAGE_DEV}:doc-${DOCKER_TAG}
-  tags:
-    - docker
+  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
     - cd $CI_PROJECT_DIR/docs
     - bash ./docu.sh
+    - python3.6 -m pip uninstall -y pycity_scheduling
+    - cd $CI_PROJECT_DIR
   artifacts:
     name: "documentation"
     paths:

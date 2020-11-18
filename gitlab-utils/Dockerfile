@@ -9,7 +9,7 @@ ENTRYPOINT /bin/bash
 
 
 # Install the archlinux base packages:
-RUN pacman -Syu sudo git patch wget php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --noconfirm
+RUN pacman -Syu sudo git patch wget curl php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --noconfirm
 
 
 # Create a builduser (required for some archlinux operations running inside Docker):
@@ -116,10 +116,6 @@ RUN cd $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl &&\
 ENV PATH="${PATH}:$SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl/build"
 
 
-# Install fundamental Python requirements for package pycity_scheduling:
-RUN python3.6 -m pip install --no-cache-dir pyomo numpy pandas matplotlib Shapely pytest
-
-
 # Download, install and test Python package richardsonpy:
 # Unfortunately, the current PyPI version of package richardsonpy seems to be broken.
 # As a workaround, richardsonpy is downloaded from github and flag -e is used for pip.
@@ -136,17 +132,6 @@ RUN git clone --depth=1 -b v0.3.1 https://github.com/RWTH-EBC/pyCity pycity_base
     python3.6 -m pytest -q pycity_base/
 
 
-# pycity_scheduling lint target:
-FROM base AS lint
-RUN python3.6 -m pip install --no-cache-dir pylint
-
-
-# pycity_scheduling doc target:
-FROM base AS doc
-RUN python3.6 -m pip install sphinx numpydoc
-
-
-# pycity_scheduling unittest target:
-FROM base AS unittest
-COPY src /pycity_scheduling
-RUN python3.6 -m pip install --no-cache-dir /pycity_scheduling[test]
+# Download and install the other requirements for package pycity_scheduling:
+# Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
+RUN python3.6 -m pip install --no-cache-dir pyomo numpy pandas matplotlib Shapely pylint sphinx numpydoc
