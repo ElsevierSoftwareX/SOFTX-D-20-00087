@@ -85,8 +85,10 @@ def plot_entity(entity, schedule=None, ax=None, title=None):
     if isinstance(entity, Battery):
         unknown_vars.discard("p_el_demand")
         unknown_vars.discard("p_el_supply")
+        unknown_vars.discard("p_state")
     if isinstance(entity, ElectricalVehicle):
         unknown_vars.discard("p_el_drive")
+        unknown_vars.discard("p_state")
     if isinstance(entity, CombinedHeatPower):
         unknown_vars.discard("total_device")
         unknown_vars.discard("current_device")
@@ -95,6 +97,8 @@ def plot_entity(entity, schedule=None, ax=None, title=None):
             raise ValueError("Too many variables for entity to plot.")
         var_colors[uv] = _other_colors[i]
     linestyles = ['-', ':']
+    min_y = np.infty
+    max_y = -np.infty
     for i, entity_schedule in enumerate(schedule_names):
         for var_name, var_schedule in entity.schedules[entity_schedule].items():
             if var_name not in var_colors:
@@ -108,13 +112,30 @@ def plot_entity(entity, schedule=None, ax=None, title=None):
                 label = entity_schedule + "_" + var_name
             ax.plot(xs, extended_schedule, color=c, label=label, drawstyle=drawstyle, linewidth=2,
                     linestyle=linestyles[i])
+            min_y = min(min_y, min(var_schedule))
+            max_y = max(max_y, max(var_schedule))
+
+    if min_y < 0.0:
+        min_y = min_y*1.5
+    elif min_y > 0.0:
+        min_y = min_y * 0.5
+    else:
+        min_y = -0.1*max_y
+
+    if max_y < 0.0:
+        max_y = max_y*0.5
+    elif max_y > 0.0:
+        max_y = max_y * 1.5
+    else:
+        max_y = -0.1*min_y
 
     if title is None:
         ax.set_title(str(entity))
     else:
         ax.set_title(title)
+    ax.set_ylim([min_y, max_y])
     ax.set_xlabel("Time in h")
-    ax.legend()
+    ax.legend(loc='upper right')
     if fig is not None:
         plt.show()
     return
@@ -160,6 +181,8 @@ def plot_imbalance(entity, schedule=None, var_name="p_el", ax=None, title=None):
     else:
         raise ValueError("Unknown type for schedule.")
 
+    min_y = np.infty
+    max_y = -np.infty
     for entity_schedule in schedule_names:
         imbalance = entity.schedules[entity_schedule][var_name].copy()
         for lower_entity in entity.get_lower_entities():
@@ -167,13 +190,30 @@ def plot_imbalance(entity, schedule=None, var_name="p_el", ax=None, title=None):
         xs = [x * entity.time_slot for x in range(entity.simu_horizon + 1)]
         extended_schedule, drawstyle = _extended_schedule(var_name, imbalance)
         ax.plot(xs, extended_schedule, drawstyle=drawstyle, linewidth=1.5, label=entity_schedule)
+        min_y = min(min_y, min(imbalance))
+        max_y = max(max_y, max(imbalance))
 
+    if min_y < 0.0:
+        min_y = min_y*1.5
+    elif min_y > 0.0:
+        min_y = min_y * 0.5
+    else:
+        min_y = -0.1*max_y
+
+    if max_y < 0.0:
+        max_y = max_y*0.5
+    elif max_y > 0.0:
+        max_y = max_y * 1.5
+    else:
+        max_y = -0.1*min_y
+
+    ax.set_ylim([min_y, max_y])
     if title is None:
         ax.set_title("Imbalance of entity {} for {}".format(str(entity), var_name))
     else:
         ax.set_title(title)
     ax.set_xlabel("Time in h")
-    ax.legend()
+    ax.legend(loc='upper right')
     if fig is not None:
         plt.show()
     return
@@ -204,6 +244,8 @@ def plot_entity_directory(entity, schedule=None, directory_path=None, levels=Non
         - `1` : Only print city district and buildings.
         - `2` : Print city district, buildings and their lower entities.
         - `...` : ...
+    extension : str, optional
+        File extension (i.e., the file format) of the figures to be stored in the given directory.
     """
 
     entities = [entity]
