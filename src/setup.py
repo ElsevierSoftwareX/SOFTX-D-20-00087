@@ -33,12 +33,12 @@ setup(
     packages=find_packages(),
     package_data={'pycity_scheduling': ['data/*.txt']},
     install_requires=[
-        'pyomo',
         'numpy',
         'pandas',
         'matplotlib',
-        'pycity_base>=0.3.1',
-        'Shapely>=1.6.4'
+        'pyomo',
+        'Shapely',
+        'pycity_base>=0.3.1'
     ],
     extras_require={
         'test': ['pytest']

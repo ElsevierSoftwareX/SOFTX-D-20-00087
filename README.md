@@ -4,10 +4,10 @@
 
 Python package pycity_scheduling is a framework for the effective prototyping, testing, and assessment of optimization-based power scheduling algorithms for multi-energy systems.
 The framework primarily targets the development of coordination concepts that can efficiently solve the power dispatch problem on the city district level.
-Its target users are researchers in the field of operational flexibility deployment and exploitation for local energy systems.
+Its target users are researchers in the field of smart grid applications and deployment of operational flexibility for local energy systems.
 
 
-## Contributing
+## Contribution
 
 1. Clone repository via SSH (`git clone git@git.rwth-aachen.de:acs/internal/simulation/pycity_scheduling.git`) or clone repository via HTTPS (`git clone https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling.git`)
 2. Open an issue at [https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/issues](https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/issues)
@@ -20,13 +20,13 @@ Its target users are researchers in the field of operational flexibility deploym
 
 ## Installation
 
-pycity_scheduling requires the following Python packages:
+pycity_scheduling requires at least the following Python packages:
 - numpy
-- matplotlib
 - pandas
-- pycity_base
+- matplotlib
 - pyomo
 - Shapely
+- pycity_base
 
 as well as the installation of at least one mathematical programming solver for convex and/or non-convex problems, which is supported by the [Pyomo](http://www.pyomo.org/) optimisation modelling library.
 We recommend one of the following solvers:

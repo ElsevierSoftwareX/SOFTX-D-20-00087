@@ -1,0 +1,10 @@
+numpy
+pandas
+matplotlib
+pyomo
+Shapely
+pycity_base>=0.3.1
+pylint
+sphinx
+numpydoc
+pytest

@@ -134,4 +134,4 @@ RUN git clone --depth=1 -b v0.3.1 https://github.com/RWTH-EBC/pyCity pycity_base
 
 # Download and install the other requirements for package pycity_scheduling:
 # Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
-RUN python3.6 -m pip install --no-cache-dir pyomo numpy pandas matplotlib Shapely pylint sphinx numpydoc
+RUN python3.6 -m pip install --no-cache-dir numpy pandas matplotlib pyomo Shapely pylint sphinx numpydoc
