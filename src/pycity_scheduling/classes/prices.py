@@ -14,6 +14,7 @@ Sebastian Alexander Uerlich, B.Sc.;
 Univ.-Prof. Antonello Monti, Ph.D.
 """
 
+
 import numpy as np
 import os.path as op
 import calendar
@@ -72,7 +73,8 @@ class Prices(pr.Prices):
             self.da_prices = self._interp_prices(Prices.da_price_cache,
                                                  timesteps,
                                                  timer.simu_horizon,
-                                                 factor)
+                                                 factor,
+                                                 'step')
         else:
             if len(da_prices) != timer.simu_horizon:
                 raise ValueError(
@@ -148,7 +150,8 @@ class Prices(pr.Prices):
             self.co2_prices = self._interp_prices(Prices.co2_price_cache,
                                                   timesteps,
                                                   timer.simu_horizon,
-                                                  factor)
+                                                  factor,
+                                                  'step')
         else:
             if len(co2_prices) != timer.simu_horizon:
                 raise ValueError(
