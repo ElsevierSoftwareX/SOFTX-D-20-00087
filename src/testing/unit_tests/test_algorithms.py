@@ -21,7 +21,7 @@ import pyomo.environ as pyomo
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.algorithms import algorithms
-from pycity_scheduling.exception import *
+from pycity_scheduling.exceptions import *
 
 
 class TestAlgorithms(unittest.TestCase):

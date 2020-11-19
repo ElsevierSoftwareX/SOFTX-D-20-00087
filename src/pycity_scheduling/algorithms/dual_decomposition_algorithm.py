@@ -21,7 +21,7 @@ import pyomo.environ as pyomo
 from pycity_scheduling.classes import (CityDistrict, Building, Photovoltaic, WindEnergyConverter)
 from pycity_scheduling.util import extract_pyomo_values
 from pycity_scheduling.algorithms.algorithm import IterationAlgorithm, DistributedAlgorithm, SolverNode
-from pycity_scheduling.constants import DEFAULT_SOLVER, DEFAULT_SOLVER_OPTIONS
+from pycity_scheduling.solvers import DEFAULT_SOLVER, DEFAULT_SOLVER_OPTIONS
 
 
 class DualDecomposition(IterationAlgorithm, DistributedAlgorithm):

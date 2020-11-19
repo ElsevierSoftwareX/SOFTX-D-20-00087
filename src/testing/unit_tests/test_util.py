@@ -26,10 +26,10 @@ import pyomo.environ as pyomo
 import pycity_scheduling.util as util
 import pycity_scheduling.util.factory
 import pycity_scheduling.util.generic_constraints as gen_constrs
-from pycity_scheduling import constants
+from pycity_scheduling import solvers
 from pycity_scheduling.classes import *
 from pycity_scheduling.data.tabula_data import tabula_building_data
-from pycity_scheduling.exception import SchedulingError
+from pycity_scheduling.exceptions import SchedulingError
 from pycity_scheduling.util.write_schedules import schedule_to_dict, schedule_to_csv, schedule_to_json
 from pycity_scheduling.util.plot_schedules import plot_entity_directory
 from pycity_scheduling.algorithms import CentralOptimization
@@ -59,7 +59,7 @@ class TestConstraints(unittest.TestCase):
 
         lal_constr.apply(ee.model, "convex")
         self.assertEqual(_get_constr_count(ee.model), 0)
-        opt = pyomo.SolverFactory(constants.DEFAULT_SOLVER)
+        opt = pyomo.SolverFactory(solvers.DEFAULT_SOLVER)
         opt.solve(m)
         ee.update_schedule()
         for i in ee.op_time_vec:
@@ -310,7 +310,7 @@ class TestSubpackage(unittest.TestCase):
             util.extract_pyomo_values(v)
 
         m = pyomo.ConcreteModel()
-        opt = pyomo.SolverFactory(constants.DEFAULT_SOLVER)
+        opt = pyomo.SolverFactory(solvers.DEFAULT_SOLVER)
 
         m.v = pyomo.Var(domain=pyomo.Reals)
         m.c = pyomo.Constraint(expr=m.v == 1.0)

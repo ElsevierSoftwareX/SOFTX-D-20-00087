@@ -21,9 +21,10 @@ import datetime
 import logging
 import warnings
 import pyomo.environ as pyomo
-from pyomo.opt import SolverStatus, TerminationCondition
+from pyomo.opt import TerminationCondition
 from shapely.geometry import Point
 
+from pycity_scheduling import constants, solvers
 from pycity_scheduling.classes import *
 from pycity_scheduling.util.metric import *
 
@@ -1715,5 +1716,5 @@ def solve_model(model):
     if not hasattr(model, "simple_var"):
         model.simple_var = pyomo.Var(domain=pyomo.Reals, bounds=(None, None), initialize=0)
         model.simple_constr = pyomo.Constraint(expr=model.simple_var == 1)
-    opt = pyomo.SolverFactory(constants.DEFAULT_SOLVER)
+    opt = pyomo.SolverFactory(solvers.DEFAULT_SOLVER)
     return opt.solve(model)

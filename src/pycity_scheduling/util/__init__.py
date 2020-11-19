@@ -19,7 +19,7 @@ import numpy as np
 import pyomo.environ as pyomo
 
 from pycity_scheduling.util.write_schedules import schedule_to_csv, schedule_to_json
-from pycity_scheduling.exception import SchedulingError
+from pycity_scheduling.exceptions import SchedulingError
 
 
 __all__ = [

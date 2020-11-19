@@ -20,7 +20,7 @@ import pyomo.environ as pyomo
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.algorithms import *
-from pycity_scheduling.constants import *
+from pycity_scheduling.solvers import *
 
 
 # This examples demonstrates the warmstart capability for algorithms implemented in pycity_scheduling.

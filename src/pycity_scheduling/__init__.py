@@ -16,7 +16,7 @@ Univ.-Prof. Antonello Monti, Ph.D.
 
 
 from pycity_scheduling import constants
-from pycity_scheduling import exception
+from pycity_scheduling import exceptions
 from pycity_scheduling import classes
 from pycity_scheduling import algorithms
 from pycity_scheduling import util
@@ -24,7 +24,7 @@ from pycity_scheduling import util
 
 __all__ = [
     'constants',
-    'exception',
+    'exceptions.py',
     'classes',
     'algorithms',
     'util',

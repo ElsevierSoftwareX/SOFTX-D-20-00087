@@ -19,7 +19,7 @@ import numpy as np
 import pyomo.environ as pyomo
 
 from pycity_scheduling.algorithms.algorithm import DistributedAlgorithm, SolverNode
-from pycity_scheduling.constants import DEFAULT_SOLVER, DEFAULT_SOLVER_OPTIONS
+from pycity_scheduling.solvers import DEFAULT_SOLVER, DEFAULT_SOLVER_OPTIONS
 
 
 class LocalOptimization(DistributedAlgorithm):
