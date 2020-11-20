@@ -19,7 +19,6 @@ sys.path.insert(0, os.path.abspath('../src'))
 
 project = 'pycity_scheduling'
 copyright = '2020, Institute for Automation of Complex Power Systems, E.ON Energy Research Center, RWTH Aachen University'
-author = 'Sebastian Schwarz, Sebastian Alexander Uerlich, Antonello Monti'
 
 # The short X.Y version
 version = '1.0.0'

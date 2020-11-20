@@ -83,7 +83,11 @@ RUN cd $BLISS_BASE_DIR &&\
 ENV PATH="${PATH}:$BLISS_BASE_DIR/bliss-0.73p/"
 
 
-# Download, build and install SCIP solver:
+# Download, build and install the SCIP solver (SCIPOptSuite 7.0.1).
+# Important note: You are allowed to retrieve a copy of SCIP for research purposes as a member of a noncommercial and academic institution.
+# In order to get a copy of SCIP, you need to certify that you are a member of a noncommercial, academic institution and accept the ZIB Academic License.
+# Commercial use requires a commercial license.
+# For further information visit: https://scipopt.org/#scipoptsuite
 RUN mkdir -p /opt/scip
 ENV SCIPAMPL_BASE_DIR="/opt/scip"
 

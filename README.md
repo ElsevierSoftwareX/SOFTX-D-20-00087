@@ -67,21 +67,6 @@ You may also try to run the pycity_scheduling's unit tests located in folder ./s
 
 ```Python
 """
-The pycity_scheduling framework
-
-
-@institution:
-Institute for Automation of Complex Power Systems (ACS)
-E.ON Energy Research Center
-RWTH Aachen University
-
-@author:
-Sebastian Schwarz, M.Sc.
-Sebastian Alexander Uerlich, B.Sc.
-Univ.-Prof. Antonello Monti, Ph.D.
-"""
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 
