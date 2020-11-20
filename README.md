@@ -272,3 +272,15 @@ Also see the pycity_base package's tutorials for the basic usage of the framewor
 ## License
 
 The pycity_scheduling package is released by RWTH Aachen University, E.ON Energy Research Center (E.ON ERC), Institute for Automation of Complex Power Systems (ACS) under the [MIT License](https://opensource.org/licenses/MIT).
+
+
+## Contact
+
+- Sebastian Schwarz, M.Sc. <sebastian.schwarz@eonerc.rwth-aachen.de>
+- Sebastian Alexander Uerlich, B.Sc. <sebastian.uerlich@rwth-aachen.de>
+- Univ.-Prof. Antonello Monti, Ph.D. <post_acs@eonerc.rwth-aachen.de>
+
+[Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de) \
+[E.ON Energy Research Center](http://www.eonerc.rwth-aachen.de) \
+[RWTH Aachen University, Germany](http://www.rwth-aachen.de)
+
