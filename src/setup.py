@@ -29,9 +29,8 @@ setuptools.setup(
     name="pycity_scheduling",
     description="A Python framework for the development, testing, and assessment of optimization-based"
                 "power scheduling algorithms for multi-energy systems in city districts",
-    version="0.9",
-    author="Sebastian Schwarz, Sebastian Alexander Uerlich, Antonello Monti"
-           "Institute for Automation of Complex Power Systems,"
+    version="1.0.0",
+    author="Institute for Automation of Complex Power Systems,"
            "E.ON Energy Research Center (E.ON ERC),"
            "RWTH Aachen University",
     author_email="post_acs@eonerc.rwth-aachen.de",
@@ -53,10 +52,10 @@ setuptools.setup(
     },
     platforms="any",
     classifiers=[
-        "Development Status :: 4 - Beta",
-        "Intended Audience :: Scientists/Engineers/Developers",
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Scientists/Developers",
         "License :: OSI Approved :: MIT License",
-        "Topic :: Science/Engineering",
+        "Topic :: Science/Research/Engineering",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.6",
     ],

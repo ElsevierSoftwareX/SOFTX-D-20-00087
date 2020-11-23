@@ -21,9 +21,9 @@ project = 'pycity_scheduling'
 copyright = '2020, Institute for Automation of Complex Power Systems, E.ON Energy Research Center, RWTH Aachen University'
 
 # The short X.Y version
-version = '1.0.0'
+version = 'v1.0.0'
 # The full version, including alpha/beta/rc tags
-release = '1.0.0'
+release = 'v1.0.0'
 
 # -- General configuration ---------------------------------------------------
 

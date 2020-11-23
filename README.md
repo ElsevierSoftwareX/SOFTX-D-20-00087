@@ -40,7 +40,7 @@ We recommend one of the following solvers:
 
 ### Installation of pycity_scheduling
 
-The latest version of pycity_scheduling is 0.9.
+The latest version of pycity_scheduling is 1.0.0.
 
 If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via pip (Python 3.X) as follows:
 
@@ -64,9 +64,14 @@ This import should be possible without any errors.
 You may also try to run the pycity_scheduling's unit tests located in folder ./src/testing using Python module pytest.
 
 
+## Documentation
+
+The documentation for the latest pycity_scheduling release can be accessed online via the [FEIN association](https://pycity-scheduling.fein-aachen.org/).
+
+
 ## Example usage
 
-```Python
+```python
 """
 import numpy as np
 import matplotlib.pyplot as plt

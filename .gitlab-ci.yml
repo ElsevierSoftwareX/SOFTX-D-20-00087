@@ -30,6 +30,8 @@ lint:
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir .
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
     - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
@@ -48,6 +50,8 @@ unittest:
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir .
     - cd $CI_PROJECT_DIR/src/testing/unit_tests
     - python3.6 -m unittest discover -v
@@ -62,6 +66,8 @@ doc:
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir .
     - cd $CI_PROJECT_DIR/gitlab-utils/sphinx_doc
     - bash ./docu.sh
@@ -84,9 +90,9 @@ pypi:
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR
-    - cp -a $CI_PROJECT_DIR/src ./_release
-    - cp $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/_release/LICENSE.txt
-    - cp $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/_release/README.md
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
+    - cp -ar $CI_PROJECT_DIR/src ./_release
     - cd $CI_PROJECT_DIR/_release
     - python3.6 setup.py sdist bdist_wheel
     - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi dist/*
