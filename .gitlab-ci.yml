@@ -75,6 +75,18 @@ doc:
     when: always
 
 
+pages:
+  stage: deploy
+  script:
+    - mkdir -p /public
+    - cp -ar $CI_PROJECT_DIR/docs/. /public/
+    - cd /public
+    - ls -ls
+  artifacts:
+    paths:
+      - public
+
+
 pypi:
   stage: release
   rules:
@@ -86,7 +98,8 @@ pypi:
     - cd $CI_PROJECT_DIR
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - cp -ar $CI_PROJECT_DIR/src ./_release
+    - mkdir -p $CI_PROJECT_DIR/_release
+    - cp -ar $CI_PROJECT_DIR/src/. $CI_PROJECT_DIR/_release/
     - cd $CI_PROJECT_DIR/_release
     - python3.6 setup.py sdist bdist_wheel
     - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi dist/*
