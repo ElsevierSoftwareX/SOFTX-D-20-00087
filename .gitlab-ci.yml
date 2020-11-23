@@ -78,13 +78,20 @@ doc:
 pypi:
   stage: release
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "web"'
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG =~ /^v/'
       when: delayed
-      start_in: '2 minutes'
+      start_in: '30 minutes'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - cd $CI_PROJECT_DIR/src
-    - cp $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - cp $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
+    - cd $CI_PROJECT_DIR
+    - cp -a $CI_PROJECT_DIR/src ./_release
+    - cp $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/_release/LICENSE.txt
+    - cp $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/_release/README.md
+    - cd $CI_PROJECT_DIR/_release
     - python3.6 setup.py sdist bdist_wheel
-    - echo $GITLAB_USER_ID
+    - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi dist/*
+    - cd $CI_PROJECT_DIR
+  artifacts:
+    name: "pycity_scheduling-release-$CI_COMMIT_TAG"
+    paths:
+      - $CI_PROJECT_DIR/_release/dist

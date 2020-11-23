@@ -27,8 +27,8 @@ import setuptools
 
 setuptools.setup(
     name="pycity_scheduling",
-    description="A Python framework for the development, testing, and assessment of optimization-based power scheduling"
-                "algorithms for multi-energy systems in city districts",
+    description="A Python framework for the development, testing, and assessment of optimization-based"
+                "power scheduling algorithms for multi-energy systems in city districts",
     version="0.9",
     author="Sebastian Schwarz, Sebastian Alexander Uerlich, Antonello Monti"
            "Institute for Automation of Complex Power Systems,"
@@ -37,9 +37,9 @@ setuptools.setup(
     author_email="post_acs@eonerc.rwth-aachen.de",
     url="https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling",
     license="MIT",
-    license_file="LICENSE.txt",
     packages=setuptools.find_packages(),
-    package_data={"": ["LICENSE.txt", "README.md", "pycity_scheduling/data/*.txt", "examples/*.ipynb"]},
+    package_data={"pycity_scheduling": ["data/*.txt"], "examples": ["*.ipynb"]},
+    data_files=[(".", ["LICENSE.txt", "README.md"])],
     install_requires=[
         "numpy",
         "pandas",
