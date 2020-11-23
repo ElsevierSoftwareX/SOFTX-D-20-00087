@@ -58,7 +58,7 @@ unittest:
 doc:
   stage: deploy
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"
+    - if: '$CI_COMMIT_BRANCH == "master"'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
@@ -78,7 +78,7 @@ doc:
 pypi:
   stage: release
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "web" 
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "web"'
       when: delayed
       start_in: '2 minutes'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
