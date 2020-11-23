@@ -2,21 +2,22 @@
 
 # pycity_scheduling
 
-Python package pycity_scheduling is a framework for the effective prototyping, testing, and assessment of optimization-based power scheduling algorithms for multi-energy systems.
-The framework primarily targets the development of coordination concepts that can efficiently solve the power dispatch problem on the city district level.
-Its target users are researchers in the field of smart grid applications and deployment of operational flexibility for local energy systems.
+Python package pycity_scheduling is a framework for the effective development, testing, and assessment of optimization-based power scheduling algorithms for local multi-energy systems in city districts.
+The framework primarily targets the elaboration of coordination concepts that can efficiently solve the power dispatch problem on the city district level.
+Its target users are researchers in the field of smart grid applications and the deployment of operational flexibility for local energy systems.
 
 
 ## Contribution
 
-1. Clone repository via SSH (`git clone git@git.rwth-aachen.de:acs/internal/simulation/pycity_scheduling.git`) or clone repository via HTTPS (`git clone https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling.git`)
-2. Open an issue at [https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/issues](https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/issues)
+1. Clone repository via SSH (`git clone git@git.rwth-aachen.de:acs/public/simulation/pycity_scheduling.git`) or clone repository via HTTPS (`git clone https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling.git`)
+2. Open an issue at [https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling/-/issues](https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling/-/issues)
 3. Checkout the development branch: `git checkout development` 
 4. Update your local development branch (if necessary): `git pull origin development`
 5. Create your feature/issue branch: `git checkout -b issueXY_explanation`
 6. Commit your changes: `git commit -m "Add feature #XY"`
 7. Push to the branch: `git push origin issueXY_explanation`
-8. Submit a pull request from issueXY_explanation to development branch via [https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/merge_requests](https://git.rwth-aachen.de/acs/internal/simulation/pycity_scheduling/-/merge_requests)
+8. Submit a merge request from issueXY_explanation to development branch via [https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling/-/merge_requests](https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling/-/merge_requests)
+9. Wait for approval or revision of the new implementations.
 
 ## Installation
 
