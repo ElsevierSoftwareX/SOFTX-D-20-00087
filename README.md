@@ -1,4 +1,4 @@
-<img src="./docs/logos/pycity_scheduling.png" width="150"/>
+<img src="./gitlab-utils/logos/pycity_scheduling.png" width="150"/>
 
 # pycity_scheduling
 
@@ -72,7 +72,6 @@ The documentation for the latest pycity_scheduling release can be accessed onlin
 ## Example usage
 
 ```python
-"""
 import numpy as np
 import matplotlib.pyplot as plt
 

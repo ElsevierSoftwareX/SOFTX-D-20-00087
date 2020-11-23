@@ -1,7 +1,7 @@
 pycity_scheduling
 =================
 
-.. image:: /logos/pycity_scheduling.png
+.. image:: ../logos/pycity_scheduling.png
    :scale: 15%
    :align: right
 
