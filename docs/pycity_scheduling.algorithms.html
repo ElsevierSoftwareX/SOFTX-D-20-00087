@@ -1,0 +1,615 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pycity_scheduling.algorithms package &#8212; pycity_scheduling v1.0.0 documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/x-mathjax-config">MathJax.Hub.Config({"extensions": ["tex2jax.js"], "jax": ["input/TeX", "output/HTML-CSS"]})</script>
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="pycity_scheduling.classes package" href="pycity_scheduling.classes.html" />
+    <link rel="prev" title="pycity_scheduling" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pycity_scheduling.classes.html" title="pycity_scheduling.classes package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pycity_scheduling"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pycity_scheduling.algorithms package</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="pycity-scheduling-algorithms-package">
+<h1>pycity_scheduling.algorithms package<a class="headerlink" href="#pycity-scheduling-algorithms-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.algorithm">
+<span id="pycity-scheduling-algorithms-algorithm-module"></span><h2>pycity_scheduling.algorithms.algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.algorithm.</code><code class="sig-name descname">DistributedAlgorithm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm" title="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm</span></code></a></p>
+<p>Base class for all distributed optimization algorithms.</p>
+<p>These algorithms can divide the optimization problem into sub-problems.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.algorithm.IterationAlgorithm">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.algorithm.</code><code class="sig-name descname">IterationAlgorithm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.IterationAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm" title="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm</span></code></a></p>
+<p>Base class for all optimization algorithms that solve the problem iteratively.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.algorithm.</code><code class="sig-name descname">OptimizationAlgorithm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Base class for all optimization algorithms.</p>
+<p>This class provides functionality common to all algorithms which are
+able to optimize City Districts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>city_district</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.city_district.CityDistrict" title="pycity_scheduling.classes.city_district.CityDistrict"><em>CityDistrict</em></a>) – </p></li>
+<li><p><strong>solver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Solver to use for solving (sub-)problems.</p></li>
+<li><p><strong>solver_options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Options to pass to calls to the solver. Keys are the name of
+the functions being called and are one of <cite>__call__</cite>, <cite>set_instance</cite>,
+<cite>solve</cite>.</p>
+<ul>
+<li><p><cite>__call__</cite> is the function being called when generating an instance
+with the pyomo SolverFactory.  Additionally to the options provided,
+<cite>node_ids</cite> is passed to this call containing the IDs of the entities
+being optimized.</p></li>
+<li><p><cite>set_instance</cite> is called when a pyomo Model is set as an instance of
+a persistent solver.</p></li>
+<li><p><cite>solve</cite> is called to perform an optimization. If not set,
+<cite>save_results</cite> and <cite>load_solutions</cite> may be set to false to provide a
+speedup.</p></li>
+</ul>
+</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
+<ul>
+<li><p><cite>convex</cite>  : Use linear constraints</p></li>
+<li><p><cite>integer</cite>  : May use non-linear constraints</p></li>
+</ul>
+</p></li>
+<li><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm.solve" title="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm.solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve</span></code></a>([full_update, beta, robustness, debug])</p></td>
+<td><p>Solves the city district for the current op_horizon.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm.solve">
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">full_update</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">beta</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solves the city district for the current op_horizon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>full_update</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Should be true if the city district models were changed or
+update_model should be called to update the city district models.
+Disabling the full_update can give a small performance gain.</p></li>
+<li><p><strong>beta</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Tradeoff factor between system and customer objective. The customer
+objective is multiplied with beta.</p></li>
+<li><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p></li>
+<li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Specify whether detailed debug information shall be printed.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>results</strong> – Dictionary of performance values of the algorithm.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)">dict</a></p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><a class="reference internal" href="pycity_scheduling.html#pycity_scheduling.exceptions.NonoptimalError" title="pycity_scheduling.exceptions.NonoptimalError"><strong>NonoptimalError</strong></a> – If no feasible solution for the city district is found or a solver
+problem is encountered.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.algorithm.SolverNode">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.algorithm.</code><code class="sig-name descname">SolverNode</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">solver</span></em>, <em class="sig-param"><span class="n">solver_options</span></em>, <em class="sig-param"><span class="n">entities</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.SolverNode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Node which can be used to solve all entities provided to it.</p>
+<p>Provides an abstraction layer for algorithms, so entities can be
+assigned to nodes and optimized easily.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>solver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Solver to use for solving (sub)problems.</p></li>
+<li><p><strong>solver_options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>Options to pass to calls to the solver. Keys are the name of
+the functions being called and are one of <cite>__call__</cite>, <cite>set_instance_</cite>,
+<cite>solve</cite>.</p>
+<ul>
+<li><p><cite>__call__</cite> is the function being called when generating an instance
+with the pyomo SolverFactory.  Additionally to the options provided,
+<cite>node_ids</cite> is passed to this call containing the IDs of the entities
+being optimized.</p></li>
+<li><p><cite>set_instance</cite> is called when a pyomo Model is set as an instance of
+a persistent solver.</p></li>
+<li><p><cite>solve</cite> is called to perform an optimization. If not set,
+<cite>save_results</cite> and <cite>load_solutions</cite> may be set to false to provide a
+speedup.</p></li>
+</ul>
+</p></li>
+<li><p><strong>entities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of entities which should be optimized by this node.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
+<ul>
+<li><p><cite>convex</cite>  : Use linear constraints</p></li>
+<li><p><cite>integer</cite>  : May use non-linear constraints</p></li>
+</ul>
+</p></li>
+<li><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Methods</p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.SolverNode.full_update" title="pycity_scheduling.algorithms.algorithm.SolverNode.full_update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">full_update</span></code></a>([robustness])</p></td>
+<td><p>Execute the update_model function and propagate other model changes.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.SolverNode.load_vars" title="pycity_scheduling.algorithms.algorithm.SolverNode.load_vars"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_vars</span></code></a>()</p></td>
+<td><p>Load all remaining variables that were not loaded at the last ‘solve’ call.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.SolverNode.obj_update" title="pycity_scheduling.algorithms.algorithm.SolverNode.obj_update"><code class="xref py py-obj docutils literal notranslate"><span class="pre">obj_update</span></code></a>()</p></td>
+<td><p>Only propagate the objective value update of the model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.SolverNode.solve" title="pycity_scheduling.algorithms.algorithm.SolverNode.solve"><code class="xref py py-obj docutils literal notranslate"><span class="pre">solve</span></code></a>([variables, debug])</p></td>
+<td><p>Call the solver to solve this nodes optimization problem.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt id="pycity_scheduling.algorithms.algorithm.SolverNode.full_update">
+<code class="sig-name descname">full_update</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.SolverNode.full_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Execute the update_model function and propagate other model changes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycity_scheduling.algorithms.algorithm.SolverNode.load_vars">
+<code class="sig-name descname">load_vars</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.SolverNode.load_vars" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load all remaining variables that were not loaded at the last ‘solve’ call.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycity_scheduling.algorithms.algorithm.SolverNode.obj_update">
+<code class="sig-name descname">obj_update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.SolverNode.obj_update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Only propagate the objective value update of the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="pycity_scheduling.algorithms.algorithm.SolverNode.solve">
+<code class="sig-name descname">solve</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">variables</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">debug</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.algorithm.SolverNode.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Call the solver to solve this nodes optimization problem.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>variables</strong> (<em>list of list of variables</em><em>, </em><em>optional</em>) – Can contain a list for each node in nodes to indicate to pyomo which
+variables should be loaded back into the model. Specifying this can
+lead to a significant speedup.</p></li>
+<li><p><strong>debug</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – Specify whether detailed debug information shall be printed. Defaults
+to true.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.central_optimization_algorithm">
+<span id="pycity-scheduling-algorithms-central-optimization-algorithm-module"></span><h2>pycity_scheduling.algorithms.central_optimization_algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.central_optimization_algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.central_optimization_algorithm.CentralOptimization">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.central_optimization_algorithm.</code><code class="sig-name descname">CentralOptimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.central_optimization_algorithm.CentralOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm" title="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm</span></code></a></p>
+<p>Implementation of a central Algorithm.</p>
+<p>Only creates one model and calls the solver only once. Combines the
+objectives of all entities.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.dual_decomposition_algorithm">
+<span id="pycity-scheduling-algorithms-dual-decomposition-algorithm-module"></span><h2>pycity_scheduling.algorithms.dual_decomposition_algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.dual_decomposition_algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.dual_decomposition_algorithm.DualDecomposition">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.dual_decomposition_algorithm.</code><code class="sig-name descname">DualDecomposition</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">eps_primal</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">rho</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">max_iterations</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.dual_decomposition_algorithm.DualDecomposition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.IterationAlgorithm" title="pycity_scheduling.algorithms.algorithm.IterationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.IterationAlgorithm</span></code></a>, <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the Dual Decomposition Algorithm.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.exchange_admm_algorithm">
+<span id="pycity-scheduling-algorithms-exchange-admm-algorithm-module"></span><h2>pycity_scheduling.algorithms.exchange_admm_algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.exchange_admm_algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.exchange_admm_algorithm.ExchangeADMM">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.exchange_admm_algorithm.</code><code class="sig-name descname">ExchangeADMM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">eps_primal</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">eps_dual</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">rho</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">max_iterations</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.exchange_admm_algorithm.ExchangeADMM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.IterationAlgorithm" title="pycity_scheduling.algorithms.algorithm.IterationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.IterationAlgorithm</span></code></a>, <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the Exchange ADMM Algorithm.</p>
+<p>Uses the Exchange ADMM algorithm described in [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>city_district</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.city_district.CityDistrict" title="pycity_scheduling.classes.city_district.CityDistrict"><em>CityDistrict</em></a>) – </p></li>
+<li><p><strong>solver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Solver to use for solving (sub)problems.</p></li>
+<li><p><strong>solver_options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – Options to pass to calls to the solver. Keys are the name of
+the functions being called and are one of <cite>__call__</cite>, <cite>set_instance_</cite>,
+<cite>solve</cite>.
+<cite>__call__</cite> is the function being called when generating an instance
+with the pyomo SolverFactory.  Additionally to the options provided,
+<cite>node_ids</cite> is passed to this call containing the IDs of the entities
+being optimized.
+<cite>set_instance</cite> is called when a pyomo Model is set as an instance of
+a persistent solver. <cite>solve</cite> is called to perform an optimization. If
+not set, <cite>save_results</cite> and <cite>load_solutions</cite> may be set to false to
+provide a speedup.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Specifies which set of constraints to use.
+- <cite>convex</cite>  : Use linear constraints
+- <cite>integer</cite>  : May use non-linear constraints</p></li>
+<li><p><strong>eps_primal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Primal stopping criterion for the ADMM algorithm.</p></li>
+<li><p><strong>eps_dual</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Dual stopping criterion for the ADMM algorithm.</p></li>
+<li><p><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Stepsize for the ADMM algorithm.</p></li>
+<li><p><strong>max_iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of ADMM iterations.</p></li>
+<li><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r11a97d4e97c6-1"><span class="brackets">1</span></dt>
+<dd><p>“Alternating Direction Method of Multipliers for Decentralized
+Electric Vehicle Charging Control” by Jose Rivera, Philipp Wolfrum,
+Sandra Hirche, Christoph Goebel, and Hans-Arno Jacobsen
+Online: <a class="reference external" href="https://mediatum.ub.tum.de/doc/1187583/1187583.pdf">https://mediatum.ub.tum.de/doc/1187583/1187583.pdf</a> (accessed on 2020/09/28)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.local_optimization_algorithm">
+<span id="pycity-scheduling-algorithms-local-optimization-algorithm-module"></span><h2>pycity_scheduling.algorithms.local_optimization_algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.local_optimization_algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.local_optimization_algorithm.</code><code class="sig-name descname">LocalOptimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the reference optimization algorithm.</p>
+<p>Schedule all nodes in <cite>city_district</cite> on their own.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms.stand_alone_optimization_algorithm">
+<span id="pycity-scheduling-algorithms-stand-alone-optimization-algorithm-module"></span><h2>pycity_scheduling.algorithms.stand_alone_optimization_algorithm module<a class="headerlink" href="#module-pycity_scheduling.algorithms.stand_alone_optimization_algorithm" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.stand_alone_optimization_algorithm.StandAlone">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.stand_alone_optimization_algorithm.</code><code class="sig-name descname">StandAlone</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.stand_alone_optimization_algorithm.StandAlone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization" title="pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization</span></code></a></p>
+<p>Implementation of the reference optimization algorithm.</p>
+<p>Schedule all entities in <cite>city_district</cite> on their own.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-pycity_scheduling.algorithms">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pycity_scheduling.algorithms" title="Permalink to this headline">¶</a></h2>
+<p>The pycity_scheduling framework</p>
+<p>Copyright (C) 2020
+Institute for Automation of Complex Power Systems (ACS);
+E.ON Energy Research Center;
+RWTH Aachen University</p>
+<p>Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the “Software”), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:</p>
+<p>The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.</p>
+<p>THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.CentralOptimization">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.</code><code class="sig-name descname">CentralOptimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.CentralOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm" title="pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.OptimizationAlgorithm</span></code></a></p>
+<p>Implementation of a central Algorithm.</p>
+<p>Only creates one model and calls the solver only once. Combines the
+objectives of all entities.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.DualDecomposition">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.</code><code class="sig-name descname">DualDecomposition</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">eps_primal</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">rho</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">max_iterations</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.DualDecomposition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.IterationAlgorithm" title="pycity_scheduling.algorithms.algorithm.IterationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.IterationAlgorithm</span></code></a>, <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the Dual Decomposition Algorithm.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.ExchangeADMM">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.</code><code class="sig-name descname">ExchangeADMM</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">eps_primal</span><span class="o">=</span><span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">eps_dual</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">rho</span><span class="o">=</span><span class="default_value">2.0</span></em>, <em class="sig-param"><span class="n">max_iterations</span><span class="o">=</span><span class="default_value">10000</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.ExchangeADMM" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.IterationAlgorithm" title="pycity_scheduling.algorithms.algorithm.IterationAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.IterationAlgorithm</span></code></a>, <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the Exchange ADMM Algorithm.</p>
+<p>Uses the Exchange ADMM algorithm described in [1].</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>city_district</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.city_district.CityDistrict" title="pycity_scheduling.classes.city_district.CityDistrict"><em>CityDistrict</em></a>) – </p></li>
+<li><p><strong>solver</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Solver to use for solving (sub)problems.</p></li>
+<li><p><strong>solver_options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – Options to pass to calls to the solver. Keys are the name of
+the functions being called and are one of <cite>__call__</cite>, <cite>set_instance_</cite>,
+<cite>solve</cite>.
+<cite>__call__</cite> is the function being called when generating an instance
+with the pyomo SolverFactory.  Additionally to the options provided,
+<cite>node_ids</cite> is passed to this call containing the IDs of the entities
+being optimized.
+<cite>set_instance</cite> is called when a pyomo Model is set as an instance of
+a persistent solver. <cite>solve</cite> is called to perform an optimization. If
+not set, <cite>save_results</cite> and <cite>load_solutions</cite> may be set to false to
+provide a speedup.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Specifies which set of constraints to use.
+- <cite>convex</cite>  : Use linear constraints
+- <cite>integer</cite>  : May use non-linear constraints</p></li>
+<li><p><strong>eps_primal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Primal stopping criterion for the ADMM algorithm.</p></li>
+<li><p><strong>eps_dual</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Dual stopping criterion for the ADMM algorithm.</p></li>
+<li><p><strong>rho</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Stepsize for the ADMM algorithm.</p></li>
+<li><p><strong>max_iterations</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Maximum number of ADMM iterations.</p></li>
+<li><p><strong>robustness</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.9)"><em>tuple</em></a><em>, </em><em>optional</em>) – Tuple of two floats. First entry defines how many time steps are
+protected from deviations. Second entry defines the magnitude of
+deviations which are considered.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="re873e53fa098-1"><span class="brackets">1</span></dt>
+<dd><p>“Alternating Direction Method of Multipliers for Decentralized
+Electric Vehicle Charging Control” by Jose Rivera, Philipp Wolfrum,
+Sandra Hirche, Christoph Goebel, and Hans-Arno Jacobsen
+Online: <a class="reference external" href="https://mediatum.ub.tum.de/doc/1187583/1187583.pdf">https://mediatum.ub.tum.de/doc/1187583/1187583.pdf</a> (accessed on 2020/09/28)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.LocalOptimization">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.</code><code class="sig-name descname">LocalOptimization</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.LocalOptimization" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.algorithm.DistributedAlgorithm" title="pycity_scheduling.algorithms.algorithm.DistributedAlgorithm"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.algorithm.DistributedAlgorithm</span></code></a></p>
+<p>Implementation of the reference optimization algorithm.</p>
+<p>Schedule all nodes in <cite>city_district</cite> on their own.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="pycity_scheduling.algorithms.StandAlone">
+<em class="property">class </em><code class="sig-prename descclassname">pycity_scheduling.algorithms.</code><code class="sig-name descname">StandAlone</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">city_district</span></em>, <em class="sig-param"><span class="n">solver</span><span class="o">=</span><span class="default_value">'scip'</span></em>, <em class="sig-param"><span class="n">solver_options</span><span class="o">=</span><span class="default_value">{'solve': {'options': {}}}</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'convex'</span></em>, <em class="sig-param"><span class="n">robustness</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.algorithms.StandAlone" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization" title="pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.algorithms.local_optimization_algorithm.LocalOptimization</span></code></a></p>
+<p>Implementation of the reference optimization algorithm.</p>
+<p>Schedule all entities in <cite>city_district</cite> on their own.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">pycity_scheduling.algorithms package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.algorithm">pycity_scheduling.algorithms.algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.central_optimization_algorithm">pycity_scheduling.algorithms.central_optimization_algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.dual_decomposition_algorithm">pycity_scheduling.algorithms.dual_decomposition_algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.exchange_admm_algorithm">pycity_scheduling.algorithms.exchange_admm_algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.local_optimization_algorithm">pycity_scheduling.algorithms.local_optimization_algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms.stand_alone_optimization_algorithm">pycity_scheduling.algorithms.stand_alone_optimization_algorithm module</a></li>
+<li><a class="reference internal" href="#module-pycity_scheduling.algorithms">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">pycity_scheduling</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pycity_scheduling.classes.html"
+                        title="next chapter">pycity_scheduling.classes package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/pycity_scheduling.algorithms.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pycity_scheduling.classes.html" title="pycity_scheduling.classes package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="pycity_scheduling"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.0.0 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">pycity_scheduling.algorithms package</a></li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Institute for Automation of Complex Power Systems, E.ON Energy Research Center, RWTH Aachen University.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.3.1.
+    </div>
+  </body>
+</html>

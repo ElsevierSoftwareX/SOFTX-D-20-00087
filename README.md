@@ -66,7 +66,9 @@ You may also try to run the pycity_scheduling's unit tests located in folder ./s
 
 ## Documentation
 
-The documentation for the latest pycity_scheduling release can be accessed online via the [FEIN association](https://pycity-scheduling.fein-aachen.org/).
+The documentation for the latest pycity_scheduling release can be found in folder ./docs.
+
+This documentation can be accessed as a persistent link via the [FEIN association](https://pycity-scheduling.fein-aachen.org/), too.
 
 
 ## Example usage

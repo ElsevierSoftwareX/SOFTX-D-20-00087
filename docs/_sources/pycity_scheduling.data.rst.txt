@@ -1,0 +1,29 @@
+pycity\_scheduling.data package
+===============================
+
+Submodules
+----------
+
+pycity\_scheduling.data.ev\_data module
+---------------------------------------
+
+.. automodule:: pycity_scheduling.data.ev_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.data.tabula\_data module
+-------------------------------------------
+
+.. automodule:: pycity_scheduling.data.tabula_data
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling.data
+   :members:
+   :undoc-members:
+   :show-inheritance:

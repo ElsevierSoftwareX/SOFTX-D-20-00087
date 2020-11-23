@@ -1,0 +1,48 @@
+pycity\_scheduling package
+==========================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pycity_scheduling.algorithms
+   pycity_scheduling.classes
+   pycity_scheduling.data
+   pycity_scheduling.util
+
+Submodules
+----------
+
+pycity\_scheduling.constants module
+-----------------------------------
+
+.. automodule:: pycity_scheduling.constants
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.exceptions module
+------------------------------------
+
+.. automodule:: pycity_scheduling.exceptions
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.solvers module
+---------------------------------
+
+.. automodule:: pycity_scheduling.solvers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling
+   :members:
+   :undoc-members:
+   :show-inheritance:

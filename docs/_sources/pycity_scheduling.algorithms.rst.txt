@@ -1,0 +1,61 @@
+pycity\_scheduling.algorithms package
+=====================================
+
+Submodules
+----------
+
+pycity\_scheduling.algorithms.algorithm module
+----------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.algorithms.central\_optimization\_algorithm module
+---------------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.central_optimization_algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.algorithms.dual\_decomposition\_algorithm module
+-------------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.dual_decomposition_algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.algorithms.exchange\_admm\_algorithm module
+--------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.exchange_admm_algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.algorithms.local\_optimization\_algorithm module
+-------------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.local_optimization_algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.algorithms.stand\_alone\_optimization\_algorithm module
+--------------------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.algorithms.stand_alone_optimization_algorithm
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling.algorithms
+   :members:
+   :undoc-members:
+   :show-inheritance:

@@ -1,0 +1,61 @@
+pycity\_scheduling.util package
+===============================
+
+Submodules
+----------
+
+pycity\_scheduling.util.debug module
+------------------------------------
+
+.. automodule:: pycity_scheduling.util.debug
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.util.factory module
+--------------------------------------
+
+.. automodule:: pycity_scheduling.util.factory
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.util.generic\_constraints module
+---------------------------------------------------
+
+.. automodule:: pycity_scheduling.util.generic_constraints
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.util.metric module
+-------------------------------------
+
+.. automodule:: pycity_scheduling.util.metric
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.util.plot\_schedules module
+----------------------------------------------
+
+.. automodule:: pycity_scheduling.util.plot_schedules
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.util.write\_schedules module
+-----------------------------------------------
+
+.. automodule:: pycity_scheduling.util.write_schedules
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling.util
+   :members:
+   :undoc-members:
+   :show-inheritance:
