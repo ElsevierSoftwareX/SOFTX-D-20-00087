@@ -19,7 +19,7 @@ RUN useradd builduser -m -d /home/builduser &&\
     printf 'root ALL=(ALL) ALL\n' | tee a /etc/sudoers
 
 
-# Downgrade Python to the recommended version 3.6:
+# Downgrade Python to the recommended version 3.6 and install some core package:
 RUN cd / &&\
     sudo -u builduser /bin/bash -c 'mkdir -p ~/python36 && cd ~/python36 && wget --quiet https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=python36 -O PKGBUILD && makepkg -s' &&\
     cd /home/builduser/python36 &&\
@@ -27,7 +27,7 @@ RUN cd / &&\
     wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
     python3.6 get-pip.py &&\
     python3.6 -m pip install --upgrade pip &&\
-    python3.6 -m pip install pytest &&\
+    python3.6 -m pip install setuptools wheel twine pytest &&\
     cd /
 
 

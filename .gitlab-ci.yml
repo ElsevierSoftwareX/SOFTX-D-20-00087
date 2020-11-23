@@ -8,6 +8,7 @@ variables:
 stages:
   - build
   - test
+  - deploy
   - release
 
 
@@ -31,7 +32,7 @@ lint:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
-    - tail -n 2 pylint_report.txt
+    - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
     - python3.6 -m pip uninstall -y pycity_scheduling
     - cd $CI_PROJECT_DIR
   artifacts:
@@ -55,9 +56,9 @@ unittest:
 
 
 doc:
-  stage: release
-  only:
-    - master
+  stage: deploy
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master"
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - cd $CI_PROJECT_DIR/src
@@ -72,3 +73,18 @@ doc:
       - $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html
     expire_in: 365 days
     when: always
+
+
+pypi:
+  stage: release
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "master" && $CI_PIPELINE_SOURCE == "web" 
+      when: delayed
+      start_in: '2 minutes'
+  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
+  script:
+    - cd $CI_PROJECT_DIR/src
+    - cp $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - cp $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
+    - python3.6 setup.py sdist bdist_wheel
+    - echo $GITLAB_USER_ID

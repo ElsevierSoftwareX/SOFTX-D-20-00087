@@ -22,35 +22,36 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 """
 
 
-from setuptools import setup, find_packages
+import setuptools
 
 
-setup(
-    name='pycity_scheduling',
-    description='A Python framework for the development and assessment of optimisation-based power scheduling'
-                'algorithms for multi-energy systems in city districts',
-    version='0.9',
-    author='Sebastian Schwarz, Sebastian Alexander Uerlich, Antonello Monti'
-           'Institute for Automation of Complex Power Systems'
-           'E.ON Energy Research Center, RWTH Aachen University',
-    author_email='post_acs@eonerc.rwth-aachen.de',
-    url='https://www.acs.eonerc.rwth-aachen.de/cms/~dlkd/E-ON-ERC-ACS/',
-    license='MIT',
-    license_file='LICENSE.txt',
-    packages=find_packages(),
-    package_data={'pycity_scheduling': ['data/*.txt']},
+setuptools.setup(
+    name="pycity_scheduling",
+    description="A Python framework for the development, testing, and assessment of optimization-based power scheduling"
+                "algorithms for multi-energy systems in city districts",
+    version="0.9",
+    author="Sebastian Schwarz, Sebastian Alexander Uerlich, Antonello Monti"
+           "Institute for Automation of Complex Power Systems,"
+           "E.ON Energy Research Center (E.ON ERC),"
+           "RWTH Aachen University",
+    author_email="post_acs@eonerc.rwth-aachen.de",
+    url="https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling",
+    license="MIT",
+    license_file="LICENSE.txt",
+    packages=setuptools.find_packages(),
+    package_data={"": ["LICENSE.txt", "README.md", "pycity_scheduling/data/*.txt", "examples/*.ipynb"]},
     install_requires=[
-        'numpy',
-        'pandas',
-        'matplotlib',
-        'pyomo',
-        'Shapely',
-        'pycity_base>=0.3.1'
+        "numpy",
+        "pandas",
+        "matplotlib",
+        "pyomo",
+        "Shapely",
+        "pycity_base>=0.3.1"
     ],
     extras_require={
-        'test': ['pytest']
+        "test": ["pytest"]
     },
-    platforms='any',
+    platforms="any",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Scientists/Engineers/Developers",
@@ -59,5 +60,6 @@ setup(
         "Natural Language :: English",
         "Programming Language :: Python :: 3.6",
     ],
-    zip_safe=False
+    zip_safe=False,
+    python_requires=">=3.6",
 )
