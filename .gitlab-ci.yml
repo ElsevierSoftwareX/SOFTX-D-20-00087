@@ -6,7 +6,7 @@ variables:
 
 
 stages:
-  - prepare
+  - build
   - test
   - release
 
@@ -14,7 +14,7 @@ stages:
 prepare:
   variables:
     GIT_SUBMODULE_STRATEGY: none
-  stage: prepare
+  stage: build
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [ "" ]
@@ -30,14 +30,14 @@ lint:
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
-    - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/src/pylint_report.txt || true
+    - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
     - tail -n 2 pylint_report.txt
     - python3.6 -m pip uninstall -y pycity_scheduling
     - cd $CI_PROJECT_DIR
   artifacts:
     name: "pylint-report"
     paths:
-      - $CI_PROJECT_DIR/src/pylint_report.txt
+      - $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
     expire_in: 4 weeks
     when: always
 
@@ -62,13 +62,13 @@ doc:
   script:
     - cd $CI_PROJECT_DIR/src
     - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/docs
+    - cd $CI_PROJECT_DIR/gitlab-utils/sphinx_doc
     - bash ./docu.sh
     - python3.6 -m pip uninstall -y pycity_scheduling
     - cd $CI_PROJECT_DIR
   artifacts:
-    name: "documentation"
+    name: "sphinx-documentation"
     paths:
-      - $CI_PROJECT_DIR/docs/_build/html
+      - $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html
     expire_in: 365 days
     when: always
