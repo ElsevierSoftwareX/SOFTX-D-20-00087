@@ -81,11 +81,8 @@ pages:
     - if: '$CI_COMMIT_BRANCH == "master"'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - cd /
-    - mkdir -p /public
-    - cp -ar $CI_PROJECT_DIR/docs/. /public/
-    - cd /public
-    - ls -ls /public
+    - mkdir public
+    - mv $CI_PROJECT_DIR/docs/* public
   artifacts:
     paths:
       - public
