@@ -42,7 +42,7 @@ We recommend one of the following solvers:
 
 The latest version of pycity_scheduling is 1.0.0.
 
-If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via pip (Python 3.X) as follows:
+If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python 3.X) as follows:
 
 `pip install pycity_scheduling`
 
