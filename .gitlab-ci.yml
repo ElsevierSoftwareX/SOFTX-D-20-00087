@@ -22,23 +22,25 @@ prepare:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG} --cache=true --cache-ttl=72h --snapshotMode=redo --use-new-run
+    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG} --cache=true --snapshotMode=redo --use-new-run
 
 
 lint:
   stage: test
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
+    - mkdir -p /lint
     - cd $CI_PROJECT_DIR/src
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir .
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
     - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
+    - mv $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt /lint/pylint_report.txt
   artifacts:
     name: "pylint-report"
     paths:
-      - $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
+      - lint
     expire_in: 4 weeks
     when: always
 
@@ -61,16 +63,18 @@ doc:
     - if: '$CI_COMMIT_BRANCH == "master"'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
+    - mkdir -p /doc
     - cd $CI_PROJECT_DIR/src
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir .
     - cd $CI_PROJECT_DIR/gitlab-utils/sphinx_doc
     - bash ./docu.sh
+    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* /doc
   artifacts:
     name: "pycity_scheduling-documentation-sphinx"
     paths:
-      - $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html
+      - doc
     expire_in: 365 days
     when: always
 
@@ -78,7 +82,7 @@ doc:
 pages:
   stage: deploy
   rules:
-    - if: '$CI_COMMIT_BRANCH == "master"'
+    - if: '$CI_COMMIT_BRANCH == "master"' && $CI_COMMIT_TAG =~ /^v/'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
     - mkdir public
@@ -96,6 +100,7 @@ pypi:
       start_in: '30 minutes'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
+    - mkdir -p /release
     - cd $CI_PROJECT_DIR
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
@@ -103,8 +108,9 @@ pypi:
     - cp -ar $CI_PROJECT_DIR/src/. $CI_PROJECT_DIR/_release/
     - cd $CI_PROJECT_DIR/_release
     - python3.6 setup.py sdist bdist_wheel
-    - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi dist/*
+    - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi $CI_PROJECT_DIR/_release/dist/*
+    - mv $CI_PROJECT_DIR/_release/dist/* /release
   artifacts:
     name: "pycity_scheduling-release-$CI_COMMIT_TAG"
     paths:
-      - $CI_PROJECT_DIR/_release/dist
+      - release
