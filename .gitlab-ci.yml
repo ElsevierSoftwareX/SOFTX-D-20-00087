@@ -29,14 +29,13 @@ lint:
   stage: test
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - mkdir -p /lint
-    - cd $CI_PROJECT_DIR/src
+    - mkdir -p lint
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir .
+    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
     - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
-    - mv $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt /lint/pylint_report.txt
+    - mv $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt lint
   artifacts:
     name: "pylint-report"
     paths:
@@ -49,12 +48,10 @@ unittest:
   stage: test
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - cd $CI_PROJECT_DIR/src
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/src/testing/unit_tests
-    - python3.6 -m unittest discover -v
+    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
 
 
 doc:
@@ -63,14 +60,12 @@ doc:
     - if: '$CI_COMMIT_BRANCH == "master"'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - mkdir -p /doc
-    - cd $CI_PROJECT_DIR/src
+    - mkdir -p doc
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir .
-    - cd $CI_PROJECT_DIR/gitlab-utils/sphinx_doc
-    - bash ./docu.sh
-    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* /doc
+    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - bash $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/docu.sh
+    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* doc
   artifacts:
     name: "pycity_scheduling-documentation-sphinx"
     paths:
@@ -85,14 +80,14 @@ pages:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG =~ /^v/'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - mkdir public
+    - mkdir -p public
     - mv $CI_PROJECT_DIR/docs/* public
   artifacts:
     paths:
       - public
 
 
-pypi:
+pypi-release:
   stage: release
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" && $CI_COMMIT_TAG =~ /^v/'
@@ -100,16 +95,15 @@ pypi:
       start_in: '30 minutes'
   image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-${DOCKER_TAG}
   script:
-    - mkdir -p /release
-    - cd $CI_PROJECT_DIR
+    - mkdir -p release
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - mkdir -p $CI_PROJECT_DIR/_release
     - cp -ar $CI_PROJECT_DIR/src/. $CI_PROJECT_DIR/_release/
-    - cd $CI_PROJECT_DIR/_release
-    - python3.6 setup.py sdist bdist_wheel
+    - python3.6 $CI_PROJECT_DIR/_release/setup.py sdist -d $CI_PROJECT_DIR/_release/dist
+    - python3.6 $CI_PROJECT_DIR/_release/setup.py bdist_wheel -d $CI_PROJECT_DIR/_release/dist
     - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload pypi $CI_PROJECT_DIR/_release/dist/*
-    - mv $CI_PROJECT_DIR/_release/dist/* /release
+    - mv $CI_PROJECT_DIR/_release/dist/* release
   artifacts:
     name: "pycity_scheduling-release-$CI_COMMIT_TAG"
     paths:
