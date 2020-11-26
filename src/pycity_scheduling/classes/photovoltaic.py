@@ -2,9 +2,9 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020
-Institute for Automation of Complex Power Systems (ACS);
-E.ON Energy Research Center;
+Copyright (C) 2020,
+Institute for Automation of Complex Power Systems (ACS),
+E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
