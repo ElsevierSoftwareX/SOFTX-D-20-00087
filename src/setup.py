@@ -56,9 +56,10 @@ setuptools.setup(
     platforms="any",
     classifiers=[
         "Development Status :: 5 - Production/Stable",
-        "Intended Audience :: Scientists/Developers",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Science/Research",
         "License :: OSI Approved :: MIT License",
-        "Topic :: Science/Research/Engineering",
+        "Topic :: Scientific/Engineering",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.6",
     ],
