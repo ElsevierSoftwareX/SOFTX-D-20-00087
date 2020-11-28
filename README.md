@@ -40,7 +40,7 @@ We recommend one of the following solvers:
 
 ### Installation of pycity_scheduling
 
-The latest version of pycity_scheduling is 1.0.0.
+The latest version of pycity_scheduling is v1.0.0.
 
 If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python 3.X) as follows:
 
@@ -66,9 +66,9 @@ You may also try to run the pycity_scheduling's unit tests located in folder ./s
 
 ## Documentation
 
-The documentation for the latest pycity_scheduling release can be found in folder ./docs.
+The documentation for the latest pycity_scheduling release can be found in folder ./docs and on [this](https://acs.pages.rwth-aachen.de/public/simulation/pycity_scheduling/) GitLab page.
 
-This documentation can be accessed as a persistent link via the [FEIN association](https://pycity-scheduling.fein-aachen.org/), too.
+For further information, please also visit the [FEIN Aachen association website](https://fein-aachen.org/en/projects/pycity_scheduling/).
 
 
 ## Example usage
@@ -265,7 +265,6 @@ def main(do_plot=False):
 if __name__ == '__main__':
     # Run example:
     main(do_plot=True)
-
 ```
 
 ## Tutorial
@@ -278,7 +277,7 @@ Also see the pycity_base package's tutorials for the basic usage of the framewor
 
 ## License
 
-The pycity_scheduling package is released by RWTH Aachen University, E.ON Energy Research Center (E.ON ERC), Institute for Automation of Complex Power Systems (ACS) under the [MIT License](https://opensource.org/licenses/MIT).
+The pycity_scheduling package is released by the Institute for Automation of Complex Power Systems (ACS), E.ON Energy Research Center (E.ON ERC), RWTH Aachen University under the [MIT License](https://opensource.org/licenses/MIT).
 
 
 ## Contact
@@ -288,6 +287,5 @@ The pycity_scheduling package is released by RWTH Aachen University, E.ON Energy
 - Univ.-Prof. Antonello Monti, Ph.D. <post_acs@eonerc.rwth-aachen.de>
 
 [Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de) \
-[E.ON Energy Research Center](http://www.eonerc.rwth-aachen.de) \
+[E.ON Energy Research Center (E.ON ERC)](http://www.eonerc.rwth-aachen.de) \
 [RWTH Aachen University, Germany](http://www.rwth-aachen.de)
-
