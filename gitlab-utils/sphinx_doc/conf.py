@@ -22,9 +22,9 @@ copyright = '2020, Institute for Automation of Complex Power Systems (ACS), E.ON
             'RWTH Aachen University'
 
 # The short X.Y version
-version = 'v1.0.0'
+version = 'v1.0.1'
 # The full version, including alpha/beta/rc tags
-release = 'v1.0.0'
+release = 'v1.0.1'
 
 # -- General configuration ---------------------------------------------------
 

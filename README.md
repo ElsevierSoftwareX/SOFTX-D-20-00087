@@ -40,7 +40,7 @@ We recommend one of the following solvers:
 
 ### Installation of pycity_scheduling
 
-The latest version of pycity_scheduling is v1.0.0.
+The latest version of pycity_scheduling is v1.0.1.
 
 If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python 3.X) as follows:
 
@@ -282,8 +282,6 @@ The pycity_scheduling package is released by the Institute for Automation of Com
 
 ## Contact
 
-<img src="https://fein-aachen.org/img/logos/eonerc.png"/>
-
 - Sebastian Schwarz, M.Sc. <sebastian.schwarz@eonerc.rwth-aachen.de>
 - Sebastian Alexander Uerlich, B.Sc. <sebastian.uerlich@rwth-aachen.de>
 - Univ.-Prof. Antonello Monti, Ph.D. <post_acs@eonerc.rwth-aachen.de>
@@ -291,3 +289,6 @@ The pycity_scheduling package is released by the Institute for Automation of Com
 [Institute for Automation of Complex Power Systems (ACS)](http://www.acs.eonerc.rwth-aachen.de) \
 [E.ON Energy Research Center (E.ON ERC)](http://www.eonerc.rwth-aachen.de) \
 [RWTH Aachen University, Germany](http://www.rwth-aachen.de)
+
+
+<img src="https://fein-aachen.org/img/logos/eonerc.png"/>

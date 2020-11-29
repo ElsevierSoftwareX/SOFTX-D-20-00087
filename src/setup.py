@@ -34,7 +34,7 @@ setuptools.setup(
     name="pycity_scheduling",
     description="A Python framework for the development, testing, and assessment of optimization-based"
                 "power scheduling algorithms for multi-energy systems in city districts",
-    version="1.0.0",
+    version="1.0.1",
     author="Institute for Automation of Complex Power Systems (ACS),"
            "E.ON Energy Research Center (E.ON ERC),"
            "RWTH Aachen University",
