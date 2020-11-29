@@ -27,13 +27,15 @@ import setuptools
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+with open('README.md') as f:
+    long_description = f.read()
 
 setuptools.setup(
     name="pycity_scheduling",
     description="A Python framework for the development, testing, and assessment of optimization-based"
                 "power scheduling algorithms for multi-energy systems in city districts",
     version="1.0.0",
-    author="Institute for Automation of Complex Power Systems,"
+    author="Institute for Automation of Complex Power Systems (ACS),"
            "E.ON Energy Research Center (E.ON ERC),"
            "RWTH Aachen University",
     author_email="post_acs@eonerc.rwth-aachen.de",
@@ -54,6 +56,8 @@ setuptools.setup(
         "test": ["pytest"]
     },
     platforms="any",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Operating System :: OS Independent",

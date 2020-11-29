@@ -1,4 +1,4 @@
-<img src="./gitlab-utils/logos/pycity_scheduling.png" width="150"/>
+<img src="https://fein-aachen.org/img/logos/pycity_scheduling.png" width="150"/>
 
 # pycity_scheduling
 
@@ -281,6 +281,8 @@ The pycity_scheduling package is released by the Institute for Automation of Com
 
 
 ## Contact
+
+<img src="https://fein-aachen.org/img/logos/eonerc.png"/>
 
 - Sebastian Schwarz, M.Sc. <sebastian.schwarz@eonerc.rwth-aachen.de>
 - Sebastian Alexander Uerlich, B.Sc. <sebastian.uerlich@rwth-aachen.de>
