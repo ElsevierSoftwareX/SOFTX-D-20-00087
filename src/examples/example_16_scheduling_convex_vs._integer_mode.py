@@ -36,7 +36,7 @@ from pycity_scheduling.algorithms import *
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 15: Scheduling Convex vs. Integer Mode ------\n\n")
+    print("\n\n------ Example 16: Scheduling Convex vs. Integer Mode ------\n\n")
 
     # Scheduling will be performed for a typical winter day within the annual heating period:
     env = factory.generate_standard_environment(step_size=3600, op_horizon=24, mpc_horizon=None, mpc_step_width=None,

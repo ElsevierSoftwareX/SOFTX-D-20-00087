@@ -36,7 +36,7 @@ from pycity_scheduling.algorithms import *
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 16: Scheduling PV+Battery System ------\n\n")
+    print("\n\n------ Example 17: Scheduling PV+Battery System ------\n\n")
 
     # Scheduling will be performed for one month:
     env = factory.generate_standard_environment(step_size=3600, op_horizon=24*31, mpc_horizon=None,

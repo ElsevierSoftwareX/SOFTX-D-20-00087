@@ -36,7 +36,7 @@ from pycity_scheduling.algorithms import *
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 17: Scheduling Heating and Cooling Loads ------\n\n")
+    print("\n\n------ Example 18: Scheduling Heating and Cooling Loads ------\n\n")
 
     # Scheduling will be performed for a full year:
     env = factory.generate_standard_environment(step_size=3600, op_horizon=24*365, mpc_horizon=None,

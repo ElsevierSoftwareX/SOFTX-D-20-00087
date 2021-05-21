@@ -71,11 +71,19 @@ class ElectricalEntity(OptimizationEntity):
 
                 def p_consumption_rule(model, t):
                     return model.max_consumption_var >= m.p_el_vars[t]
-                m.P_cons_constr = pyomo.Constraint(m.t, rule=p_consumption_rule)
+                m.p_cons_constr = pyomo.Constraint(m.t, rule=p_consumption_rule)
 
                 def p_generation_rule(model, t):
                     return model.max_consumption_var >= -m.p_el_vars[t]
-                m.P_gen_constr = pyomo.Constraint(m.t, rule=p_generation_rule)
+                m.p_gen_constr = pyomo.Constraint(m.t, rule=p_generation_rule)
+
+            if self.objective == "self-consumption":
+                m.p_export_var = pyomo.Var(m.t, domain=pyomo.Reals, bounds=(0, None), initialize=0)
+                m.p_import_var = pyomo.Var(m.t, domain=pyomo.Reals, bounds=(0, None), initialize=0)
+
+                def p_self_consumption_rule(model, t):
+                    return model.p_import_var[t] - model.p_export_var[t] == m.p_el_vars[t]
+                m.p_self_cons_constr = pyomo.Constraint(m.t, rule=p_self_consumption_rule)
 
             if self.objective == "flexibility-quantification":
                 m.max_p_flex_var = pyomo.Var(m.t, domain=pyomo.Reals, bounds=(0, None), initialize=0)
@@ -94,8 +102,6 @@ class ElectricalEntity(OptimizationEntity):
     def get_objective(self, coeff=1):
         if self.objective == 'peak-shaving':
             return coeff * pyomo.sum_product(self.model.p_el_vars, self.model.p_el_vars)
-        if self.objective == 'flexibility-quantification':
-            return coeff * pyomo.sum_product(self.model.max_p_flex_var, self.model.max_p_flex_var)
         if self.objective in ['price', 'co2']:
             if self.objective == 'price':
                 prices = self.environment.prices.tou_prices
@@ -110,8 +116,20 @@ class ElectricalEntity(OptimizationEntity):
                 return 0
         if self.objective == "max-consumption":
             if not hasattr(self.model, "max_consumption_var"):
-                raise ValueError("'max-consumption' needs to be selected during populate_model call.")
+                raise ValueError("Objective 'max-consumption' needs to be selected during populate_model call.")
             if coeff < 0:
                 raise ValueError("Setting a coefficient below zero is not supported for the max-consumption objective.")
             return coeff * self.model.max_consumption_var
+        if self.objective == "self-consumption":
+            if not hasattr(self.model, "p_export_var"):
+                raise ValueError("'Objective self-consumption' needs to be selected during populate_model call.")
+            if coeff < 0:
+                raise ValueError("Setting a coefficient below zero is not supported for the self-consumption "
+                                 "objective.")
+            return coeff * pyomo.sum_product(self.model.p_export_var, self.model.p_export_var)
+        if self.objective == 'flexibility-quantification':
+            if not hasattr(self.model, "max_p_flex_var"):
+                raise ValueError("Objective 'flexibility-quantification' needs to be selected during populate_model "
+                                 "call.")
+            return coeff * pyomo.sum_product(self.model.max_p_flex_var, self.model.max_p_flex_var)
         return super().get_objective(coeff)

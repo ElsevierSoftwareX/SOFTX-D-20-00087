@@ -31,11 +31,11 @@ from pycity_scheduling.algorithms import *
 
 
 # This is a very simple power scheduling example using the central optimization algorithm to demonstrate the impact
-# of system level objective "co2".
+# of system level objective "price".
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 10: Objective CO2------\n\n")
+    print("\n\n------ Example 10: Objective Price ------\n\n")
 
     # Define timer, price, weather, and environment objects:
     t = Timer(op_horizon=96, step_size=900, initial_date=(2015, 4, 1))
@@ -43,8 +43,8 @@ def main(do_plot=False):
     w = Weather(timer=t)
     e = Environment(timer=t, weather=w, prices=p)
 
-    # City district with district operator objective "co2":
-    cd = CityDistrict(environment=e, objective='co2')
+    # City district with district operator objective "peak-shaving":
+    cd = CityDistrict(environment=e, objective='price')
 
     # Schedule some sample buildings. The buildings' objectives are defined as "none".
     n = 10
@@ -72,7 +72,7 @@ def main(do_plot=False):
     # Perform the scheduling:
     opt = CentralOptimization(city_district=cd)
     opt.solve()
-    cd.copy_schedule("co2")
+    cd.copy_schedule("price")
 
     # Print and show the city district's schedule:
     print("Schedule of the city district:")
@@ -82,16 +82,15 @@ def main(do_plot=False):
     ax0 = plt.subplot(gs[0])
     ax0.plot(list(range(e.timer.timesteps_used_horizon)), cd.p_el_schedule)
     plt.ylim([-100.0, 200.0])
-    plt.grid()
     plt.ylabel('Electrical power in kW')
     plt.title('City district scheduling result')
 
     ax1 = plt.subplot(gs[1], sharex=ax0)
-    ax1.plot(list(range(e.timer.timesteps_used_horizon)), e.prices.co2_prices)
-    plt.grid()
-    plt.ylabel('National CO2 emissions in g/kWh')
+    ax1.plot(list(range(e.timer.timesteps_used_horizon)), e.prices.da_prices)
+    plt.ylabel('Spot market day-ahead prices in ct/kWh')
 
     plt.xlabel('Time in hours', fontsize=12)
+    plt.grid()
 
     if do_plot:
         figManager = plt.get_current_fig_manager()
@@ -104,11 +103,10 @@ def main(do_plot=False):
 
 
 # Conclusions:
-# Using "co2" as the system level objective results in a low emission power profile for the considered city district.
-# In other words, this means that power is preferably bought from the energy spot market during periods with low
-# national CO2 emissions emitted incorporating the local flexibility potentials. These periods usually correspond to a
-# high share of renewable energy available in the national energy mix. A low emission power profile is usually the
-# preferred option for a district operator and customers who demand for "green" solutions.
+# Using "price" as the system level objective results in a "cheap" power profile for the considered city district.
+# In other words, this means that power is bought from the spot market during cheap tariff periods and sold during
+# expensive tariff periods incorporating the local flexibility potentials. A cost-optimal power profile is usually
+# the preferred option by a district operator who procures the electrical power for its customers.
 
 
 if __name__ == '__main__':
