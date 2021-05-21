@@ -35,7 +35,7 @@ from pycity_scheduling.algorithms import *
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 11: Objective Valley-Filling ------\n\n")
+    print("\n\n------ Example 12: Objective Valley-Filling ------\n\n")
 
     # Define timer, price, weather, and environment objects:
     t = Timer(op_horizon=96, step_size=900, initial_date=(2015, 4, 1))

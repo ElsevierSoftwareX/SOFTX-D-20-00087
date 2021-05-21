@@ -41,13 +41,14 @@ class CityDistrict(ElectricalEntity, cd.CityDistrict):
 
         - 'price' : Optimize for the minimum total cost given by `prices.da_prices`.
         - 'peak-shaving' : Try to 'flatten' the schedule as much as possible.
-        - 'max-consumption' : Try to minimize the maximum power subscription.
         - 'co2' : Optimize for the minimum total co2 emissions given by `prices.co2_prices`.
-        - valley-filling : Try to fill the 'valleys' given by a reference power profile.
-        - flexibility-quantification: To be used to quantify the flexibility potential of the city district only.
+        - 'valley-filling' : Try to fill the 'valleys' given by a reference power profile.
+        - 'max-consumption' : Try to minimize the maximum power subscription.
+        - 'self-consumption' : Try to maximize the self-consumption of the local power generation.
+        - 'flexibility-quantification' : To be used to quantify the flexibility potential of the city district only.
         - 'none' : No objective.
     valley_profile : numpy.ndarray, optional
-        Profile to be filled by applying valley filling.
+        Profile to be filled by applying the valley filling objective.
 
     Notes
     -----

@@ -35,7 +35,7 @@ import pycity_scheduling.util.debug as debug
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 12: District Generator ------\n\n")
+    print("\n\n------ Example 13: District Generator ------\n\n")
 
     # First, create an environment using the factory's "generate_standard_environment" method. The environment
     # automatically encapsulates time, weather, and price data/information.

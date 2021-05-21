@@ -35,7 +35,7 @@ from pycity_scheduling.util.write_schedules import schedule_to_json, schedule_to
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 19: Post-Processing Schedule Evaluation ------\n\n")
+    print("\n\n------ Example 20: Post-Processing Schedule Evaluation ------\n\n")
 
     # Define timer, price, weather, and environment objects:
     t = Timer()
