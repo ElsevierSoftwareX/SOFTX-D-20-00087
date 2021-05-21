@@ -131,11 +131,11 @@ RUN git clone --depth=1 -b v0.2.1 https://github.com/RWTH-EBC/richardsonpy &&\
 # Download, install and test Python package pycity_base:
 # Always use a specific tagged pycity_base version from github.
 # Thus, pycity_base is downloaded from github and flag -e is used for pip.
-RUN git clone --depth=1 -b v0.3.1 https://github.com/RWTH-EBC/pyCity pycity_base &&\
+RUN git clone --depth=1 -b v0.3.2 https://github.com/RWTH-EBC/pyCity pycity_base &&\
     python3.6 -m pip install --no-cache-dir -e pycity_base/ &&\
     python3.6 -m pytest -q pycity_base/
 
 
 # Download and install the other requirements for package pycity_scheduling:
 # Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
-RUN python3.6 -m pip install --no-cache-dir numpy pandas matplotlib pyomo Shapely pylint sphinx numpydoc
+RUN python3.6 -m pip install --no-cache-dir pylint sphinx numpydoc

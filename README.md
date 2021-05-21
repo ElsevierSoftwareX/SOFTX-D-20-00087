@@ -22,12 +22,13 @@ Its target users are researchers in the field of smart grid applications and the
 ## Installation
 
 pycity_scheduling requires at least the following Python packages:
-- numpy
-- pandas
-- matplotlib
-- pyomo
-- Shapely
-- pycity_base
+- numpy==1.19.5
+- pandas==1.1.5
+- matplotlib==3.3.4
+- pyomo==6.0.0
+- Shapely==1.7.1
+- pycity_base==0.3.2
+- pytest==6.2.4 (optional)
 
 as well as the installation of at least one mathematical programming solver for convex and/or non-convex problems, which is supported by the [Pyomo](http://www.pyomo.org/) optimisation modelling library.
 We recommend one of the following solvers:
@@ -40,7 +41,7 @@ We recommend one of the following solvers:
 
 ### Installation of pycity_scheduling
 
-The latest version of pycity_scheduling is v1.0.1.
+The latest version of pycity_scheduling is v1.0.2.
 
 If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python 3.X) as follows:
 
