@@ -2,6 +2,7 @@ variables:
   GIT_STRATEGY: fetch
   DOCKER_FILE: ${CI_PROJECT_DIR}/gitlab-utils/Dockerfile
   DOCKER_IMAGE_DEV: pycity_scheduling_ci
+  FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
 
 
 stages:
