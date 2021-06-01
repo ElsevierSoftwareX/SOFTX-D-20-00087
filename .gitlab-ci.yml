@@ -22,7 +22,7 @@ prepare:
   script:
     - mkdir -p /kaniko/.docker
     - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image --cache=true --snapshotMode=redo --use-new-run
+    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
 
 
 lint:
