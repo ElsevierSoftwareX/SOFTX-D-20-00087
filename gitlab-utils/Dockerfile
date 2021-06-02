@@ -42,6 +42,10 @@ RUN cd / &&\
     cd /
 
 
+# Intermediate cleanup:
+RUN rm -rf /home/builduser/*
+
+
 # Download the required HiGHS LP solver source code:
 RUN mkdir -p /opt/HiGHS
 ENV HiGHS_BASE_DIR="/opt/HiGHS"
@@ -59,6 +63,7 @@ RUN cd $HMETIS_BASE_DIR &&\
     wget --quiet http://glaros.dtc.umn.edu/gkhome/fetch/sw/hmetis/hmetis-1.5-linux.tar.gz &&\
     tar xzf $HMETIS_BASE_DIR/hmetis-1.5-linux.tar.gz &&\
     chmod +x $HMETIS_BASE_DIR/hmetis-1.5-linux/hmetis &&\
+	rm -rf $HMETIS_BASE_DIR/hmetis-1.5-linux.tar.gz &&\
     cd /
 
 ENV PATH="${PATH}:$HMETIS_BASE_DIR/hmetis-1.5-linux/"
@@ -71,6 +76,7 @@ ENV BLISS_BASE_DIR="/opt/bliss"
 RUN cd $BLISS_BASE_DIR &&\
     wget --quiet http://www.tcs.hut.fi/Software/bliss/bliss-0.73.zip &&\
     unzip $BLISS_BASE_DIR/bliss-0.73.zip &&\
+	rm -rf $BLISS_BASE_DIR/bliss-0.73.zip &&\
     wget --quiet https://www.scipopt.org/download/bugfixes/scip-7.0.1/bliss-0.73.patch &&\
     patch -l -p0 < bliss-0.73.patch &&\
     mv $BLISS_BASE_DIR/bliss-0.73 $BLISS_BASE_DIR/bliss-0.73p &&\
@@ -94,6 +100,7 @@ ENV SCIPAMPL_BASE_DIR="/opt/scip"
 RUN cd $SCIPAMPL_BASE_DIR &&\
     wget --quiet https://www.scipopt.org/download/release/scipoptsuite-7.0.1.tgz &&\
     tar xzf $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1.tgz &&\
+	rm -rf $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1.tgz &&\
     cd /
 
 RUN cd $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1 &&\
@@ -120,22 +127,29 @@ RUN cd $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl &&\
 ENV PATH="${PATH}:$SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl/build"
 
 
-# Download, install and test Python package richardsonpy:
+# Download and install Python package richardsonpy:
 # Unfortunately, the current PyPI version of package richardsonpy seems to be broken.
 # As a workaround, richardsonpy is downloaded from github and flag -e is used for pip.
-RUN git clone --depth=1 -b v0.2.1 https://github.com/RWTH-EBC/richardsonpy &&\
+RUN cd /opt &&\
+    git clone --depth=1 -b v0.2.1 https://github.com/RWTH-EBC/richardsonpy &&\
     python3.6 -m pip install --no-cache-dir -e richardsonpy/ &&\
-    python3.6 -m pytest -q richardsonpy/
+	cd /
 
 
-# Download, install and test Python package pycity_base:
+# Download and install Python package pycity_base:
 # Always use a specific tagged pycity_base version from github.
 # Thus, pycity_base is downloaded from github and flag -e is used for pip.
-RUN git clone --depth=1 -b v0.3.2 https://github.com/RWTH-EBC/pyCity pycity_base &&\
+RUN cd /opt &&\
+    git clone --depth=1 -b v0.3.2 https://github.com/RWTH-EBC/pyCity pycity_base &&\
     python3.6 -m pip install --no-cache-dir -e pycity_base/ &&\
-    python3.6 -m pytest -q pycity_base/
+	cd /
 
 
 # Download and install the other requirements for package pycity_scheduling:
 # Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
 RUN python3.6 -m pip install --no-cache-dir pylint sphinx numpydoc
+
+
+# Final cleanup:
+RUN pacman -R patch wget curl php make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 --noconfirm
+
