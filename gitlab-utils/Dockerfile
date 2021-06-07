@@ -148,8 +148,3 @@ RUN cd /opt &&\
 # Download and install the other requirements for package pycity_scheduling:
 # Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
 RUN python3.6 -m pip install --no-cache-dir pylint sphinx numpydoc
-
-
-# Final cleanup:
-RUN pacman -R patch wget curl php make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 --noconfirm
-
