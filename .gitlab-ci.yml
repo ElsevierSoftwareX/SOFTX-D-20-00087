@@ -19,14 +19,14 @@ prepare:
     - mkdir -p /.docker
     - docker -build
        --file ${DOCKER_FILE}
-       --tag ${DOCKER_IMAGE_DEV}-base-image /.docker
+       --tag ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME} /.docker
   tags:
    - docker
 
 
 test-prerequisites:
   stage: test
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - python3.6 -m pytest -q /opt/richardsonpy/.
     - python3.6 -m pytest -q /opt/pycity_base/.
@@ -36,7 +36,7 @@ test-prerequisites:
 
 unittest:
   stage: test
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
@@ -48,7 +48,7 @@ unittest:
 
 lint:
   stage: test
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - mkdir -p lint
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -71,7 +71,7 @@ doc:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - mkdir -p doc
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -93,7 +93,7 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '60 minutes'
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - mkdir -p public
     - mv $CI_PROJECT_DIR/docs/* public
@@ -110,7 +110,7 @@ pypi-release:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '120 minutes'
-  image: ${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}:${CI_COMMIT_REF_NAME}
   script:
     - mkdir -p release
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
