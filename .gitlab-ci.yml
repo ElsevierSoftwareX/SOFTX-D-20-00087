@@ -16,9 +16,10 @@ prepare:
     GIT_SUBMODULE_STRATEGY: none
   stage: build
   script:
+    - mkdir -p /.docker
     - docker -build
        --file ${DOCKER_FILE}
-       --tag ${DOCKER_IMAGE_DEV}-base-image
+       --tag ${DOCKER_IMAGE_DEV}-base-image /.docker
   tags:
    - docker
 
