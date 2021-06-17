@@ -2,7 +2,6 @@ variables:
   GIT_STRATEGY: fetch
   DOCKER_FILE: ${CI_PROJECT_DIR}/gitlab-utils/Dockerfile
   DOCKER_IMAGE_DEV: pycity_scheduling_ci
-  FF_GITLAB_REGISTRY_HELPER_IMAGE: 1
 
 
 stages:
@@ -16,36 +15,39 @@ prepare:
   variables:
     GIT_SUBMODULE_STRATEGY: none
   stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [ "" ]
   script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+    - docker -build
+       --file ${DOCKER_FILE}
+       --tag ${DOCKER_IMAGE_DEV}-base-image
+  tags:
+   - docker
 
 
 test-prerequisites:
   stage: test
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - python3.6 -m pytest -q /opt/richardsonpy/.
     - python3.6 -m pytest -q /opt/pycity_base/.
+  tags:
+   - docker
 
 
 unittest:
   stage: test
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
 
 
 lint:
   stage: test
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - mkdir -p lint
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -60,13 +62,15 @@ lint:
       - lint
     expire_in: 4 weeks
     when: always
+  tags:
+   - docker
 
 
 doc:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - mkdir -p doc
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -88,13 +92,15 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '60 minutes'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - mkdir -p public
     - mv $CI_PROJECT_DIR/docs/* public
   artifacts:
     paths:
       - public
+  tags:
+   - docker
 
 
 pypi-release:
@@ -103,7 +109,7 @@ pypi-release:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '120 minutes'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE_DEV}-base-image
   script:
     - mkdir -p release
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -118,3 +124,6 @@ pypi-release:
     name: "pycity_scheduling-release-$CI_COMMIT_TAG"
     paths:
       - release
+  tags:
+   - docker
+
