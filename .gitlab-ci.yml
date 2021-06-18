@@ -39,7 +39,7 @@ unittest-gurobi:
   stage: test
   image: ${DOCKER_IMAGE}
   script:
-    - echo $GUROBI_LIC > /opt/gurobi/gurobi.lic
+    - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
