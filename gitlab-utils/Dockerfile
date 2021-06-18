@@ -9,7 +9,7 @@ ENTRYPOINT /bin/bash
 
 
 # Install the archlinux base packages:
-RUN pacman -Syu sudo git patch wget curl php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --ignore filesystem --noconfirm
+RUN pacman -Syu sudo git patch wget curl php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --noconfirm
 
 
 # Create a builduser (required for some archlinux operations running inside Docker):
@@ -40,10 +40,6 @@ RUN cd / &&\
     cd /home/builduser/coin-or-ipopt &&\
     pacman -U *.pkg.tar.zst --noconfirm &&\
     cd /
-
-
-# Intermediate cleanup:
-RUN rm -rf /home/builduser/*
 
 
 # Download the required HiGHS LP solver source code:
@@ -89,9 +85,9 @@ RUN cd $BLISS_BASE_DIR &&\
 ENV PATH="${PATH}:$BLISS_BASE_DIR/bliss-0.73p/"
 
 
-# Download, build and install the SCIP solver (SCIPOptSuite 7.0.1).
-# Important note: You are allowed to retrieve a copy of SCIP for research purposes as a member of a noncommercial and academic institution.
-# In order to get a copy of SCIP, you need to certify that you are a member of a noncommercial, academic institution and accept the ZIB Academic License.
+# Download, build and install the SCIP optimization solver (SCIPOptSuite 7.0.1).
+# Important note: You are allowed to retrieve a copy of SCIP for research purposes as a member of a noncommercial and academic institution only.
+# To get a copy of SCIP, you need to certify that you are a member of a noncommercial, academic institution and accept the ZIB Academic License.
 # Commercial use requires a commercial license.
 # For further information visit: https://scipopt.org/#scipoptsuite
 RUN mkdir -p /opt/scip
@@ -127,6 +123,27 @@ RUN cd $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl &&\
 ENV PATH="${PATH}:$SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl/build"
 
 
+## Download, build and install the Gurobi optimization solver (Gurobi 9.0.1).
+# Important note: You are allowed to retrieve a copy of Gurobi for research purposes as a member of a non-commercial and academic institution only.
+# To get a copy of Gurobi, you need to request for an academic license at Gurobi Optimization, LLC.
+# Commercial use requires a commercial license.
+# For further information visit: https://www.gurobi.com/
+RUN mkdir -p /opt/gurobi
+ENV GUROBI_BASE_DIR="/opt/scip"
+
+RUN cd $GUROBI_BASE_DIR &&\
+    wget --quiet https://packages.gurobi.com/9.0/gurobi9.0.1_linux64.tar.gz &&\
+    tar xfz gurobi9.0.1_linux64.tar.gz &&\
+    chmod +x $GUROBI_BASE_DIR &&\
+    rm $GUROBI_BASE_DIR/gurobi9.0.1_linux64.tar.gz &&\
+    cd $GUROBI_BASE_DIR &&\
+    python3 setup.py install &&\
+    cd /
+
+ENV PATH="${PATH}:$GUROBI_BASE_DIR/bin"
+ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$GUROBI_BASE_DIR/lib"
+
+
 # Download and install Python package richardsonpy:
 # Unfortunately, the current PyPI version of package richardsonpy seems to be broken.
 # As a workaround, richardsonpy is downloaded from github and flag -e is used for pip.
@@ -147,4 +164,4 @@ RUN cd /opt &&\
 
 # Download and install the other requirements for package pycity_scheduling:
 # Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
-RUN python3.6 -m pip install --no-cache-dir pylint sphinx numpydoc
+RUN python3.6 -m pip install --no-cache-dir importlib pylint sphinx numpydoc
