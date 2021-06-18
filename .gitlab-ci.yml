@@ -54,8 +54,8 @@ unittest-scip:
   script:
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - sed -i '55s/GUROBI_DIRECT_SOLVER/"SCIP_SOLVER"/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
-    - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/"SCIP_SOLVER_OPTIONS"/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - sed -i '55s/GUROBI_DIRECT_SOLVER/SCIP_SOLVER/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/SCIP_SOLVER_OPTIONS/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
     - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
   tags:
