@@ -123,25 +123,25 @@ RUN cd $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl &&\
 ENV PATH="${PATH}:$SCIPAMPL_BASE_DIR/scipoptsuite-7.0.1/scip/interfaces/ampl/build"
 
 
-## Download, build and install the Gurobi optimization solver (Gurobi 9.0.1).
+# Download, build and install the Gurobi optimization solver (Gurobi 9.1.2).
 # Important note: You are allowed to retrieve a copy of Gurobi for research purposes as a member of a non-commercial and academic institution only.
 # To get a copy of Gurobi, you need to request for an academic license at Gurobi Optimization, LLC.
 # Commercial use requires a commercial license.
 # For further information visit: https://www.gurobi.com/
 RUN mkdir -p /opt/gurobi
-ENV GUROBI_BASE_DIR="/opt/scip"
+ENV GUROBI_BASE_DIR="/opt/gurobi"
 
 RUN cd $GUROBI_BASE_DIR &&\
-    wget --quiet https://packages.gurobi.com/9.0/gurobi9.0.1_linux64.tar.gz &&\
-    tar xfz gurobi9.0.1_linux64.tar.gz &&\
-    chmod +x $GUROBI_BASE_DIR &&\
-    rm $GUROBI_BASE_DIR/gurobi9.0.1_linux64.tar.gz &&\
-    cd $GUROBI_BASE_DIR &&\
-    python3 setup.py install &&\
+    wget --quiet https://packages.gurobi.com/9.1/gurobi9.1.2_linux64.tar.gz &&\
+    tar xfz gurobi9.1.2_linux64.tar.gz &&\
+    rm $GUROBI_BASE_DIR/gurobi9.1.2_linux64.tar.gz &&\
+	chmod -R 755 $GUROBI_BASE_DIR/gurobi912 &&\
+    cd $GUROBI_BASE_DIR/gurobi912/linux64 &&\
+    python3.6 setup.py install &&\
     cd /
 
-ENV PATH="${PATH}:$GUROBI_BASE_DIR/bin"
-ENV LD_LIBRARY_PATH="/usr/local/lib:/usr/local/lib64:$GUROBI_BASE_DIR/lib"
+ENV PATH="${PATH}:$GUROBI_BASE_DIR/gurobi912/linux64/bin"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$GUROBI_BASE_DIR/gurobi912/linux64/lib"
 
 
 # Download and install Python package richardsonpy:
