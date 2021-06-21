@@ -70,7 +70,6 @@ def main(do_plot=False):
 
     # Plot the convex schedules:
     plot_time = list(range(env.timer.timesteps_used_horizon))
-    figure = plt.figure(figsize=(6, 6))
 
     gs = gridspec.GridSpec(5, 1)
     ax0 = plt.subplot(gs[0])
