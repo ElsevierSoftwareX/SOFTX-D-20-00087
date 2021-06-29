@@ -37,7 +37,7 @@ from pycity_scheduling.util.metric import calculate_costs, peak_to_average_ratio
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 20: Post-Processing Metrics Evaluation ------\n\n")
+    print("\n\n------ Example 21: Post-Processing Metrics Evaluation ------\n\n")
 
     # Use a standard environment of 24 hours with hourly resolution (=60min=3600sec):
     env = factory.generate_standard_environment(step_size=3600, op_horizon=24)

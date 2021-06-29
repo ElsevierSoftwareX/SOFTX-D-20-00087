@@ -1,7 +1,8 @@
 variables:
   GIT_STRATEGY: fetch
   DOCKER_FILE: ${CI_PROJECT_DIR}/gitlab-utils/Dockerfile
-  DOCKER_IMAGE_DEV: pycity_scheduling_ci
+  DOCKER_TAG: latest
+  DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}
 
 
 stages:
@@ -12,21 +13,58 @@ stages:
 
 
 prepare:
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
   stage: build
-  image:
-    name: gcr.io/kaniko-project/executor:debug
-    entrypoint: [ "" ]
+  before_script:
+    - docker version
+    - echo "${CI_REGISTRY_PASSWORD}" | docker login --password-stdin --username "${CI_REGISTRY_USER}" "${CI_REGISTRY}"
   script:
-    - mkdir -p /kaniko/.docker
-    - echo "{\"auths\":{\"$CI_REGISTRY\":{\"username\":\"$CI_REGISTRY_USER\",\"password\":\"$CI_REGISTRY_PASSWORD\"}}}" > /kaniko/.docker/config.json
-    - /kaniko/executor --context ${CI_PROJECT_DIR} --dockerfile ${DOCKER_FILE} --target base --destination ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image --cache=true --snapshotMode=redo --use-new-run
+    - mkdir -p /.docker
+    - docker build -f ${DOCKER_FILE} -t ${DOCKER_IMAGE}:${DOCKER_TAG} /.docker
+    - docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+  tags:
+   - docker
+
+
+test-prerequisites:
+  stage: test
+  image: ${DOCKER_IMAGE}
+  script:
+    - python3.6 -m pytest -q /opt/richardsonpy/.
+    - python3.6 -m pytest -q /opt/pycity_base/.
+  tags:
+   - docker
+
+
+unittest-gurobi:
+  stage: test
+  image: ${DOCKER_IMAGE}
+  script:
+    - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
+    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
+
+
+unittest-scip:
+  stage: test
+  image: ${DOCKER_IMAGE}
+  script:
+    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
+    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
+    - sed -i '55s/GUROBI_DIRECT_SOLVER/SCIP_SOLVER/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/SCIP_SOLVER_OPTIONS/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
 
 
 lint:
   stage: test
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE}
   script:
     - mkdir -p lint
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -41,23 +79,15 @@ lint:
       - lint
     expire_in: 4 weeks
     when: always
-
-
-unittest:
-  stage: test
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
-  script:
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
-    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
 
 
 doc:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE}
   script:
     - mkdir -p doc
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -79,13 +109,15 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '60 minutes'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+  image: ${DOCKER_IMAGE}
   script:
     - mkdir -p public
     - mv $CI_PROJECT_DIR/docs/* public
   artifacts:
     paths:
       - public
+  tags:
+   - docker
 
 
 pypi-release:
@@ -93,8 +125,8 @@ pypi-release:
   rules:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
-      start_in: '60 minutes'
-  image: ${CI_REGISTRY_IMAGE}:${DOCKER_IMAGE_DEV}-base-image
+      start_in: '120 minutes'
+  image: ${DOCKER_IMAGE}
   script:
     - mkdir -p release
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
@@ -109,3 +141,5 @@ pypi-release:
     name: "pycity_scheduling-release-$CI_COMMIT_TAG"
     paths:
       - release
+  tags:
+   - docker

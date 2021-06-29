@@ -214,8 +214,6 @@ def extract_pyomo_value(variable, var_type=None):
     else:
         value = variable.value
     value = var_type(value)
-    assert variable.lb is None or variable.lb <= value or np.isclose(variable.lb, value)
-    assert variable.ub is None or value <= variable.ub or np.isclose(variable.ub, value)
     return value
 
 

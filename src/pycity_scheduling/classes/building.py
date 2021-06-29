@@ -45,6 +45,7 @@ class Building(EntityContainer, bd.Building):
         - 'co2' : Optimize for the CO2 emissions given by `prices.co2_prices`.
         - 'peak-shaving' : Try to flatten the schedule as much as possible.
         - 'max-consumption' : Try to reduce the maximum of the absolute values of the schedule as much as possible.
+        - 'self-consumption' : Try to maximize the self-consumption of the local power generation.
         - 'none' : No objective (leave all flexibility to other participants).
     name : str, optional
         Name for the building.

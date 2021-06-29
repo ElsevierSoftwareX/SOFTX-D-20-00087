@@ -36,7 +36,7 @@ from pycity_scheduling.algorithms import *
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 17: Scheduling Heating and Cooling Loads ------\n\n")
+    print("\n\n------ Example 18: Scheduling Heating and Cooling Loads ------\n\n")
 
     # Scheduling will be performed for a full year:
     env = factory.generate_standard_environment(step_size=3600, op_horizon=24*365, mpc_horizon=None,
@@ -53,7 +53,6 @@ def main(do_plot=False):
 
     # Plot the thermal loads:
     plot_time = list(range(env.timer.timesteps_used_horizon))
-    figure = plt.figure(figsize=(6, 6))
 
     gs = gridspec.GridSpec(2, 1)
     ax0 = plt.subplot(gs[0])
@@ -116,7 +115,6 @@ def main(do_plot=False):
 
     # Plot the (thermal) schedules of interest:
     plot_time = list(range(env.timer.timesteps_used_horizon))
-    figure = plt.figure(figsize=(6, 6))
 
     gs = gridspec.GridSpec(4, 1)
     ax0 = plt.subplot(gs[0])
