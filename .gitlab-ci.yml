@@ -101,6 +101,8 @@ doc:
       - doc
     expire_in: 365 days
     when: always
+  tags:
+   - docker
 
 
 pages:
