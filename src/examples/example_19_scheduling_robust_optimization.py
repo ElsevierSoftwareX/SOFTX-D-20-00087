@@ -34,7 +34,7 @@ from pycity_scheduling.util.metric import calculate_costs
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 18: Scheduling Robust Optimization ------\n\n")
+    print("\n\n------ Example 19: Scheduling Robust Optimization ------\n\n")
 
     # Use a simple environment of 6 hours with quarter-hourly resolution (=15min=900sec):
     env = factory.generate_standard_environment(step_size=900, op_horizon=6)

@@ -41,7 +41,7 @@ class TestExamples(unittest.TestCase):
         for file in self.files:
             filepath = os.path.join(self.example_dir, file)
             example_name, file_ext = os.path.splitext(os.path.split(filepath)[-1])
-            if file_ext.lower() == '.py':
-                example_module = SourceFileLoader('main', filepath).load_module()
+            if file_ext.lower() == '.py' and example_name != '__init__':
+                example_module = SourceFileLoader(example_name, filepath).load_module()
                 example_module.main(do_plot=False)
         return

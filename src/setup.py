@@ -34,7 +34,7 @@ setuptools.setup(
     name="pycity_scheduling",
     description="A Python framework for the development, testing, and assessment of optimization-based"
                 "power scheduling algorithms for multi-energy systems in city districts",
-    version="1.0.1",
+    version="1.0.2",
     author="Institute for Automation of Complex Power Systems (ACS),"
            "E.ON Energy Research Center (E.ON ERC),"
            "RWTH Aachen University",
@@ -45,15 +45,15 @@ setuptools.setup(
     package_data={"pycity_scheduling": ["data/*.txt"], "examples": ["*.ipynb"]},
     data_files=[(".", ["LICENSE.txt", "README.md"])],
     install_requires=[
-        "numpy",
-        "pandas",
-        "matplotlib",
-        "pyomo",
-        "Shapely",
-        "pycity_base>=0.3.1"
+        "numpy==1.19.5",
+        "pandas==1.1.5",
+        "matplotlib==3.3.4",
+        "pyomo==5.7.1",
+        "Shapely==1.7.1",
+        "pycity_base==0.3.2"
     ],
     extras_require={
-        "test": ["pytest"]
+        "test": ["pytest==6.2.4"]
     },
     platforms="any",
     long_description=long_description,
