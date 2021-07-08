@@ -83,22 +83,22 @@ lint:
    - docker
 
 
-doc:
+docs:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
   image: ${DOCKER_IMAGE}
   script:
-    - mkdir -p doc
+    - mkdir -p docs
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - bash $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/docu.sh
-    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* doc
+    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* docs
   artifacts:
     name: "pycity_scheduling-documentation-sphinx"
     paths:
-      - doc
+      - docs
     expire_in: 365 days
     when: always
   tags:
