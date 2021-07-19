@@ -9,7 +9,7 @@ ENTRYPOINT /bin/bash
 
 
 # Install the archlinux base packages:
-RUN pacman -Syu sudo git patch wget php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis mpich --noconfirm
+RUN pacman -Syu sudo git patch wget php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis openmpi --noconfirm
 
 
 # Create a builduser (required for some archlinux operations running inside Docker):
