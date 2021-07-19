@@ -186,8 +186,9 @@ class ExchangeADMM(IterationAlgorithm, DistributedAlgorithm):
             s[i] = - self.rho * (p_el_schedules[i] - params["p_el"][i] + params["x_"] - x_)
         results["s_norms"].append(np.linalg.norm(s.flatten()))
 
-        # save parameters for another iteration
+        # save other parameters for another iteration
         params["p_el"] = p_el_schedules
         params["x_"] = x_
         params["u"] = u
+
         return

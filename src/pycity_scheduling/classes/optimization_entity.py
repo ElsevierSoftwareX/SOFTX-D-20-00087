@@ -357,6 +357,19 @@ class OptimizationEntity(object):
             e.load_schedule(schedule)
         return
 
+    def load_schedule_from_dict(self, schedule_dict):
+        """
+        Overwrites the values in the current schedule with the values from the given dictionary.
+
+        Parameters
+        ----------
+        schedule_dict : dict
+            Dictionary with schedules from a corresponding dictionary object.
+        """
+        self.schedules[self.current_schedule_active] = {name: np.array(entries) for name, entries in
+                                                        schedule_dict.items()}
+        return
+
     def load_schedule_into_model(self, schedule=None):
         """
         Overwrites the values in the entity model with the values in the schedule.

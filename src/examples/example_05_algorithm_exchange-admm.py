@@ -28,7 +28,7 @@ from pycity_scheduling.classes import *
 from pycity_scheduling.algorithms import *
 
 
-# This is a very simple power scheduling example using the distributed Exchange ADMM algorithm.
+# This is a very simple power scheduling example using the distributed exchange ADMM algorithm.
 
 
 def main(do_plot=False):
@@ -95,11 +95,11 @@ def main(do_plot=False):
     cd.copy_schedule("admm")
 
     # Print some ADMM results:
-    print("ADMM - Number of iterations:")
+    print("Exchange ADMM - Number of iterations:")
     print(results["iterations"][-1])
-    print("ADMM - Norm vector 'r' over iterations:")
+    print("Exchange ADMM - Norm vector 'r' over iterations:")
     print(results["r_norms"])
-    print("ADMM - Norm vector 's' over iterations:")
+    print("Exchange ADMM - Norm vector 's' over iterations:")
     print(results["s_norms"])
     print("")
 

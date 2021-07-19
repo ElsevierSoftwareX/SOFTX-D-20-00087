@@ -32,7 +32,7 @@ from pycity_scheduling.solvers import DEFAULT_SOLVER, DEFAULT_SOLVER_OPTIONS
 
 
 class ExchangeADMMMPI(IterationAlgorithm, DistributedAlgorithm):
-    """Implementation of the Exchange ADMM Algorithm.
+    """Implementation of the Exchange ADMM MPI Algorithm.
 
     Uses the Exchange ADMM algorithm described in [1].
 
@@ -132,6 +132,54 @@ class ExchangeADMMMPI(IterationAlgorithm, DistributedAlgorithm):
         results["r_norms"] = []
         results["s_norms"] = []
         return results, params
+
+    def _postsolve(self, results, params, debug):
+        if self.mpi_interface.mpi_size > 1:
+            # Take actions if the number of MPI processes does not fit the total number of nodes:
+            if self.mpi_interface.mpi_size > len(self.nodes):
+                rank_id_range = np.array([i for i in range(len(self.nodes))])
+            elif self.mpi_interface.mpi_size < len(self.nodes):
+                if self.mpi_interface.mpi_size == 1:
+                    rank_id_range = np.array([0 for i in range(len(self.nodes))])
+                else:
+                    a, b = divmod(len(self.nodes) - 1, self.mpi_interface.mpi_size - 1)
+                    rank_id_range = np.repeat(np.array([i for i in range(1, self.mpi_interface.mpi_size)]), a)
+                    for i in range(b):
+                        rank_id_range = np.append(rank_id_range, i + 1)
+                    rank_id_range = np.concatenate([[0], rank_id_range])
+            else:
+                rank_id_range = np.array([i for i in range(len(self.nodes))])
+            rank_id_range = np.sort(rank_id_range)
+
+            # Update all models across all MPI instances:
+            entity_schedules = [None for i in range(len(self.nodes))]
+            for i, node, entity in zip(range(len(self.nodes)), self.nodes, self.entities):
+                if not isinstance(
+                        entity,
+                        (CityDistrict, Building, Photovoltaic, WindEnergyConverter)
+                ):
+                    continue
+                if self.mpi_interface.mpi_rank == rank_id_range[i]:
+                    entity.update_schedule()
+                    for j in range(self.mpi_interface.mpi_size):
+                        if j != self.mpi_interface.mpi_rank:
+                            entity_schedules[i] = entity.schedule
+                            req = self.mpi_interface.mpi_comm.isend(entity.schedule, dest=j, tag=i)
+                            req.wait()
+                else:
+                    req = self.mpi_interface.mpi_comm.irecv(source=rank_id_range[i], tag=i)
+                    data = req.wait()
+                    entity_schedules[i] = data
+            for i, node, entity in zip(range(len(self.nodes)), self.nodes, self.entities):
+                if not isinstance(
+                        entity,
+                        (CityDistrict, Building, Photovoltaic, WindEnergyConverter)
+                ):
+                    continue
+                self.entities[i].load_schedule_from_dict(entity_schedules[i])
+        else:
+            super()._postsolve(results, params, debug)
+        return
 
     def _is_last_iteration(self, results, params):
         return results["r_norms"][-1] <= self.eps_primal and results["s_norms"][-1] <= self.eps_dual
@@ -249,7 +297,7 @@ class ExchangeADMMMPI(IterationAlgorithm, DistributedAlgorithm):
         results["r_norms"].append(r_norm[0])
         results["s_norms"].append(s_norm[0])
 
-        # save parameters for another iteration
+        # save other parameters for another iteration
         params["p_el"] = p_el_schedules
         params["x_"] = x_
         params["u"] = u
