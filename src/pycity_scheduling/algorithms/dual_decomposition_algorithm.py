@@ -73,6 +73,7 @@ class DualDecomposition(IterationAlgorithm, DistributedAlgorithm):
             deviations which are considered.
         """
         super(DualDecomposition, self).__init__(city_district, solver, solver_options, mode)
+
         self.eps_primal = eps_primal
         self.rho = rho
         self.max_iterations = max_iterations
@@ -148,8 +149,10 @@ class DualDecomposition(IterationAlgorithm, DistributedAlgorithm):
         r = np.zeros(op_horizon)
         r -= p_el_schedules[0]
         r += np.sum(p_el_schedules[1:], axis=0)
-
-        # save parameters for another iteration
         results["r_norms"].append(np.linalg.norm(r, np.inf))
         results["lambdas"].append(np.copy(lambdas))
+
+        # save other parameters for another iteration
+        params["lambdas"] = lambdas
+
         return

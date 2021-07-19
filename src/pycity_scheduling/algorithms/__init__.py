@@ -28,6 +28,7 @@ from .exchange_admm_algorithm import ExchangeADMM
 from .exchange_admm_algorithm_mpi import ExchangeADMMMPI
 from .central_optimization_algorithm import CentralOptimization
 from .dual_decomposition_algorithm import DualDecomposition
+from .dual_decomposition_algorithm_mpi import DualDecompositionMPI
 
 
 __all__ = [
@@ -37,6 +38,7 @@ __all__ = [
     'ExchangeADMMMPI',
     'CentralOptimization',
     'DualDecomposition',
+    'DualDecompositionMPI',
     'algorithm',
     'algorithms',
 ]
@@ -49,4 +51,5 @@ algorithms = {
     'exchange-admm-mpi': ExchangeADMMMPI,
     'central': CentralOptimization,
     'dual-decomposition': DualDecomposition,
+    'dual-decomposition-mpi': DualDecompositionMPI,
 }

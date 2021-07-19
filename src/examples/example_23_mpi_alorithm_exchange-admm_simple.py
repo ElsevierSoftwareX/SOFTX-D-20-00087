@@ -36,7 +36,7 @@ def main(do_plot=False):
     mpi = mpi_interface.MPI_Interface()
 
     if mpi.mpi_rank == 0:
-        print("\n\n------ Example 22: Algorithm Exchange-ADMM-MPI ------\n\n")
+        print("\n\n------ Example 23: Algorithm Exchange-ADMM MPI ------\n\n")
 
     # Define timer, price, weather, and environment objects:
     t = Timer(op_horizon=2, step_size=3600)
@@ -100,11 +100,11 @@ def main(do_plot=False):
 
     # Print some ADMM results:
     if mpi.mpi_rank == 0:
-        print("ADMM - Number of iterations:")
+        print("Exchange ADMM MPI - Number of iterations:")
         print(results["iterations"][-1])
-        print("ADMM - Norm vector 'r' over iterations:")
+        print("Exchange ADMM MPI - Norm vector 'r' over iterations:")
         print(results["r_norms"])
-        print("ADMM - Norm vector 's' over iterations:")
+        print("Exchange ADMM MPI - Norm vector 's' over iterations:")
         print(results["s_norms"])
         print("")
 

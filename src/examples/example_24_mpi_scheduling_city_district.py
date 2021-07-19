@@ -40,7 +40,7 @@ def main(do_plot=False):
     mpi = mpi_interface.MPI_Interface()
 
     if mpi.mpi_rank == 0:
-        print("\n\n------ Example 23: Scheduling City District MPI ------\n\n")
+        print("\n\n------ Example 24: Scheduling City District MPI ------\n\n")
 
     # First, create an environment using the factory's "generate_standard_environment" method. The environment
     # automatically encapsulates time, weather, and price data/information.

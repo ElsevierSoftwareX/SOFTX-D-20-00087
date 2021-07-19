@@ -195,6 +195,18 @@ class TestAlgorithms(unittest.TestCase):
         self.assertAlmostEqual(60, self.cd.p_el_schedule[1], 2)
         return
 
+    def test_dual_decomposition_mpi(self):
+        f = algorithms['dual-decomposition-mpi'](self.cd, eps_primal=0.001)
+        f.solve()
+
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[0], 4)
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[1], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[0], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[1], 4)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[0], 2)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[1], 2)
+        return
+
     def test_stand_alone_algorithm(self):
         f = algorithms['stand-alone'](self.cd)
         f.solve()
