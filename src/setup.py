@@ -50,7 +50,8 @@ setuptools.setup(
         "matplotlib==3.3.4",
         "pyomo==5.7.1",
         "Shapely==1.7.1",
-        "pycity_base==0.3.2"
+        "pycity_base==0.3.2",
+        "mpi4py==3.0.3"
     ],
     extras_require={
         "test": ["pytest==6.2.4"]
