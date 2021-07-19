@@ -33,7 +33,7 @@ from pycity_scheduling.util import mpi_interface
 
 
 # In this example, the power schedule for a city district scenario is determined using the parallel MPI Exchange
-# ADMM. The scenario is built upon the district setup as defined in example 'example_13_district_generator.py'.
+# ADMM. The scenario is built upon the district setup code as defined in example 'example_13_district_generator.py'.
 
 
 def main(do_plot=False):
@@ -46,8 +46,8 @@ def main(do_plot=False):
     # automatically encapsulates time, weather, and price data/information.
     env = factory.generate_standard_environment(initial_date=(2018, 12, 6), step_size=900, op_horizon=96)
 
-    # Create 20 single-family houses:
-    num_sfh = 10
+    # Create 5 single-family houses:
+    num_sfh = 5
 
     # 50% SFH.2002, 30% SFH.2010, 20% SFH.2016 (based on TABULA):
     sfh_distribution = {
@@ -140,7 +140,8 @@ def main(do_plot=False):
 
 # Conclusions:
 # The parallel and distributed power scheduling for a city district scenario can be done easily using pycity_scheduling
-# with MPI support and the Python module mpi4py installed.
+# with MPI support and the Python module mpi4py installed. It is already recommended to make use of MPI for distributed
+# city district optimizations in which one considers more than 20 buildings.
 
 
 if __name__ == '__main__':
