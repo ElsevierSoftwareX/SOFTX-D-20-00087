@@ -74,7 +74,7 @@ lint:
     - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
     - mv $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt lint
   artifacts:
-    name: "pylint-report"
+    name: "pycity_scheduling-pylint-report-$CI_COMMIT_SHORT_SHA"
     paths:
       - lint
     expire_in: 4 weeks
@@ -83,24 +83,27 @@ lint:
    - docker
 
 
-doc:
+docs:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
   image: ${DOCKER_IMAGE}
   script:
-    - mkdir -p doc
+    - mkdir -p docs
+    - rm -rf docs/*
     - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
     - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - bash $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/docu.sh
-    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* doc
+    - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* docs
   artifacts:
-    name: "pycity_scheduling-documentation-sphinx"
+    name: "pycity_scheduling-docs-$CI_COMMIT_SHORT_SHA"
     paths:
-      - doc
+      - docs
     expire_in: 365 days
     when: always
+  tags:
+   - docker
 
 
 pages:

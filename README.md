@@ -28,14 +28,17 @@ pycity_scheduling requires at least the following Python packages:
 - pyomo==6.0.0
 - Shapely==1.7.1
 - pycity_base==0.3.2
-- pytest==6.2.4 (optional)
+- pylint (optional)
+- sphinx (optional)
+- numpydoc (optional)
+- pytest (optional)
 
 as well as the installation of at least one mathematical programming solver for convex and/or non-convex problems, which is supported by the [Pyomo](http://www.pyomo.org/) optimisation modelling library.
 We recommend one of the following solvers:
 
-- [SCIP](https://www.scipopt.org/) (default)
+- [SCIP](https://www.scipopt.org/)
 - [bonmin](https://github.com/coin-or/Bonmin)
-- [Gurobi (gurobipy)](https://www.gurobi.com/products/gurobi-optimizer/)
+- [Gurobi (gurobipy)](https://www.gurobi.com/products/gurobi-optimizer/) (default)
 - [IBM ILOG CPLEX](https://www.ibm.com/products/ilog-cplex-optimization-studio)
 
 
@@ -43,7 +46,7 @@ We recommend one of the following solvers:
 
 The latest version of pycity_scheduling is v1.0.2.
 
-If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python 3.X) as follows:
+If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python version >= 3.6) as follows:
 
 `pip install pycity_scheduling`
 
@@ -271,9 +274,11 @@ if __name__ == '__main__':
 ## Tutorial
 
 The pycity_scheduling package comes with several example/tutorial scripts in folder ./src/examples.
+
 The unit tests can be found in folder ./src/testing.
 
-Also see the pycity_base package's tutorials for the basic usage of the framework's core functionalities. 
+
+Moreover, also check the pycity_base package's tutorials for the basic usage of the framework's core functionalities. 
 
 
 ## License
