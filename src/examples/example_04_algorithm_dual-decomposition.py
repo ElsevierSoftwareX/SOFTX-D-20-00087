@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -93,7 +93,7 @@ def main(do_plot=False):
     results = opt.solve()
     cd.copy_schedule("dual_decomposition")
 
-    # Print some ADMM results:
+    # Print some dual decomposition results:
     print("Dual Decomposition - Number of iterations:")
     print(results["iterations"][-1])
     print("Dual Decomposition - Norm vector 'r' over iterations:")

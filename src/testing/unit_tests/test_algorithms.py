@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -158,8 +158,45 @@ class TestAlgorithms(unittest.TestCase):
         self.assertAlmostEqual(-10, cd.p_el_schedule[1], 2)
         return
 
+    def test_exchange_admm_mpi(self):
+        f = algorithms['exchange-admm-mpi'](self.cd, rho=2.0, eps_primal=0.001)
+        r = f.solve()
+
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[0], 4)
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[1], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[0], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[1], 4)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[0], 2)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[1], 2)
+        self.assertTrue(r["r_norms"][-2] > 0.001 or r["s_norms"][-2] > 1)
+        self.assertGreater(0.001, r["r_norms"][-1])
+        self.assertGreater(1, r["s_norms"][-1])
+
+        # Test infeasible model:
+        self.bd1.model.new_constr = pyomo.Constraint(expr=self.bd1.model.p_el_vars[0] == 0)
+        self.bd1.model.p_el_vars[0].setub(15.0)
+        with self.assertRaises(NonoptimalError):
+            f.solve(full_update=True, debug=False)
+
+        f2 = algorithms['exchange-admm-mpi'](self.cd, rho=2, eps_primal=0.001, max_iterations=2)
+        with self.assertRaises(MaxIterationError):
+            f2.solve()
+        return
+
     def test_dual_decomposition(self):
         f = algorithms['dual-decomposition'](self.cd, eps_primal=0.001)
+        f.solve()
+
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[0], 4)
+        self.assertAlmostEqual(20, self.bd1.p_el_schedule[1], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[0], 4)
+        self.assertAlmostEqual(40, self.bd2.p_el_schedule[1], 4)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[0], 2)
+        self.assertAlmostEqual(60, self.cd.p_el_schedule[1], 2)
+        return
+
+    def test_dual_decomposition_mpi(self):
+        f = algorithms['dual-decomposition-mpi'](self.cd, eps_primal=0.001)
         f.solve()
 
         self.assertAlmostEqual(20, self.bd1.p_el_schedule[0], 4)

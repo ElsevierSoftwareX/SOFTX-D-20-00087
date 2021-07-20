@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -98,7 +98,7 @@ def main(do_plot=False):
     ev = ElectricalVehicle(environment=e, e_el_max=37.0, p_el_max_charge=22.0, soc_init=0.65)
     ap.addEntity(ev)
 
-    # Perform the scheduling with the Exchange ADMM algorithm to obtain an algorithm warmstart point:
+    # Perform the scheduling with the exchange ADMM algorithm to obtain an algorithm warmstart point:
     opt = ExchangeADMM(city_district=cd, rho=2.0, eps_primal=1, eps_dual=1, mode="integer")
     r1 = opt.solve()
     imbalance = sum(np.abs(cd.schedule["p_el"] - bd1.schedule["p_el"] - bd2.schedule["p_el"]))

@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -32,7 +32,7 @@ from pycity_scheduling.algorithms import *
 
 
 # This is a simple power scheduling example to demonstrate the difference between the pycity_scheduling's convex and
-# integer (MIP) optimization models using the distributed Exchange ADMM algorithm.
+# integer (MIP) optimization models using the distributed exchange ADMM algorithm.
 
 
 def main(do_plot=False):

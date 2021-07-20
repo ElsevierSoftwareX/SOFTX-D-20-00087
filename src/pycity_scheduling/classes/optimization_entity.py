@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -355,6 +355,19 @@ class OptimizationEntity(object):
         self.current_schedule_active = schedule
         for e in self.get_lower_entities():
             e.load_schedule(schedule)
+        return
+
+    def load_schedule_from_dict(self, schedule_dict):
+        """
+        Overwrites the values in the current schedule with the values from the given dictionary.
+
+        Parameters
+        ----------
+        schedule_dict : dict
+            Dictionary with schedules from a corresponding dictionary object.
+        """
+        self.schedules[self.current_schedule_active] = {name: np.array(entries) for name, entries in
+                                                        schedule_dict.items()}
         return
 
     def load_schedule_into_model(self, schedule=None):

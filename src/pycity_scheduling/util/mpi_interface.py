@@ -22,17 +22,15 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 """
 
 
-from pycity_scheduling import constants
-from pycity_scheduling import exceptions
-from pycity_scheduling import classes
-from pycity_scheduling import algorithms
-from pycity_scheduling import util
-
-
-__all__ = [
-    'constants',
-    'exceptions.py',
-    'classes',
-    'algorithms',
-    'util',
-]
+class MPI_Interface():
+    def __init__(self):
+        self.mpi_comm = None
+        self.mpi_rank = 0
+        self.mpi_size = 1
+        try:
+            from mpi4py import MPI
+            self.mpi_comm = MPI.COMM_WORLD
+            self.mpi_rank = self.mpi_comm.Get_rank()
+            self.mpi_size = self.mpi_comm.Get_size()
+        except:
+            pass

@@ -2,7 +2,7 @@
 The pycity_scheduling framework
 
 
-Copyright (C) 2020,
+Copyright (C) 2021,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University
@@ -25,16 +25,20 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 from .stand_alone_optimization_algorithm import StandAlone
 from .local_optimization_algorithm import LocalOptimization
 from .exchange_admm_algorithm import ExchangeADMM
+from .exchange_admm_algorithm_mpi import ExchangeADMMMPI
 from .central_optimization_algorithm import CentralOptimization
 from .dual_decomposition_algorithm import DualDecomposition
+from .dual_decomposition_algorithm_mpi import DualDecompositionMPI
 
 
 __all__ = [
     'StandAlone',
     'LocalOptimization',
     'ExchangeADMM',
+    'ExchangeADMMMPI',
     'CentralOptimization',
     'DualDecomposition',
+    'DualDecompositionMPI',
     'algorithm',
     'algorithms',
 ]
@@ -44,6 +48,8 @@ algorithms = {
     'stand-alone': StandAlone,
     'local': LocalOptimization,
     'exchange-admm': ExchangeADMM,
+    'exchange-admm-mpi': ExchangeADMMMPI,
     'central': CentralOptimization,
     'dual-decomposition': DualDecomposition,
+    'dual-decomposition-mpi': DualDecompositionMPI,
 }

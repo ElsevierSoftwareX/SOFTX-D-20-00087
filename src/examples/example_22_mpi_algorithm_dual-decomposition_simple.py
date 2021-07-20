@@ -26,13 +26,16 @@ import numpy as np
 
 from pycity_scheduling.classes import *
 from pycity_scheduling.algorithms import *
+from pycity_scheduling.util import mpi_interface
 
-
-# This is a very simple power scheduling example using the distributed exchange ADMM algorithm.
+# This is a very simple power scheduling example using the distributed dual decomposition MPI algorithm.
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 05: Algorithm Exchange-ADMM ------\n\n")
+    mpi = mpi_interface.MPI_Interface()
+
+    if mpi.mpi_rank == 0:
+        print("\n\n------ Example 22: Algorithm Dual-Decomposition MPI ------\n\n")
 
     # Define timer, price, weather, and environment objects:
     t = Timer(op_horizon=2, step_size=3600)
@@ -90,33 +93,34 @@ def main(do_plot=False):
     ap.addEntity(ev)
 
     # Perform the scheduling:
-    opt = ExchangeADMM(city_district=cd, rho=2.0, eps_primal=0.001, eps_dual=0.01)
+    opt = DualDecompositionMPI(city_district=cd, rho=0.1, eps_primal=1.0)
     results = opt.solve()
-    cd.copy_schedule("admm")
+    cd.copy_schedule("dual_decomposition-mpi")
 
-    # Print some ADMM results:
-    print("Exchange ADMM - Number of iterations:")
-    print(results["iterations"][-1])
-    print("Exchange ADMM - Norm vector 'r' over iterations:")
-    print(results["r_norms"])
-    print("Exchange ADMM - Norm vector 's' over iterations:")
-    print(results["s_norms"])
-    print("")
+    # Print some dual decomposition results:
+    if mpi.mpi_rank == 0:
+        print("Dual Decomposition MPI - Number of iterations:")
+        print(results["iterations"][-1])
+        print("Dual Decomposition MPI - Norm vector 'r' over iterations:")
+        print(results["r_norms"])
+        print("Dual Decomposition MPI - Final shadow price vector:")
+        print(results["lambdas"][-1])
+        print("")
 
-    # Print the building's schedules:
-    print("Schedule building no. one:")
-    print(list(bd1.p_el_schedule))
-    print("Schedule building no. two:")
-    print(list(bd2.p_el_schedule))
-    print("Schedule of the city district:")
-    print(list(cd.p_el_schedule))
+        # Print the building's schedules:
+        print("Schedule building no. one:")
+        print(list(bd1.p_el_schedule))
+        print("Schedule building no. two:")
+        print(list(bd2.p_el_schedule))
+        print("Schedule of the city district:")
+        print(list(cd.p_el_schedule))
     return
 
 
 # Conclusions:
-# If the distributed exchange ADMM optimization algorithm is applied, the two buildings are scheduled in a way
-# so that both the local and system level objectives are satisfied. Local flexibility is used to achieve the system
-# level objective. The scheduling results are close to the ones of the central algorithm, which demonstrates the
+# If the distributed MPI dual decomposition optimization algorithm is applied, the two buildings are scheduled in
+# parallel such that both the local and system level objectives are satisfied. Local flexibility is used to achieve the
+# system level objective. The scheduling results are close to the ones of the central algorithm, which demonstrates the
 # correctness of the distributed algorithm.
 
 

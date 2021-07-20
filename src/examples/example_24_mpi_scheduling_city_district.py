@@ -29,22 +29,25 @@ import pycity_scheduling.util.factory as factory
 import pycity_scheduling.util.debug as debug
 from pycity_scheduling.algorithms import *
 from pycity_scheduling.classes import *
+from pycity_scheduling.util import mpi_interface
 
 
-# In this example, the power schedule for a complex city district scenario is determined. The scenario is built upon the
-# district setup as defined in example 'example_13_district_generator.py', but it contains more than 100 buildings and
-# is hence considered more complex.
+# In this example, the power schedule for a city district scenario is determined using the parallel MPI Exchange
+# ADMM. The scenario is built upon the district setup code as defined in example 'example_13_district_generator.py'.
 
 
 def main(do_plot=False):
-    print("\n\n------ Example 15: Scheduling Complex City District ------\n\n")
+    mpi = mpi_interface.MPI_Interface()
+
+    if mpi.mpi_rank == 0:
+        print("\n\n------ Example 24: Scheduling City District MPI ------\n\n")
 
     # First, create an environment using the factory's "generate_standard_environment" method. The environment
     # automatically encapsulates time, weather, and price data/information.
     env = factory.generate_standard_environment(initial_date=(2018, 12, 6), step_size=900, op_horizon=96)
 
-    # Create 75 single-family houses:
-    num_sfh = 75
+    # Create 5 single-family houses:
+    num_sfh = 5
 
     # 50% SFH.2002, 30% SFH.2010, 20% SFH.2016 (based on TABULA):
     sfh_distribution = {
@@ -72,8 +75,8 @@ def main(do_plot=False):
         'PV': 0.8,
     }
 
-    # Create 25 multi-family houses (number of apartments according to TABULA):
-    num_mfh = 25
+    # Create 0 multi-family houses (number of apartments according to TABULA):
+    num_mfh = 0
 
     # 60% MFH.2002, 20% SFH.2010, 20% SFH.2016 (based on TABULA):
     mfh_distribution = {
@@ -114,36 +117,31 @@ def main(do_plot=False):
                                                 building_objective='price'
                                                 )
 
-    # To cover the city district's load, the setup additionally comprises a wind energy converter of approx. 2MWp:
-    v = np.array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 99])
-    p = np.array([0, 0, 3, 25, 82, 174, 321, 532, 815, 1180, 1580, 1810, 1980, 2050, 2050, 2050, 2050, 2050, 2050, 2050,
-                  2050, 2050, 2050, 2050, 2050, 2050, 0, 0])
-    wec = WindEnergyConverter(env, velocity=v, power=p, hub_height=78.0)
-    district.addEntity(wec, [0, 0])
-
     # Hierarchically print the district and all buildings/assets:
-    debug.print_district(district, 1)
+    if mpi.mpi_rank == 0:
+        debug.print_district(district, 1)
 
-    # Perform the city district scheduling using the central optimization algorithm:
-    opt = CentralOptimization(district)
+    # Perform the parallel city district scheduling using the exchange ADMM MPI optimization algorithm:
+    opt = ExchangeADMMMPI(city_district=district, rho=0.1, eps_primal=10.0, eps_dual=1.0)
     results = opt.solve()
     district.copy_schedule("district_schedule")
 
     # Plot the scheduling results:
-    plt.plot(district.p_el_schedule)
-    plt.ylabel("City District Power [kW]")
-    plt.title("Complex City District Scenario - Schedule")
-    plt.grid()
-    if do_plot:
-        plt.show()
+    if mpi.mpi_rank == 0:
+        print(list(district.p_el_schedule))
+        plt.plot(district.p_el_schedule)
+        plt.ylabel("City District Power [kW]")
+        plt.title("Complex City District Scenario - Schedule")
+        plt.grid()
+        if do_plot:
+            plt.show()
     return
 
 
 # Conclusions:
-# The power scheduling for a complex city district scenario can be done easily using pycity_scheduling. Even more than
-# 100 (TABULA) buildings could be considered, but this might lead to scalability issues when using the central
-# optimization algorithm. Thus, with a growing number buildings, distributed algorithms such as dual decomposition or
-# ADMM should be applied.
+# The parallel and distributed power scheduling for a city district scenario can be done easily using pycity_scheduling
+# with MPI support and the Python module mpi4py installed. It is already recommended to make use of MPI for distributed
+# city district optimizations in which one considers more than 20 buildings.
 
 
 if __name__ == '__main__':
