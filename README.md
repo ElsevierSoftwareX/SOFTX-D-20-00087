@@ -63,7 +63,7 @@ The project can also be installed in editable mode directly from gitlab without 
 
 or:
 
-`pip install -e --src <install_location> "git+ssh://git.rwth-aachen.de:acs/public/simulation/pycity_scheduling.git"`
+`pip install --src <install_location> -e "git+ssh://git.rwth-aachen.de:acs/public/simulation/pycity_scheduling.git"`
 
 You can check if the installation has been successful by trying to import package pycity_scheduling into your Python environment.
 This import should be possible without any errors.
