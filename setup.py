@@ -21,14 +21,11 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-import os
 import setuptools
-
-
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 from pathlib import Path
-long_description = (Path(__file__).parent.parent / "README.md").read_text()
+
+
+long_description = (Path(__file__).parent / "README.md").read_text()
 
 setuptools.setup(
     name="pycity_scheduling",
@@ -41,7 +38,8 @@ setuptools.setup(
     author_email="post_acs@eonerc.rwth-aachen.de",
     url="https://git.rwth-aachen.de/acs/public/simulation/pycity_scheduling",
     license="MIT",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(where="src"),
+    package_dir={"": "src"},
     package_data={"pycity_scheduling": ["data/*.txt"], "examples": ["*.ipynb"]},
     data_files=[(".", ["LICENSE.txt", "README.md"])],
     install_requires=[
