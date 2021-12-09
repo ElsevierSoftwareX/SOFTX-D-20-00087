@@ -25,8 +25,7 @@ pycity_scheduling requires at least the following Python packages:
 - numpy==1.19.5
 - pandas==1.1.5
 - matplotlib==3.3.4
-- pyomo==6.0.0
-- Shapely==1.7.1
+- pyomo==5.7.3
 - pycity_base==0.3.2
 - pylint (optional)
 - sphinx (optional)

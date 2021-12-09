@@ -27,14 +27,14 @@ import setuptools
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-with open('README.md') as f:
-    long_description = f.read()
+from pathlib import Path
+long_description = (Path(__file__).parent.parent / "README.md").read_text()
 
 setuptools.setup(
     name="pycity_scheduling",
     description="A Python framework for the development, testing, and assessment of optimization-based"
                 "power scheduling algorithms for multi-energy systems in city districts",
-    version="1.0.2",
+    version="1.1.0",
     author="Institute for Automation of Complex Power Systems (ACS),"
            "E.ON Energy Research Center (E.ON ERC),"
            "RWTH Aachen University",
@@ -48,8 +48,7 @@ setuptools.setup(
         "numpy==1.19.5",
         "pandas==1.1.5",
         "matplotlib==3.3.4",
-        "pyomo==5.7.1",
-        "Shapely==1.7.1",
+        "pyomo==5.7.3",
         "pycity_base==0.3.2"
     ],
     extras_require={
@@ -65,8 +64,10 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Topic :: Scientific/Engineering",
         "Natural Language :: English",
-        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
     ],
     zip_safe=False,
-    python_requires=">=3.6",
+    python_requires=">=3.7",
 )
