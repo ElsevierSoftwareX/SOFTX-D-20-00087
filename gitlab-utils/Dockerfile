@@ -9,8 +9,13 @@ ENTRYPOINT /bin/bash
 
 
 # Install the archlinux base packages:
-RUN pacman -Syu sudo git patch wget php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses tbb cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --noconfirm
+RUN pacman -Syu sudo git patch wget php doxygen make cmake clang base-devel gcc gcc-fortran unzip tar bzip2 expat gdbm libffi openssl bluez-libs mpdecimal sqlite tk bison flex pkgconf boost boost-libs zlib gmp blas gsl readline ncurses cliquer ghc ghc-libs haskell-criterion coin-or-asl lapack metis --noconfirm
 
+# Scipopt cannot be build with tbb >= 2021
+RUN pacman -U https://archive.archlinux.org/packages/t/tbb/tbb-2020.3-1-x86_64.pkg.tar.zst --noconfirm
+
+ENV CMAKE_BUILD_PARALLEL_LEVEL="8"
+ENV MAKEFLAGS "-j8"
 
 # Create a builduser (required for some archlinux operations running inside Docker):
 RUN useradd builduser -m -d /home/builduser &&\
@@ -19,24 +24,12 @@ RUN useradd builduser -m -d /home/builduser &&\
     printf 'root ALL=(ALL) ALL\n' | tee a /etc/sudoers
 
 
-# Install Python version 3.6 together with some core package:
-RUN cd / &&\
-    sudo -u builduser /bin/bash -c 'mkdir -p ~/python36 && cd ~/python36 && wget --quiet "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=python36&id=a057b43d348f307a04e166cbef04deec7cf4c8c4" -O PKGBUILD && makepkg -s' &&\
-    cd /home/builduser/python36 &&\
-    pacman -U *.pkg.tar.zst --noconfirm &&\
-    wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
-    python3.6 get-pip.py &&\
-    python3.6 -m pip install --upgrade pip &&\
-    python3.6 -m pip install setuptools wheel twine pytest &&\
-    cd /
-
-
 # Download and install the required IPOPT solver (version 3.13.2):
 RUN cd / &&\
-    sudo -u builduser /bin/bash -c 'mkdir -p ~/coin-or-coinmumps && cd ~/coin-or-coinmumps && wget --quiet "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=coin-or-coinmumps&id=43e3a59117757bb582f52c041b64a741fa19324b" -O PKGBUILD && makepkg -s' &&\
+    sudo --preserve-env=MAKEFLAGS,CMAKE_BUILD_PARALLEL_LEVEL -u builduser /bin/bash -c 'mkdir -p ~/coin-or-coinmumps && cd ~/coin-or-coinmumps && wget --quiet "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=coin-or-coinmumps&id=43e3a59117757bb582f52c041b64a741fa19324b" -O PKGBUILD && makepkg -s' &&\
     cd /home/builduser/coin-or-coinmumps &&\
     pacman -U *.pkg.tar.zst --noconfirm &&\
-    sudo -u builduser /bin/bash -c 'mkdir -p ~/coin-or-ipopt && cd ~/coin-or-ipopt && wget --quiet "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=coin-or-ipopt&id=7e213d37212b3c9f2658a7608bf4c0289a8a7319" -O PKGBUILD && makepkg -s' &&\
+    sudo --preserve-env=MAKEFLAGS,CMAKE_BUILD_PARALLEL_LEVEL -u builduser /bin/bash -c 'mkdir -p ~/coin-or-ipopt && cd ~/coin-or-ipopt && wget --quiet "https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=coin-or-ipopt&id=7e213d37212b3c9f2658a7608bf4c0289a8a7319" -O PKGBUILD && makepkg -s' &&\
     cd /home/builduser/coin-or-ipopt &&\
     pacman -U *.pkg.tar.zst --noconfirm &&\
     cd /
@@ -47,7 +40,7 @@ RUN mkdir -p /opt/HiGHS
 ENV HiGHS_BASE_DIR="/opt/HiGHS"
 
 RUN cd $HiGHS_BASE_DIR &&\
-    git clone https://github.com/ERGO-Code/HiGHS.git &&\
+    git clone --depth 1 https://github.com/ERGO-Code/HiGHS.git &&\
     cd /
 
 
@@ -93,6 +86,8 @@ ENV PATH="${PATH}:$BLISS_BASE_DIR/bliss-0.73p/"
 RUN mkdir -p /opt/scip
 ENV SCIPAMPL_BASE_DIR="/opt/scip"
 
+RUN pacman -Qe
+
 RUN cd $SCIPAMPL_BASE_DIR &&\
     wget --quiet https://www.scipopt.org/download/release/scipoptsuite-7.0.3.tgz &&\
     tar xzf $SCIPAMPL_BASE_DIR/scipoptsuite-7.0.3.tgz &&\
@@ -131,38 +126,90 @@ ENV PATH="${PATH}:$SCIPAMPL_BASE_DIR/scipoptsuite-7.0.3/scip/interfaces/ampl/bui
 # For further information visit: https://www.gurobi.com/
 RUN mkdir -p /opt/gurobi
 ENV GUROBI_BASE_DIR="/opt/gurobi"
+ENV GUROBI_HOME="${GUROBI_BASE_DIR}/gurobi912/linux64"
 
 RUN cd $GUROBI_BASE_DIR &&\
     wget --quiet https://packages.gurobi.com/9.1/gurobi9.1.2_linux64.tar.gz &&\
     tar xfz gurobi9.1.2_linux64.tar.gz &&\
     rm $GUROBI_BASE_DIR/gurobi9.1.2_linux64.tar.gz &&\
 	chmod -R 755 $GUROBI_BASE_DIR/gurobi912 &&\
-    cd $GUROBI_BASE_DIR/gurobi912/linux64 &&\
-    python3.6 setup.py install &&\
     cd /
 
-ENV PATH="${PATH}:$GUROBI_BASE_DIR/gurobi912/linux64/bin"
-ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$GUROBI_BASE_DIR/gurobi912/linux64/lib"
+ENV PATH="${PATH}:$GUROBI_HOME/bin"
+ENV LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:$GUROBI_HOME/lib"
+
+FROM base as python37
+
+# Install Python version 3.7 together with some core package:
+RUN cd / &&\
+    sudo -u builduser /bin/bash -c 'mkdir -p ~/python37 && cd ~/python37 && curl -L -O https://aur.archlinux.org/cgit/aur.git/snapshot/python37.tar.gz' &&\
+    sudo -u builduser /bin/bash -c 'gpg --keyserver keyserver.ubuntu.com --recv-keys 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D' &&\
+    sudo --preserve-env=MAKEFLAGS,CMAKE_BUILD_PARALLEL_LEVEL -u builduser /bin/bash -c 'cd ~/python37 && tar -xf python37.tar.gz && cd python37 && makepkg -s' &&\
+    cd /home/builduser/python37/python37 &&\
+    pacman -U *.pkg.tar.zst --noconfirm &&\
+    ln -s /usr/sbin/python3.7 /usr/sbin/python3 &&\
+    wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
+    python3.7 get-pip.py &&\
+    python3.7 -m pip install --upgrade pip &&\
+    python3.7 -m pip install setuptools wheel twine pytest &&\
+    cd /
 
 
-# Download and install Python package richardsonpy:
-# Unfortunately, the current PyPI version of package richardsonpy seems to be broken.
-# As a workaround, richardsonpy is downloaded from github and flag -e is used for pip.
-RUN cd /opt &&\
-    git clone --depth=1 -b v0.2.1 https://github.com/RWTH-EBC/richardsonpy &&\
-    python3.6 -m pip install --no-cache-dir -e richardsonpy/ &&\
-	cd /
+
+RUN cd $GUROBI_HOME &&\
+    python3.7 setup.py install &&\
+    cd /
+
+# Add requirements to docker image
+ADD requirements.txt /
+
+RUN pip install --no-cache-dir -r /requirements.txt
+
+FROM base as python38
+
+# Install Python version 3.8 together with some core package:
+RUN cd / &&\
+    sudo -u builduser /bin/bash -c 'mkdir -p ~/python38 && cd ~/python38 && curl -L -O https://aur.archlinux.org/cgit/aur.git/snapshot/python38.tar.gz' &&\
+    sudo -u builduser /bin/bash -c 'gpg --keyserver keyserver.ubuntu.com --recv-keys E3FF2839C048B25C084DEBE9B26995E310250568' &&\
+    sudo --preserve-env=MAKEFLAGS,CMAKE_BUILD_PARALLEL_LEVEL -u builduser /bin/bash -c 'cd ~/python38 && tar -xf python38.tar.gz && cd python38 && makepkg -s' &&\
+    cd /home/builduser/python38/python38 &&\
+    pacman -U *.pkg.tar.zst --noconfirm &&\
+    ln -s /usr/sbin/python3.8 /usr/sbin/python3 &&\
+    wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
+    python3.8 get-pip.py &&\
+    python3.8 -m pip install --upgrade pip &&\
+    python3.8 -m pip install setuptools wheel twine pytest &&\
+    cd /
 
 
-# Download and install Python package pycity_base:
-# Always use a specific tagged pycity_base version from github.
-# Thus, pycity_base is downloaded from github and flag -e is used for pip.
-RUN cd /opt &&\
-    git clone --depth=1 -b v0.3.2 https://github.com/RWTH-EBC/pyCity pycity_base &&\
-    python3.6 -m pip install --no-cache-dir -e pycity_base/ &&\
-	cd /
+
+RUN cd $GUROBI_HOME &&\
+    python3.8 setup.py install &&\
+    cd /
+
+# Add requirements to docker image
+ADD requirements.txt /
+
+RUN pip install --no-cache-dir -r /requirements.txt
+
+FROM base as python39
+
+# Install Python version 3.9 together with some core package:
+RUN cd / &&\
+    pacman -U https://archive.archlinux.org/packages/p/python/python-3.9.9-1-x86_64.pkg.tar.zst --noconfirm &&\
+    wget --quiet https://bootstrap.pypa.io/get-pip.py &&\
+    python3.9 get-pip.py &&\
+    python3.9 -m pip install --upgrade pip &&\
+    python3.9 -m pip install setuptools wheel twine pytest &&\
+    cd /
 
 
-# Download and install the other requirements for package pycity_scheduling:
-# Moreover, install the third-party Python site-packages that are required by the used tools during the different CI stages.
-RUN python3.6 -m pip install --no-cache-dir importlib pylint sphinx numpydoc
+
+RUN cd $GUROBI_HOME &&\
+    python3.9 setup.py install &&\
+    cd /
+
+# Add requirements to docker image
+ADD requirements.txt /
+
+RUN pip install --no-cache-dir -r /requirements.txt

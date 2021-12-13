@@ -1,7 +1,6 @@
 variables:
   GIT_STRATEGY: fetch
   DOCKER_FILE: ${CI_PROJECT_DIR}/gitlab-utils/Dockerfile
-  DOCKER_TAG: latest
   DOCKER_IMAGE: ${CI_REGISTRY_IMAGE}
 
 
@@ -19,57 +18,111 @@ prepare:
     - echo "${CI_REGISTRY_PASSWORD}" | docker login --password-stdin --username "${CI_REGISTRY_USER}" "${CI_REGISTRY}"
   script:
     - mkdir -p /.docker
-    - docker build -f ${DOCKER_FILE} -t ${DOCKER_IMAGE}:${DOCKER_TAG} /.docker
-    - docker push ${DOCKER_IMAGE}:${DOCKER_TAG}
+    - docker build -f ${DOCKER_FILE} --target python37 -t ${DOCKER_IMAGE}:python37 /.docker
+    - docker push ${DOCKER_IMAGE}:python37
+    - docker build -f ${DOCKER_FILE} --target python38 -t ${DOCKER_IMAGE}:python38 /.docker
+    - docker push ${DOCKER_IMAGE}:python38
+    - docker build -f ${DOCKER_FILE} --target python39 -t ${DOCKER_IMAGE}:python39 -t ${DOCKER_IMAGE}:latest /.docker
+    - docker push ${DOCKER_IMAGE}:python39
   tags:
    - docker
 
 
-test-prerequisites:
+test-prerequisites-python37:
   stage: test
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:python37
   script:
-    - python3.6 -m pytest -q /opt/richardsonpy/.
-    - python3.6 -m pytest -q /opt/pycity_base/.
+    - python3 -m pytest --pyargs pycity_base
+  tags:
+   - docker
+
+test-prerequisites-python38:
+  stage: test
+  image: ${DOCKER_IMAGE}:python38
+  script:
+    - python3 -m pytest --pyargs pycity_base
+  tags:
+   - docker
+
+test-prerequisites-python39:
+  stage: test
+  image: ${DOCKER_IMAGE}:python39
+  script:
+    - python3 -m pytest --pyargs pycity_base
   tags:
    - docker
 
 
-unittest-gurobi:
+unittest-gurobi-python37:
   stage: test
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:python37
   script:
     - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
-    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
+
+unittest-gurobi-python38:
+  stage: test
+  image: ${DOCKER_IMAGE}:python38
+  script:
+    - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
+
+unittest-gurobi-python39:
+  stage: test
+  image: ${DOCKER_IMAGE}:python39
+  script:
+    - mv $GUROBI_LIC /opt/gurobi/gurobi.lic
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
   tags:
    - docker
 
 
-unittest-scip:
+unittest-scip-python37:
   stage: test
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:python37
   script:
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - sed -i '55s/GUROBI_DIRECT_SOLVER/SCIP_SOLVER/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
     - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/SCIP_SOLVER_OPTIONS/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
-    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
-    - python3.6 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
   tags:
    - docker
 
+unittest-scip-python38:
+  stage: test
+  image: ${DOCKER_IMAGE}:python38
+  script:
+    - sed -i '55s/GUROBI_DIRECT_SOLVER/SCIP_SOLVER/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/SCIP_SOLVER_OPTIONS/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
+
+unittest-scip-python39:
+  stage: test
+  image: ${DOCKER_IMAGE}:python39
+  script:
+    - sed -i '55s/GUROBI_DIRECT_SOLVER/SCIP_SOLVER/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - sed -i '56s/GUROBI_DIRECT_SOLVER_OPTIONS/SCIP_SOLVER_OPTIONS/g' $CI_PROJECT_DIR/src/pycity_scheduling/solvers.py
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m unittest discover -s $CI_PROJECT_DIR/src/testing/unit_tests -v
+  tags:
+   - docker
 
 lint:
   stage: test
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:latest
   script:
     - mkdir -p lint
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - pylint --rcfile=$CI_PROJECT_DIR/gitlab-utils/.pylintrc pycity_scheduling > $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt || true
     - tail -n 2 $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt
     - mv $CI_PROJECT_DIR/gitlab-utils/pylint_report.txt lint
@@ -87,13 +140,11 @@ docs:
   stage: deploy
   rules:
     - if: '$CI_COMMIT_BRANCH == "master" || $CI_COMMIT_TAG =~ /^v/'
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:latest
   script:
     - mkdir -p docs
     - rm -rf docs/*
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
-    - python3.6 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
+    - python3 -m pip install --no-cache-dir $CI_PROJECT_DIR/src/.
     - bash $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/docu.sh
     - mv $CI_PROJECT_DIR/gitlab-utils/sphinx_doc/_build/html/* docs
   artifacts:
@@ -112,7 +163,7 @@ pages:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '60 minutes'
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:latest
   script:
     - mkdir -p public
     - mv $CI_PROJECT_DIR/docs/* public
@@ -129,15 +180,13 @@ pypi-release:
     - if: '$CI_COMMIT_TAG =~ /^v/'
       when: delayed
       start_in: '120 minutes'
-  image: ${DOCKER_IMAGE}
+  image: ${DOCKER_IMAGE}:latest
   script:
     - mkdir -p release
-    - ln -s $CI_PROJECT_DIR/LICENSE.txt $CI_PROJECT_DIR/src/LICENSE.txt
-    - ln -s $CI_PROJECT_DIR/README.md $CI_PROJECT_DIR/src/README.md
     - mkdir -p $CI_PROJECT_DIR/_release
     - cp -ar $CI_PROJECT_DIR/src/. $CI_PROJECT_DIR/_release/
-    - python3.6 $CI_PROJECT_DIR/_release/setup.py sdist -d $CI_PROJECT_DIR/_release/dist
-    - python3.6 $CI_PROJECT_DIR/_release/setup.py bdist_wheel -d $CI_PROJECT_DIR/_release/dist
+    - python3 $CI_PROJECT_DIR/_release/setup.py sdist -d $CI_PROJECT_DIR/_release/dist
+    - python3 $CI_PROJECT_DIR/_release/setup.py bdist_wheel -d $CI_PROJECT_DIR/_release/dist
     - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload $CI_PROJECT_DIR/_release/dist/*
     - mv $CI_PROJECT_DIR/_release/dist/* release
   artifacts:
