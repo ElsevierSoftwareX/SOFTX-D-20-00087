@@ -18,6 +18,7 @@ prepare:
     - echo "${CI_REGISTRY_PASSWORD}" | docker login --password-stdin --username "${CI_REGISTRY_USER}" "${CI_REGISTRY}"
   script:
     - mkdir -p /.docker
+    - cp ${CI_PROJECT_DIR}/requirements.txt /.docker/
     - docker build -f ${DOCKER_FILE} --target python37 -t ${DOCKER_IMAGE}:python37 /.docker
     - docker push ${DOCKER_IMAGE}:python37
     - docker build -f ${DOCKER_FILE} --target python38 -t ${DOCKER_IMAGE}:python38 /.docker
