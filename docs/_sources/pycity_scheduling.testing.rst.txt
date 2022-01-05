@@ -1,0 +1,18 @@
+pycity\_scheduling.testing package
+==================================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   pycity_scheduling.testing.unit_tests
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling.testing
+   :members:
+   :undoc-members:
+   :show-inheritance:

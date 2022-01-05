@@ -10,6 +10,8 @@ Subpackages
    pycity_scheduling.algorithms
    pycity_scheduling.classes
    pycity_scheduling.data
+   pycity_scheduling.examples
+   pycity_scheduling.testing
    pycity_scheduling.util
 
 Submodules

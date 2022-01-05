@@ -1,0 +1,53 @@
+pycity\_scheduling.testing.unit\_tests package
+==============================================
+
+Submodules
+----------
+
+pycity\_scheduling.testing.unit\_tests.test\_algorithms module
+--------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests.test_algorithms
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.testing.unit\_tests.test\_all\_classes module
+----------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests.test_all_classes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.testing.unit\_tests.test\_classes module
+-----------------------------------------------------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests.test_classes
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.testing.unit\_tests.test\_examples module
+------------------------------------------------------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests.test_examples
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+pycity\_scheduling.testing.unit\_tests.test\_util module
+--------------------------------------------------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests.test_util
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: pycity_scheduling.testing.unit_tests
+   :members:
+   :undoc-members:
+   :show-inheritance:

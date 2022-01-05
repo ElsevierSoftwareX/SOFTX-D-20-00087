@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
-    <title>pycity_scheduling.util package &#8212; pycity_scheduling v1.0.2 documentation</title>
+    <title>pycity_scheduling.util package &#8212; pycity_scheduling v1.1.0 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="_static/classic.css" />
     
@@ -33,7 +33,7 @@
         <li class="right" >
           <a href="pycity_scheduling.classes.html" title="pycity_scheduling.classes package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pycity_scheduling.util package</a></li> 
       </ul>
     </div>  
@@ -51,7 +51,7 @@
 <section id="module-pycity_scheduling.util.debug">
 <span id="pycity-scheduling-util-debug-module"></span><h2>pycity_scheduling.util.debug module<a class="headerlink" href="#module-pycity_scheduling.util.debug" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -75,7 +75,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <li><p><strong>model</strong> (<em>pyomo.ConcreteModel</em>) – Model with <cite>status != OPTIMAL</cite></p></li>
 <li><p><strong>optimizer</strong> (<em>OptSolver</em>) – The solver that was used for optimization and is used for analyzes</p></li>
 <li><p><strong>result</strong> (<em>SolverResults</em>) – The not optimal result that was returned by the solver</p></li>
-<li><p><strong>options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Options which should be passed to the solver when analyzing</p></li>
+<li><p><strong>options</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Options which should be passed to the solver when analyzing</p></li>
 </ul>
 </dd>
 </dl>
@@ -89,7 +89,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cd</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.CityDistrict" title="pycity_scheduling.classes.CityDistrict"><em>pycity_scheduling.classes.CityDistrict</em></a>) – </p></li>
-<li><p><strong>lvl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – <ul>
+<li><p><strong>lvl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – <ul>
 <li><p><cite>0</cite> : Only print city district.</p></li>
 <li><p><cite>1</cite> : Only print city district and buildings.</p></li>
 <li><p><cite>2</cite> : Print city district, buildings and all their devices.</p></li>
@@ -104,7 +104,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <section id="module-pycity_scheduling.util.factory">
 <span id="pycity-scheduling-util-factory-module"></span><h2>pycity_scheduling.util.factory module<a class="headerlink" href="#module-pycity_scheduling.util.factory" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -126,11 +126,11 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>env</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.Environment" title="pycity_scheduling.classes.Environment"><em>pycity_scheduling.classes.Environment</em></a>) – </p></li>
-<li><p><strong>fl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Demand of the FixedLoad in [kW].</p></li>
-<li><p><strong>sh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Demand of the SpaceHeating in [kW].</p></li>
-<li><p><strong>eh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Power of the ElectricHeater in [kW].</p></li>
-<li><p><strong>ths</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Capacity of the ThermalHeatingStorage in [kWh].</p></li>
-<li><p><strong>bat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Capacity of the Battery in [kWh].</p></li>
+<li><p><strong>fl</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Demand of the FixedLoad in [kW].</p></li>
+<li><p><strong>sh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Demand of the SpaceHeating in [kW].</p></li>
+<li><p><strong>eh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Power of the ElectricHeater in [kW].</p></li>
+<li><p><strong>ths</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Capacity of the ThermalHeatingStorage in [kWh].</p></li>
+<li><p><strong>bat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Capacity of the Battery in [kWh].</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -168,8 +168,8 @@ hours.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>environment</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.Environment" title="pycity_scheduling.classes.Environment"><em>pycity_scheduling.classes.Environment</em></a>) – </p></li>
-<li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of houses to be generated.</p></li>
-<li><p><strong>building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
+<li><p><strong>number</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of houses to be generated.</p></li>
+<li><p><strong>building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
 omitted an equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -180,7 +180,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
+<li><p><strong>heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
 equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -191,7 +191,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
+<li><p><strong>device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
 Keys : str</p>
 <blockquote>
 <div><p>{‘FL’, ‘DL’, ‘EV’, ‘PV’, ‘BAT’}</p>
@@ -201,8 +201,8 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – The objective for all buildings.</p></li>
-<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Specify a seed for the randomization. If omitted, a non-deterministic
+<li><p><strong>objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – The objective for all buildings.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – Specify a seed for the randomization. If omitted, a non-deterministic
 city district will be generated.</p></li>
 </ul>
 </dd>
@@ -223,9 +223,9 @@ city district will be generated.</p></li>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>environment</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.Environment" title="pycity_scheduling.classes.Environment"><em>pycity_scheduling.classes.Environment</em></a>) – </p></li>
-<li><p><strong>number_sfh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of SFH buildings.</p></li>
-<li><p><strong>number_mfh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – Number of MFH buildings.</p></li>
-<li><p><strong>sfh_building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
+<li><p><strong>number_sfh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of SFH buildings.</p></li>
+<li><p><strong>number_mfh</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – Number of MFH buildings.</p></li>
+<li><p><strong>sfh_building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
 omitted an equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -236,7 +236,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>sfh_heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
+<li><p><strong>sfh_heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
 equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -247,7 +247,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>sfh_device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
+<li><p><strong>sfh_device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
 Keys : str</p>
 <blockquote>
 <div><p>{‘FL’, ‘DL’, ‘EV’, ‘PV’, ‘BAT’}</p>
@@ -257,7 +257,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>mfh_building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
+<li><p><strong>mfh_building_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of the houses among the tabula standard buildings. If
 omitted an equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -268,7 +268,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>mfh_heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
+<li><p><strong>mfh_heating_distribution</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The distribution of heating devices among the houses. If omitted an
 equal distribution will be used.
 Keys : str</p>
 <blockquote>
@@ -279,7 +279,7 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>mfh_device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.9)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
+<li><p><strong>mfh_device_probabilities</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.10)"><em>dict</em></a><em>, </em><em>optional</em>) – <p>The probabilities of the houses / apartments to have the given device.
 Keys : str</p>
 <blockquote>
 <div><p>{‘FL’, ‘DL’, ‘EV’, ‘PV’, ‘BAT’}</p>
@@ -289,9 +289,9 @@ Keys : str</p>
 </dd>
 </dl>
 </p></li>
-<li><p><strong>district_objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Objective function for the city district (district operator). Default is ‘price’.</p></li>
-<li><p><strong>building_objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Objective function for the buildings. Default is ‘price’.</p></li>
-<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – Specify a seed for the randomization. If omitted, a non-deterministic
+<li><p><strong>district_objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Objective function for the city district (district operator). Default is ‘price’.</p></li>
+<li><p><strong>building_objective</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Objective function for the buildings. Default is ‘price’.</p></li>
+<li><p><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – Specify a seed for the randomization. If omitted, a non-deterministic
 city district will be generated.</p></li>
 </ul>
 </dd>
@@ -302,7 +302,7 @@ city district will be generated.</p></li>
 <section id="module-pycity_scheduling.util.generic_constraints">
 <span id="pycity-scheduling-util-generic-constraints-module"></span><h2>pycity_scheduling.util.generic_constraints module<a class="headerlink" href="#module-pycity_scheduling.util.generic_constraints" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -318,8 +318,8 @@ COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER I
 OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="pycity_scheduling.util.generic_constraints.Constraint">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycity_scheduling.util.generic_constraints.</span></span><span class="sig-name descname"><span class="pre">Constraint</span></span><a class="headerlink" href="#pycity_scheduling.util.generic_constraints.Constraint" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.9)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pycity_scheduling.util.generic_constraints.</span></span><span class="sig-name descname"><span class="pre">Constraint</span></span><a class="headerlink" href="#pycity_scheduling.util.generic_constraints.Constraint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.10)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Base class for all generic constraints.</p>
 <p>This class provides functionality common to all generic constraints.
 Generic constraints can be easily added to an entity block.</p>
@@ -344,7 +344,7 @@ Generic constraints can be easily added to an entity block.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<em>pyomo.Block</em>) – The block corresponding to the entity the constraint should
 be applied to.</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
 <ul>
 <li><p><cite>convex</cite>  : Use linear constraints</p></li>
 <li><p><cite>integer</cite>  : May use integer variables</p></li>
@@ -359,7 +359,7 @@ be applied to.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="pycity_scheduling.util.generic_constraints.LowerActivationLimit">
-<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">pycity_scheduling.util.generic_constraints.</span></span><span class="sig-name descname"><span class="pre">LowerActivationLimit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_activation_limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_nom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.util.generic_constraints.LowerActivationLimit" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pycity_scheduling.util.generic_constraints.</span></span><span class="sig-name descname"><span class="pre">LowerActivationLimit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">o</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_activation_limit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var_nom</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#pycity_scheduling.util.generic_constraints.LowerActivationLimit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#pycity_scheduling.util.generic_constraints.Constraint" title="pycity_scheduling.util.generic_constraints.Constraint"><code class="xref py py-class docutils literal notranslate"><span class="pre">pycity_scheduling.util.generic_constraints.Constraint</span></code></a></p>
 <p>Constraint Class for adding lower activation limits</p>
 <p>This class provides functionality to add lower activation limits
@@ -393,7 +393,7 @@ the entity.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>model</strong> (<em>pyomo.Block</em>) – The block corresponding to the entity the constraint should
 be applied to.</p></li>
-<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Specifies which set of constraints to use.</p>
 <ul>
 <li><p><cite>convex</cite>  : Use linear constraints</p></li>
 <li><p><cite>integer</cite>  : May use integer variables</p></li>
@@ -410,7 +410,7 @@ be applied to.</p></li>
 <section id="module-pycity_scheduling.util.metric">
 <span id="pycity-scheduling-util-metric-module"></span><h2>pycity_scheduling.util.metric module<a class="headerlink" href="#module-pycity_scheduling.util.metric" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -433,20 +433,20 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the absolute flexibility gain for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – <p>Name of Schedule to compare to.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Name of Schedule to compare to.</p>
 <ul>
 <li><p>’default’ : Default schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Absolute flexibility gain in [kWh].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -459,14 +459,14 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the autarky rate for.</p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Autarky rate.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -479,15 +479,15 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate adjustment costs for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
 <ul>
 <li><p>’default’ : Default schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 <li><p><strong>prices</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Adjustment prices for all timesteps in simulation horizon.</p></li>
-<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
+<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
 <cite>False</cite> if only positive deviations shall be considered.</p></li>
 </ul>
 </dd>
@@ -495,7 +495,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dd class="field-even"><p>Adjustment costs in [ct].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -508,14 +508,14 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the energy adjustment for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
 <ul>
 <li><p>’default’ : Default schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
-<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
 <cite>False</cite> if only positive deviations shall be considered.</p></li>
 </ul>
 </dd>
@@ -523,7 +523,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dd class="field-even"><p>Adjustments in [kWh].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -536,14 +536,14 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the power adjustment for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Schedule to adjust to.</p>
 <ul>
 <li><p>’default’ : Default schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
-<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>total_adjustments</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>, </em><em>optional</em>) – <cite>True</cite> if positive and negative deviations shall be considered.
 <cite>False</cite> if only positive deviations shall be considered.</p></li>
 </ul>
 </dd>
@@ -564,7 +564,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.optimization_entity.OptimizationEntity" title="pycity_scheduling.classes.optimization_entity.OptimizationEntity"><em>OptimizationEntity</em></a>) – The entity to calculate co2 emission for.</p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 <li><p><strong>co2_emissions</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Specific CO2 emissions for all timesteps in the simulation horizon in [g/kWh].</p></li>
 </ul>
 </dd>
@@ -572,7 +572,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dd class="field-even"><p>CO2 emissions in [g].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -585,16 +585,16 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate costs for.</p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 <li><p><strong>prices</strong> (<em>array_like</em><em>, </em><em>optional</em>) – Energy prices for simulation horizon.</p></li>
-<li><p><strong>feedin_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)"><em>float</em></a><em>, </em><em>optional</em>) – Factor which is multiplied to the prices for feed-in revenue.</p></li>
+<li><p><strong>feedin_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>, </em><em>optional</em>) – Factor which is multiplied to the prices for feed-in revenue.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Electricity costs in [ct].</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -607,7 +607,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The Entity to calculate the delta g metric for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – <p>Referenced Schedule</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Referenced Schedule</p>
 <ul>
 <li><p>’default’ : Normal schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
@@ -619,7 +619,7 @@ This corresponds to the amount of electrical energy shifted due to the selected 
 <dd class="field-even"><p>Factor ∆g.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 <p class="rubric">Notes</p>
@@ -642,20 +642,20 @@ Usually a small <cite>r</cite> value is the desired outcome.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the peak reduction ratio for.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – <p>Name of Schedule to compare to.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – <p>Name of Schedule to compare to.</p>
 <ul>
 <li><p>’default’ : Default schedule</p></li>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Peak reduction ratio.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -671,14 +671,14 @@ It holds <cite>r</cite> &gt;= 1, where a lower value is <cite>better</cite>, 1.0
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the peak to avereage ratio for.</p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Peak to average ratio.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -691,14 +691,14 @@ It holds <cite>r</cite> &gt;= 1, where a lower value is <cite>better</cite>, 1.0
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.electrical_entity.ElectricalEntity" title="pycity_scheduling.classes.electrical_entity.ElectricalEntity"><em>ElectricalEntity</em></a>) – The entity to calculate the self-consumption rate for.</p></li>
-<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
+<li><p><strong>timestep</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – If specified, calculate metric only to this timestep.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>Self-consumption rate.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -707,7 +707,7 @@ It holds <cite>r</cite> &gt;= 1, where a lower value is <cite>better</cite>, 1.0
 <section id="module-pycity_scheduling.util.plot_schedules">
 <span id="pycity-scheduling-util-plot-schedules-module"></span><h2>pycity_scheduling.util.plot_schedules module<a class="headerlink" href="#module-pycity_scheduling.util.plot_schedules" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -729,7 +729,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.optimization_entity.OptimizationEntity" title="pycity_scheduling.classes.optimization_entity.OptimizationEntity"><em>OptimizationEntity</em></a>) – Entity that should be plotted.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save. Defaults to the current schedule.
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save. Defaults to the current schedule.
 At most two schedules can be plotted.</p>
 <ul>
 <li><p><cite>None</cite> : Current schedule of entity</p></li>
@@ -738,7 +738,7 @@ At most two schedules can be plotted.</p>
 </ul>
 </p></li>
 <li><p><strong>ax</strong> (<em>matplotlib.Axes</em><em>, </em><em>optional</em>) – Axes the Entity should be plotted into. Shows the plot in a new figure if not specified.</p></li>
-<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Title of the plot. Uses the name of the entity if not specified.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Title of the plot. Uses the name of the entity if not specified.</p></li>
 </ul>
 </dd>
 </dl>
@@ -761,9 +761,9 @@ At most two schedules can be plotted.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>directory_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Directory path in which plots are stored. Defaults to the name of the
+<li><p><strong>directory_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Directory path in which plots are stored. Defaults to the name of the
 entity in the current directory.</p></li>
-<li><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – <p>The level of sub-entities to plot. Defaults to all sub-entities.</p>
+<li><p><strong>levels</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>, </em><em>optional</em>) – <p>The level of sub-entities to plot. Defaults to all sub-entities.</p>
 <ul>
 <li><p><cite>0</cite> : Only print city district.</p></li>
 <li><p><cite>1</cite> : Only print city district and buildings.</p></li>
@@ -771,7 +771,7 @@ entity in the current directory.</p></li>
 <li><p><cite>…</cite> : …</p></li>
 </ul>
 </p></li>
-<li><p><strong>extension</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – File extension (i.e., the file format) of the figures to be stored in the given directory.</p></li>
+<li><p><strong>extension</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – File extension (i.e., the file format) of the figures to be stored in the given directory.</p></li>
 </ul>
 </dd>
 </dl>
@@ -788,7 +788,7 @@ of these variables of the sub-entities. This function plots this imbalance.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>entity</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.optimization_entity.OptimizationEntity" title="pycity_scheduling.classes.optimization_entity.OptimizationEntity"><em>OptimizationEntity</em></a>) – Entity that should be plotted.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save. Defaults to the current schedule.
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save. Defaults to the current schedule.
 At most two schedules can be plotted.</p>
 <ul>
 <li><p><cite>None</cite> : Current schedule of entity</p></li>
@@ -796,9 +796,9 @@ At most two schedules can be plotted.</p>
 <li><p>’ref’ : Reference schedule</p></li>
 </ul>
 </p></li>
-<li><p><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the variable to plot the imbalance for. Defaults to “p_el”.</p></li>
+<li><p><strong>var_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – The name of the variable to plot the imbalance for. Defaults to “p_el”.</p></li>
 <li><p><strong>ax</strong> (<em>matplotlib.Axes</em><em>, </em><em>optional</em>) – Axes the Entity should be plotted into. Shows the plot in a new figure if not specified.</p></li>
-<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Title of the plot. Uses the name of the entity if not specified.</p></li>
+<li><p><strong>title</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – Title of the plot. Uses the name of the entity if not specified.</p></li>
 </ul>
 </dd>
 </dl>
@@ -808,7 +808,7 @@ At most two schedules can be plotted.</p>
 <section id="module-pycity_scheduling.util.write_schedules">
 <span id="pycity-scheduling-util-write-schedules-module"></span><h2>pycity_scheduling.util.write_schedules module<a class="headerlink" href="#module-pycity_scheduling.util.write_schedules" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -829,12 +829,12 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of entities.</p></li>
-<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><em>file-like object</em>) – Specify the file name or an open file where the csv should be saved
+<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of entities.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>file-like object</em>) – Specify the file name or an open file where the csv should be saved
 in. If file_name is a string and it does not have the <cite>.csv</cite>
 extension it will be appended.</p></li>
-<li><p><strong>delimiter</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – CSV file delimiter character.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
+<li><p><strong>delimiter</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – CSV file delimiter character.</p></li>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
 <ul>
 <li><p><cite>None</cite> : Current schedule of entity</p></li>
 <li><p>’default’ : Normal schedule</p></li>
@@ -853,8 +853,8 @@ extension it will be appended.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of entities.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
+<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of entities.</p></li>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
 <ul>
 <li><p><cite>None</cite> : Current schedule of entity</p></li>
 <li><p>’default’ : Normal schedule</p></li>
@@ -873,11 +873,11 @@ extension it will be appended.</p></li>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a>) – List of entities.</p></li>
-<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><em>file-like object</em>) – Specify the file name or an open file where the json should be saved
+<li><p><strong>input_list</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a>) – List of entities.</p></li>
+<li><p><strong>file_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><em>file-like object</em>) – Specify the file name or an open file where the json should be saved
 in. If file_name is a string and it does not have the <cite>.json</cite>
 extension it will be appended.</p></li>
-<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.9)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
+<li><p><strong>schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>, </em><em>optional</em>) – <p>Schedule or list of schedules to save.</p>
 <ul>
 <li><p><cite>None</cite> : Current schedule of entity</p></li>
 <li><p>’default’ : Normal schedule</p></li>
@@ -893,7 +893,7 @@ extension it will be appended.</p></li>
 <section id="module-pycity_scheduling.util">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pycity_scheduling.util" title="Permalink to this headline">¶</a></h2>
 <p>The pycity_scheduling framework</p>
-<p>Copyright (C) 2020,
+<p>Copyright (C) 2022,
 Institute for Automation of Complex Power Systems (ACS),
 E.ON Energy Research Center (E.ON ERC),
 RWTH Aachen University</p>
@@ -915,10 +915,10 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>city_district</strong> (<a class="reference internal" href="pycity_scheduling.classes.html#pycity_scheduling.classes.CityDistrict" title="pycity_scheduling.classes.CityDistrict"><em>pycity_scheduling.classes.CityDistrict</em></a>) – District for which the flexibility potential should be quantified.</p></li>
-<li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Define which algorithm should be used for the flexibility potential quantification purposes.
+<li><p><strong>algorithm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Define which algorithm should be used for the flexibility potential quantification purposes.
 Must be one of ‘exchange-admm’, ‘dual-decomposition’, ‘stand-alone’, ‘local’ or ‘central’.
 Default: ‘central’.</p></li>
-<li><p><strong>reference_algorithm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Define which algorithm should be used as the reference for the flexibility potential quantification purposes.
+<li><p><strong>reference_algorithm</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – Define which algorithm should be used as the reference for the flexibility potential quantification purposes.
 Must be one of ‘exchange-admm’, ‘dual-decomposition’, ‘stand-alone’, ‘local’ or ‘central’.
 Default: ‘stand-alone’.</p></li>
 </ul>
@@ -927,7 +927,7 @@ Default: ‘stand-alone’.</p></li>
 <dd class="field-even"><p>City district operational flexibility potential in kWh.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -948,7 +948,7 @@ Default: ‘stand-alone’.</p></li>
 <p>It must contain at least one <cite>0</cite> otherwise the model will become
 infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 </p></li>
-<li><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Define how the <cite>profile</cite> is to be used.</p>
+<li><p><strong>pattern</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>, </em><em>optional</em>) – <p>Define how the <cite>profile</cite> is to be used.</p>
 <ul>
 <li><p><cite>None</cite> : Profile matches simulation horizon.</p></li>
 <li><p>’daily’ : Profile matches one day.</p></li>
@@ -961,7 +961,7 @@ infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 <dd class="field-even"><p></p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)">numpy.ndarray</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)">numpy.ndarray</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -974,7 +974,7 @@ infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variable</strong> (<em>pyomo.Var</em>) – Variable to extract value from.</p></li>
-<li><p><strong>var_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)"><em>type</em></a><em>, </em><em>optional</em>) – <p>Type with which variable should be stored. Defaults to Domain of pyomo Variable Container or float.</p>
+<li><p><strong>var_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>, </em><em>optional</em>) – <p>Type with which variable should be stored. Defaults to Domain of pyomo Variable Container or float.</p>
 <ul>
 <li><p>float : Store values as floating point numbers.</p></li>
 <li><p>int : Store values as integers (rounding down if necessary).</p></li>
@@ -987,7 +987,7 @@ infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 <dd class="field-even"><p>Extracted value from the pyomo Variable or the closest value to zero if stale.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><a class="reference internal" href="pycity_scheduling.html#pycity_scheduling.exceptions.SchedulingError" title="pycity_scheduling.exceptions.SchedulingError"><strong>SchedulingError</strong></a> – If value to extract is not feasible.</p>
@@ -1003,7 +1003,7 @@ infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>variable</strong> (<em>pyomo.Var</em>) – Variable container to extract values from.</p></li>
-<li><p><strong>var_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.9)"><em>type</em></a><em>, </em><em>optional</em>) – <p>Type with which variable should be stored. Defaults to Domain of pyomo Variable Container or float.</p>
+<li><p><strong>var_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.10)"><em>type</em></a><em>, </em><em>optional</em>) – <p>Type with which variable should be stored. Defaults to Domain of pyomo Variable Container or float.</p>
 <ul>
 <li><p>float : Store values as floating point numbers.</p></li>
 <li><p>int : Store values as integers (rounding down if necessary).</p></li>
@@ -1017,7 +1017,7 @@ infeasible. Its length has to be consistent with <cite>pattern</cite>.</p>
 If the Variable container is not indexed returns the single extracted value.</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.21)">numpy.ndarray</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.9)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)">int</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)">bool</a></p>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v1.22)">numpy.ndarray</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)">float</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)">int</a> or <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)">bool</a></p>
 </dd>
 <dt class="field-even">Raises</dt>
 <dd class="field-even"><p><a class="reference internal" href="pycity_scheduling.html#pycity_scheduling.exceptions.SchedulingError" title="pycity_scheduling.exceptions.SchedulingError"><strong>SchedulingError</strong></a> – If values to extract are not feasible.</p>
@@ -1064,7 +1064,7 @@ If the Variable container is not indexed returns the single extracted value.</p>
   <h3 id="searchlabel">Quick search</h3>
     <div class="searchformwrapper">
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
       <input type="submit" value="Go" />
     </form>
     </div>
@@ -1086,13 +1086,13 @@ If the Variable container is not indexed returns the single extracted value.</p>
         <li class="right" >
           <a href="pycity_scheduling.classes.html" title="pycity_scheduling.classes package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.0.2 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="index.html">pycity_scheduling v1.1.0 documentation</a> &#187;</li>
         <li class="nav-item nav-item-this"><a href="">pycity_scheduling.util package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &#169; Copyright 2021, Institute for Automation of Complex Power Systems (ACS), E.ON Energy Research Center (E.ON ERC), RWTH Aachen University.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.0.2.
+        &#169; Copyright 2022, Institute for Automation of Complex Power Systems (ACS), E.ON Energy Research Center (E.ON ERC), RWTH Aachen University.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 4.3.2.
     </div>
   </body>
 </html>
