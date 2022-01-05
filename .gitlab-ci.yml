@@ -184,6 +184,7 @@ pypi-release:
       start_in: '120 minutes'
   image: ${DOCKER_IMAGE}:latest
   script:
+    - mkdir -p _release
     - mkdir -p $CI_PROJECT_DIR/_release
     - cd $CI_PROJECT_DIR
     - cp -art _release/ setup.py README.md LICENSE.txt requirements.txt src
