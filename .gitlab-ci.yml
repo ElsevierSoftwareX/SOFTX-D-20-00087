@@ -184,9 +184,10 @@ pypi-release:
       start_in: '120 minutes'
   image: ${DOCKER_IMAGE}:latest
   script:
-    - mkdir -p release
     - mkdir -p $CI_PROJECT_DIR/_release
-    - cp -ar $CI_PROJECT_DIR/. $CI_PROJECT_DIR/_release/
+    - cd $CI_PROJECT_DIR
+    - cp -art _release/ setup.py README.md LICENSE.txt requirements.txt src
+    - cd _release
     - python3 $CI_PROJECT_DIR/_release/setup.py sdist -d $CI_PROJECT_DIR/_release/dist
     - python3 $CI_PROJECT_DIR/_release/setup.py bdist_wheel -d $CI_PROJECT_DIR/_release/dist
     - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload $CI_PROJECT_DIR/_release/dist/*

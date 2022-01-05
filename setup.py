@@ -40,7 +40,7 @@ setuptools.setup(
     license="MIT",
     packages=setuptools.find_packages(where="src"),
     package_dir={"": "src"},
-    package_data={"pycity_scheduling": ["data/*.txt"], "examples": ["*.ipynb"]},
+    package_data={"pycity_scheduling": ["data/*.txt", "examples/*.ipynb"]},
     data_files=[(".", ["LICENSE.txt", "README.md"])],
     install_requires=[
         "numpy==1.19.5",
