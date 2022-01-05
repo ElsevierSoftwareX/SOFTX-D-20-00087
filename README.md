@@ -25,8 +25,7 @@ pycity_scheduling requires at least the following Python packages:
 - numpy==1.19.5
 - pandas==1.1.5
 - matplotlib==3.3.4
-- pyomo==6.0.0
-- Shapely==1.7.1
+- pyomo==5.7.3
 - pycity_base==0.3.2
 - pylint (optional)
 - sphinx (optional)
@@ -44,20 +43,27 @@ We recommend one of the following solvers:
 
 ### Installation of pycity_scheduling
 
-The latest version of pycity_scheduling is v1.0.2.
+The latest version of pycity_scheduling is v1.1.0.
 
-If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python version >= 3.6) as follows:
+If all the abovementioned dependencies are installed, you should be able to install package pycity_scheduling via [PyPI](https://pypi.org/) (using Python version >= 3.7) as follows:
 
 `pip install pycity_scheduling`
 
-or:
+or to install in editable mode:
 
-`pip install -e '<your_path_to_pycity_scheduling_git_folder>/src'`
+`pip install -e '<your_path_to_pycity_scheduling_git_folder>'`
 
 or:
 
 `<path_to_your_python_binary> -m pip install -e '<your_path_to_pycity_scheduling_git_folder>/src'`
 
+The project can also be installed in editable mode directly from gitlab without the need for a previous download:
+
+`pip install -e "git+ssh://git.rwth-aachen.de:acs/public/simulation/pycity_scheduling.git"`
+
+or:
+
+`pip install --src <install_location> -e "git+ssh://git.rwth-aachen.de:acs/public/simulation/pycity_scheduling.git"`
 
 You can check if the installation has been successful by trying to import package pycity_scheduling into your Python environment.
 This import should be possible without any errors.

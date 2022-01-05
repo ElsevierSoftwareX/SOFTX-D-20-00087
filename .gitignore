@@ -4,6 +4,8 @@
 # Python compiled files:
 *.pyc
 *.orig
+build
+dist
 
 # Python backup files:
 *.py~
@@ -19,8 +21,8 @@
 output/
 
 # Saved output files in examples
-src/examples/*.csv
-src/examples/*.json
+examples/*.csv
+examples/*.json
 
 # Optimization model files
 *.lp
@@ -31,6 +33,7 @@ src/examples/*.json
 *.emf
 *.asv
 *.bak
+src/*.egg-info
 
 # Documentation build files
 docs/pycity_scheduling*.rst

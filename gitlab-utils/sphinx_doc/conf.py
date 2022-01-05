@@ -18,13 +18,13 @@ sys.path.insert(0, os.path.abspath('../../src'))
 # -- Project information -----------------------------------------------------
 
 project = 'pycity_scheduling'
-copyright = '2021, Institute for Automation of Complex Power Systems (ACS), E.ON Energy Research Center (E.ON ERC), ' \
+copyright = '2022, Institute for Automation of Complex Power Systems (ACS), E.ON Energy Research Center (E.ON ERC), ' \
             'RWTH Aachen University'
 
 # The short X.Y version
-version = 'v1.0.2'
+version = 'v1.1.0'
 # The full version, including alpha/beta/rc tags
-release = 'v1.0.2'
+release = 'v1.1.0'
 
 # -- General configuration ---------------------------------------------------
 
