@@ -190,7 +190,7 @@ pypi-release:
     - cd _release
     - python3 $CI_PROJECT_DIR/_release/setup.py sdist -d $CI_PROJECT_DIR/_release/dist
     - python3 $CI_PROJECT_DIR/_release/setup.py bdist_wheel -d $CI_PROJECT_DIR/_release/dist
-    - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3.6 -m twine upload $CI_PROJECT_DIR/_release/dist/*
+    - TWINE_PASSWORD=${CI_PYPI_TOKEN} TWINE_USERNAME=__token__ python3 -m twine upload $CI_PROJECT_DIR/_release/dist/*
     - mv $CI_PROJECT_DIR/_release/dist/* release
   artifacts:
     name: "pycity_scheduling-release-$CI_COMMIT_TAG"
